@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= currentPlaylist ? currentPlaylist.name : 'Music Playlists' %> - Music Player</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.2/font/bootstrap-icons.css">
+  <style>
+    body {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      color: white;
+    }
+    .player-container {
+      max-width: 800px;
+      margin: 50px auto;
+    }
+    .player-card {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 20px;
+      padding: 30px;
+      box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+    }
+    .song-list-item {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      padding: 15px;
+      margin-bottom: 10px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    .song-list-item:hover {
+      background: rgba(255, 255, 255, 0.15);
+      transform: translateX(5px);
+    }
+    .song-list-item.active {
+      background: rgba(255, 255, 255, 0.25);
+      border-color: rgba(255, 255, 255, 0.5);
+    }
+    .control-btn {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.2);
+      border: 2px solid rgba(255, 255, 255, 0.3);
+      color: white;
+      font-size: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    .control-btn:hover {
+      background: rgba(255, 255, 255, 0.3);
+      transform: scale(1.1);
+    }
+    .control-btn.play-btn {
+      width: 80px;
+      height: 80px;
+      font-size: 32px;
+    }
+    .progress-bar-custom {
+      height: 8px;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 10px;
+      cursor: pointer;
+      position: relative;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      background: white;
+      border-radius: 10px;
+      transition: width 0.1s;
+    }
+    .playlist-selector {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 10px;
+      padding: 20px;
+      margin-bottom: 30px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container player-container">
+    <div class="text-center mb-4">
+      <h1><i class="bi bi-music-note-beamed"></i> Music Player</h1>
+    </div>
+
+    <% if (!currentPlaylist) { %>
+      <div class="playlist-selector">
+        <h4 class="mb-3">Select a Playlist</h4>
+        <% if (playlists.length === 0) { %>
+          <div class="alert alert-light">
+            <i class="bi bi-info-circle"></i> No playlists available yet.
+          </div>
+        <% } else { %>
+          <div class="list-group">
+            <% playlists.forEach(playlist => { %>
+              <a href="/playlist/<%= playlist.slug %>" class="list-group-item list-group-item-action" 
+                 style="background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); color: white; margin-bottom: 10px; border-radius: 10px;">
+                <div class="d-flex justify-content-between align-items-center">
+                  <div>
+                    <h5 class="mb-1"><%= playlist.name %></h5>
+                    <p class="mb-0 opacity-75"><%= playlist.description || 'No description' %></p>
+                  </div>
+                  <i class="bi bi-play-circle" style="font-size: 2rem;"></i>
+                </div>
+              </a>
+            <% }) %>
+          </div>
+        <% } %>
+      </div>
+    <% } else { %>
+      <div class="player-card">
+        <div class="text-center mb-4">
+          <h2><%= currentPlaylist.name %></h2>
+          <% if (currentPlaylist.description) { %>
+            <p class="opacity-75"><%= currentPlaylist.description %></p>
+          <% } %>
+        </div>
+
+        <% if (songs.length > 0) { %>
+          <!-- Audio Element (Hidden) -->
+          <audio id="audioPlayer" style="display: none;"></audio>
+
+          <!-- Now Playing -->
+          <div class="text-center mb-4">
+            <h5 id="nowPlaying" class="mb-2">Select a song to play</h5>
+            <p id="currentTime" class="mb-2">0:00 / 0:00</p>
+            
+            <!-- Progress Bar -->
+            <div class="progress-bar-custom" id="progressBar">
+              <div class="progress-bar-fill" id="progressFill" style="width: 0%"></div>
+            </div>
+          </div>
+
+          <!-- Controls -->
+          <div class="d-flex justify-content-center align-items-center gap-3 mb-4">
+            <div class="control-btn" id="prevBtn">
+              <i class="bi bi-skip-start-fill"></i>
+            </div>
+            <div class="control-btn play-btn" id="playBtn">
+              <i class="bi bi-play-fill" id="playIcon"></i>
+            </div>
+            <div class="control-btn" id="nextBtn">
+              <i class="bi bi-skip-end-fill"></i>
+            </div>
+          </div>
+
+          <!-- Song List -->
+          <div class="mt-4">
+            <h5 class="mb-3">Playlist (<%= songs.length %> songs)</h5>
+            <div id="songList">
+              <% songs.forEach((song, index) => { %>
+                <div class="song-list-item" data-song-index="<%= index %>" data-song-path="<%= song.file_path %>">
+                  <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                      <strong><%= index + 1 %>. <%= song.original_name %></strong>
+                      <br>
+                      <small class="opacity-75"><%= (song.file_size / 1024 / 1024).toFixed(2) %> MB</small>
+                    </div>
+                    <i class="bi bi-play-circle" style="font-size: 1.5rem;"></i>
+                  </div>
+                </div>
+              <% }) %>
+            </div>
+          </div>
+        <% } else { %>
+          <div class="alert alert-light">
+            <i class="bi bi-info-circle"></i> This playlist is empty.
+          </div>
+        <% } %>
+
+        <div class="text-center mt-4">
+          <a href="/" class="btn btn-light">
+            <i class="bi bi-arrow-left"></i> Back to Playlists
+          </a>
+        </div>
+      </div>
+    <% } %>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  
+  <% if (currentPlaylist && songs.length > 0) { %>
+  <script>
+    const audioPlayer = document.getElementById('audioPlayer');
+    const playBtn = document.getElementById('playBtn');
+    const playIcon = document.getElementById('playIcon');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const nowPlaying = document.getElementById('nowPlaying');
+    const currentTimeEl = document.getElementById('currentTime');
+    const progressBar = document.getElementById('progressBar');
+    const progressFill = document.getElementById('progressFill');
+    const songListItems = document.querySelectorAll('.song-list-item');
+    
+    let currentSongIndex = -1;
+    let isPlaying = false;
+    
+    // Load song
+    function loadSong(index) {
+      if (index < 0 || index >= songListItems.length) return;
+      
+      currentSongIndex = index;
+      const songItem = songListItems[index];
+      const songPath = songItem.dataset.songPath;
+      const songName = songItem.querySelector('strong').textContent;
+      
+      audioPlayer.src = '/' + songPath;
+      nowPlaying.textContent = songName;
+      
+      // Update active state
+      songListItems.forEach(item => item.classList.remove('active'));
+      songItem.classList.add('active');
+      
+      // Scroll to active song
+      songItem.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+    
+    // Play/Pause
+    function togglePlay() {
+      if (currentSongIndex === -1) {
+        loadSong(0);
+      }
+      
+      if (isPlaying) {
+        audioPlayer.pause();
+      } else {
+        audioPlayer.play();
+      }
+    }
+    
+    // Previous song
+    function prevSong() {
+      if (currentSongIndex > 0) {
+        loadSong(currentSongIndex - 1);
+        if (isPlaying) {
+          audioPlayer.play();
+        }
+      }
+    }
+    
+    // Next song
+    function nextSong() {
+      if (currentSongIndex < songListItems.length - 1) {
+        loadSong(currentSongIndex + 1);
+        if (isPlaying) {
+          audioPlayer.play();
+        }
+      }
+    }
+    
+    // Format time
+    function formatTime(seconds) {
+      const mins = Math.floor(seconds / 60);
+      const secs = Math.floor(seconds % 60);
+      return `${mins}:${secs.toString().padStart(2, '0')}`;
+    }
+    
+    // Update progress
+    function updateProgress() {
+      const percent = (audioPlayer.currentTime / audioPlayer.duration) * 100;
+      progressFill.style.width = percent + '%';
+      currentTimeEl.textContent = `${formatTime(audioPlayer.currentTime)} / ${formatTime(audioPlayer.duration)}`;
+    }
+    
+    // Seek
+    progressBar.addEventListener('click', (e) => {
+      const rect = progressBar.getBoundingClientRect();
+      const percent = (e.clientX - rect.left) / rect.width;
+      audioPlayer.currentTime = percent * audioPlayer.duration;
+    });
+    
+    // Event listeners
+    playBtn.addEventListener('click', togglePlay);
+    prevBtn.addEventListener('click', prevSong);
+    nextBtn.addEventListener('click', nextSong);
+    
+    audioPlayer.addEventListener('play', () => {
+      isPlaying = true;
+      playIcon.className = 'bi bi-pause-fill';
+    });
+    
+    audioPlayer.addEventListener('pause', () => {
+      isPlaying = false;
+      playIcon.className = 'bi bi-play-fill';
+    });
+    
+    audioPlayer.addEventListener('timeupdate', updateProgress);
+    
+    audioPlayer.addEventListener('ended', () => {
+      if (currentSongIndex < songListItems.length - 1) {
+        nextSong();
+        audioPlayer.play();
+      } else {
+        isPlaying = false;
+        playIcon.className = 'bi bi-play-fill';
+      }
+    });
+    
+    // Click on song to play
+    songListItems.forEach((item, index) => {
+      item.addEventListener('click', () => {
+        loadSong(index);
+        audioPlayer.play();
+      });
+    });
+    
+    // Keyboard shortcuts
+    document.addEventListener('keydown', (e) => {
+      if (e.code === 'Space') {
+        e.preventDefault();
+        togglePlay();
+      } else if (e.code === 'ArrowLeft') {
+        e.preventDefault();
+        prevSong();
+      } else if (e.code === 'ArrowRight') {
+        e.preventDefault();
+        nextSong();
+      }
+    });
+  </script>
+  <% } %>
+</body>
+</html>
