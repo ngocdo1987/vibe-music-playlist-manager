@@ -4,7 +4,7 @@
 
 File: `app/Models/Playlist.ts`
 
-\`\`\`typescript
+```typescript
 import { DateTime } from 'luxon'
 import { BaseModel, column, hasMany, HasMany, beforeCreate } from '@ioc:Adonis/Lucid/Orm'
 import Song from './Song'
@@ -45,13 +45,13 @@ export default class Playlist extends BaseModel {
     }
   }
 }
-\`\`\`
+```
 
 ## Song Model
 
 File: `app/Models/Song.ts`
 
-\`\`\`typescript
+```typescript
 import { DateTime } from 'luxon'
 import { BaseModel, column, belongsTo, BelongsTo } from '@ioc:Adonis/Lucid/Orm'
 import Playlist from './Playlist'

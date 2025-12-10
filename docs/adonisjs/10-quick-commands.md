@@ -2,7 +2,7 @@
 
 ## Development
 
-\`\`\`bash
+```bash
 # Start development server
 node ace serve --watch
 
@@ -23,11 +23,11 @@ node ace make:controller <name>
 
 # Create new middleware
 node ace make:middleware <name>
-\`\`\`
+```
 
 ## Production
 
-\`\`\`bash
+```bash
 # Build for production
 node ace build --production
 
@@ -40,13 +40,13 @@ pm2 logs music-playlist
 pm2 restart music-playlist
 pm2 stop music-playlist
 pm2 delete music-playlist
-\`\`\`
+```
 
 ## Nginx Configuration (Optional)
 
 File: `/etc/nginx/sites-available/music-playlist`
 
-\`\`\`nginx
+```nginx
 server {
     listen 80;
     server_name your-domain.com;
@@ -69,25 +69,25 @@ server {
         add_header Cache-Control "public, immutable";
     }
 }
-\`\`\`
+```
 
 Enable site:
-\`\`\`bash
+```bash
 sudo ln -s /etc/nginx/sites-available/music-playlist /etc/nginx/sites-enabled/
 sudo nginx -t
 sudo systemctl reload nginx
-\`\`\`
+```
 
 ## SSL with Certbot
 
-\`\`\`bash
+```bash
 sudo apt install certbot python3-certbot-nginx
 sudo certbot --nginx -d your-domain.com
-\`\`\`
+```
 
 ## File Structure Summary
 
-\`\`\`
+```
 music-playlist/
 ├── app/
 │   ├── Controllers/Http/

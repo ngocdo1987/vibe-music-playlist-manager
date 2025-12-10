@@ -2,7 +2,7 @@
 
 ## Project Structure
 
-\`\`\`
+```
 music-playlist/
 ├── app/
 │   ├── Controllers/Http/
@@ -42,11 +42,11 @@ music-playlist/
 │   └── routes.ts
 ├── .env
 └── package.json
-\`\`\`
+```
 
 ## Step 1: Install Node.js and npm
 
-\`\`\`bash
+```bash
 # Update system
 sudo apt update && sudo apt upgrade -y
 
@@ -57,11 +57,11 @@ sudo apt install -y nodejs
 # Verify installation
 node --version
 npm --version
-\`\`\`
+```
 
 ## Step 2: Create AdonisJS Project
 
-\`\`\`bash
+```bash
 # Create new AdonisJS project
 npm init adonis-ts-app@latest music-playlist
 
@@ -87,13 +87,13 @@ node ace configure @adonisjs/lucid
 node ace configure @adonisjs/session
 node ace configure @adonisjs/view
 node ace configure @adonisjs/shield
-\`\`\`
+```
 
 ## Step 3: Configure Environment
 
 Edit `.env` file:
 
-\`\`\`env
+```env
 PORT=3333
 HOST=0.0.0.0
 NODE_ENV=development
@@ -109,61 +109,61 @@ ADMIN_PASSWORD=your-secure-password-here
 
 # Session
 SESSION_DRIVER=cookie
-\`\`\`
+```
 
 ## Step 4: Create Database Migrations
 
 Run the following commands to create migration files, then replace their content:
 
-\`\`\`bash
+```bash
 node ace make:migration playlists
 node ace make:migration songs
-\`\`\`
+```
 
 ## Step 5: Create Models
 
-\`\`\`bash
+```bash
 node ace make:model Playlist
 node ace make:model Song
-\`\`\`
+```
 
 ## Step 6: Create Controllers
 
-\`\`\`bash
+```bash
 node ace make:controller Auth
 node ace make:controller Playlist
 node ace make:controller Song
 node ace make:controller Frontend
-\`\`\`
+```
 
 ## Step 7: Create Middleware
 
-\`\`\`bash
+```bash
 node ace make:middleware AdminAuth
-\`\`\`
+```
 
 ## Step 8: Create mp3 Directory
 
-\`\`\`bash
+```bash
 mkdir -p public/mp3
 chmod 755 public/mp3
-\`\`\`
+```
 
 ## Step 9: Run Migrations
 
-\`\`\`bash
+```bash
 node ace migration:run
-\`\`\`
+```
 
 ## Step 10: Start Development Server
 
-\`\`\`bash
+```bash
 node ace serve --watch
-\`\`\`
+```
 
 ## Step 11: Production Deployment
 
-\`\`\`bash
+```bash
 # Build for production
 node ace build --production
 
@@ -171,11 +171,11 @@ node ace build --production
 cd build
 npm ci --production
 node server.js
-\`\`\`
+```
 
 ## Using PM2 for Production
 
-\`\`\`bash
+```bash
 # Install PM2
 npm install -g pm2
 

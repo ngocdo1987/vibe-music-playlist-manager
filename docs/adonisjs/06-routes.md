@@ -2,7 +2,7 @@
 
 File: `start/routes.ts`
 
-\`\`\`typescript
+```typescript
 import Route from '@ioc:Adonis/Core/Route'
 
 // Frontend Routes (No authentication required)

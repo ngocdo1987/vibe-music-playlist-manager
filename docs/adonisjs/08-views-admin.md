@@ -4,7 +4,7 @@
 
 File: `resources/views/admin/login.edge`
 
-\`\`\`html
+```html
 <!DOCTYPE html>
 <html lang="en" data-bs-theme="light">
 <head>
@@ -54,13 +54,13 @@ File: `resources/views/admin/login.edge`
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
-\`\`\`
+```
 
 ## Dashboard Page
 
 File: `resources/views/admin/dashboard.edge`
 
-\`\`\`html
+```html
 @layout('layouts/admin')
 
 @section('content')
@@ -135,13 +135,13 @@ File: `resources/views/admin/dashboard.edge`
     </div>
   </div>
 @endsection
-\`\`\`
+```
 
 ## Playlists Index Page
 
 File: `resources/views/admin/playlists/index.edge`
 
-\`\`\`html
+```html
 @layout('layouts/admin')
 
 @section('content')
@@ -205,13 +205,13 @@ File: `resources/views/admin/playlists/index.edge`
     </div>
   </div>
 @endsection
-\`\`\`
+```
 
 ## Create Playlist Page
 
 File: `resources/views/admin/playlists/create.edge`
 
-\`\`\`html
+```html
 @layout('layouts/admin')
 
 @section('content')
@@ -329,13 +329,13 @@ File: `resources/views/admin/playlists/create.edge`
     }
   </script>
 @endsection
-\`\`\`
+```
 
 ## Edit Playlist Page
 
 File: `resources/views/admin/playlists/edit.edge`
 
-\`\`\`html
+```html
 @layout('layouts/admin')
 
 @section('content')

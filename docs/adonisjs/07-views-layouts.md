@@ -4,7 +4,7 @@
 
 File: `resources/views/layouts/admin.edge`
 
-\`\`\`html
+```html
 <!DOCTYPE html>
 <html lang="en" data-bs-theme="light">
 <head>
@@ -125,13 +125,13 @@ File: `resources/views/layouts/admin.edge`
   @!section('scripts')
 </body>
 </html>
-\`\`\`
+```
 
 ## Frontend Layout
 
 File: `resources/views/layouts/frontend.edge`
 
-\`\`\`html
+```html
 <!DOCTYPE html>
 <html lang="en">
 <head>

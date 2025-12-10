@@ -4,7 +4,7 @@
 
 File: `app/Controllers/Http/AuthController.ts`
 
-\`\`\`typescript
+```typescript
 import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 import Env from '@ioc:Adonis/Core/Env'
 
@@ -35,13 +35,13 @@ export default class AuthController {
     return response.redirect('/admin/login')
   }
 }
-\`\`\`
+```
 
 ## Playlist Controller
 
 File: `app/Controllers/Http/PlaylistController.ts`
 
-\`\`\`typescript
+```typescript
 import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 import Playlist from 'App/Models/Playlist'
 import Song from 'App/Models/Song'
@@ -221,13 +221,13 @@ export default class PlaylistController {
     }
   }
 }
-\`\`\`
+```
 
 ## Song Controller
 
 File: `app/Controllers/Http/SongController.ts`
 
-\`\`\`typescript
+```typescript
 import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 import Song from 'App/Models/Song'
 import Application from '@ioc:Adonis/Core/Application'
@@ -271,13 +271,13 @@ export default class SongController {
     return response.json({ success: true })
   }
 }
-\`\`\`
+```
 
 ## Frontend Controller
 
 File: `app/Controllers/Http/FrontendController.ts`
 
-\`\`\`typescript
+```typescript
 import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 import Playlist from 'App/Models/Playlist'
 

@@ -4,7 +4,7 @@
 
 File: `resources/views/frontend/home.edge`
 
-\`\`\`html
+```html
 @layout('layouts/frontend')
 
 @section('content')
@@ -53,13 +53,13 @@ File: `resources/views/frontend/home.edge`
     @endeach
   </div>
 @endsection
-\`\`\`
+```
 
 ## Playlist Player Page
 
 File: `resources/views/frontend/playlist.edge`
 
-\`\`\`html
+```html
 @layout('layouts/frontend')
 
 @section('content')

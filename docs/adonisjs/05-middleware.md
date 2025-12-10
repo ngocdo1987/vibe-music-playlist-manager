@@ -4,7 +4,7 @@
 
 File: `app/Middleware/AdminAuth.ts`
 
-\`\`\`typescript
+```typescript
 import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 
 export default class AdminAuth {
@@ -19,7 +19,7 @@ export default class AdminAuth {
     await next()
   }
 }
-\`\`\`
+```
 
 ## Register Middleware
 
@@ -27,7 +27,7 @@ File: `start/kernel.ts`
 
 Add the following to the named middleware section:
 
-\`\`\`typescript
+```typescript
 Server.middleware.registerNamed({
   adminAuth: () => import('App/Middleware/AdminAuth'),
 })

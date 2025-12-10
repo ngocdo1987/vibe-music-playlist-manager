@@ -4,7 +4,7 @@
 
 File: `database/migrations/xxxx_create_playlists_table.ts`
 
-\`\`\`typescript
+```typescript
 import BaseSchema from '@ioc:Adonis/Lucid/Schema'
 
 export default class extends BaseSchema {
@@ -25,13 +25,13 @@ export default class extends BaseSchema {
     this.schema.dropTable(this.tableName)
   }
 }
-\`\`\`
+```
 
 ## Migration: Create Songs Table
 
 File: `database/migrations/xxxx_create_songs_table.ts`
 
-\`\`\`typescript
+```typescript
 import BaseSchema from '@ioc:Adonis/Lucid/Schema'
 
 export default class extends BaseSchema {
