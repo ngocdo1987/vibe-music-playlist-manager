@@ -18,6 +18,7 @@ pub struct Playlist {
     pub updated_at: String,
 }
 
+#[allow(dead_code)]
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PlaylistSong {
     pub id: i64,

@@ -66,6 +66,7 @@ pub fn get_all_songs(conn: &Connection) -> Result<Vec<Song>> {
     songs.collect()
 }
 
+#[allow(dead_code)]
 pub fn get_song_by_id(conn: &Connection, id: i64) -> Result<Song> {
     conn.query_row(
         "SELECT id, filename, original_name, created_at FROM songs WHERE id = ?1",
