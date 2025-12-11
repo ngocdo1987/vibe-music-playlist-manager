@@ -1,4 +1,7 @@
-database.sqlite
+*.sqlite
 node_modules
 .env
 mp3/*
+*.db
+*.sql
+target

@@ -1,0 +1,213 @@
+{% extends "admin/base.html" %}
+
+{% block title %}{% if playlist %}Edit Playlist{% else %}New Playlist{% endif %} - Music Manager{% endblock %}
+
+{% block admin_content %}
+<h2>{% if playlist %}Edit Playlist{% else %}New Playlist{% endif %}</h2>
+
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">Playlist Details</div>
+            <div class="card-body">
+                <form method="post" id="playlist-form">
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Name</label>
+                        <input type="text" class="form-control" id="name" name="name" 
+                               value="{% if playlist %}{{ playlist.name }}{% endif %}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea class="form-control" id="description" name="description" rows="3">{% if playlist %}{{ playlist.description | default(value="") }}{% endif %}</textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        {% if playlist %}Update{% else %}Create{% endif %} Playlist
+                    </button>
+                    <a href="/admin/playlists" class="btn btn-secondary">Cancel</a>
+                </form>
+            </div>
+        </div>
+
+        {% if playlist %}
+        <div class="card mt-4">
+            <div class="card-header">Playlist Songs (Drag to reorder)</div>
+            <div class="card-body">
+                <ul class="list-group" id="playlist-songs">
+                    {% for song in playlist_songs %}
+                    <li class="list-group-item song-item d-flex justify-content-between align-items-center" data-id="{{ song.id }}">
+                        <span>
+                            <i class="bi bi-grip-vertical me-2"></i>
+                            {{ song.original_name }}
+                        </span>
+                        <button type="button" class="btn btn-sm btn-outline-danger remove-song" data-id="{{ song.id }}">
+                            <i class="bi bi-x"></i>
+                        </button>
+                    </li>
+                    {% endfor %}
+                </ul>
+                <button type="button" class="btn btn-success mt-3" id="save-order" {% if not playlist_songs %}disabled{% endif %}>
+                    <i class="bi bi-check-lg"></i> Save Order
+                </button>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">Upload Songs</div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label for="mp3-upload" class="form-label">Select MP3 Files</label>
+                    <input type="file" class="form-control" id="mp3-upload" accept=".mp3" multiple>
+                </div>
+                <div id="upload-progress" class="d-none">
+                    <div class="progress mb-2">
+                        <div class="progress-bar" role="progressbar" style="width: 0%"></div>
+                    </div>
+                    <small class="text-muted">Uploading...</small>
+                </div>
+                <div id="upload-result"></div>
+            </div>
+        </div>
+
+        <div class="card mt-4">
+            <div class="card-header">Available Songs</div>
+            <div class="card-body" style="max-height: 400px; overflow-y: auto;">
+                <ul class="list-group" id="available-songs">
+                    {% for song in songs %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <span>{{ song.original_name }}</span>
+                        {% if playlist %}
+                        <button type="button" class="btn btn-sm btn-outline-success add-song" data-id="{{ song.id }}" data-name="{{ song.original_name }}">
+                            <i class="bi bi-plus"></i>
+                        </button>
+                        {% endif %}
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+<script>
+    const playlistId = {% if playlist %}{{ playlist.id }}{% else %}null{% endif %};
+    const playlistSongsEl = document.getElementById('playlist-songs');
+    
+    // Initialize Sortable for drag and drop
+    if (playlistSongsEl) {
+        new Sortable(playlistSongsEl, {
+            animation: 150,
+            ghostClass: 'sortable-ghost',
+            handle: '.bi-grip-vertical'
+        });
+    }
+    
+    // Upload functionality
+    document.getElementById('mp3-upload').addEventListener('change', async function(e) {
+        const files = e.target.files;
+        if (files.length === 0) return;
+        
+        const formData = new FormData();
+        for (const file of files) {
+            formData.append('files', file);
+        }
+        
+        const progressEl = document.getElementById('upload-progress');
+        const resultEl = document.getElementById('upload-result');
+        progressEl.classList.remove('d-none');
+        resultEl.innerHTML = '';
+        
+        try {
+            const response = await fetch('/api/upload', {
+                method: 'POST',
+                body: formData
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                resultEl.innerHTML = `<div class="alert alert-success">Uploaded ${data.songs.length} song(s) successfully!</div>`;
+                // Reload page to show new songs
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                resultEl.innerHTML = `<div class="alert alert-danger">${data.error}</div>`;
+            }
+        } catch (err) {
+            resultEl.innerHTML = `<div class="alert alert-danger">Upload failed: ${err.message}</div>`;
+        }
+        
+        progressEl.classList.add('d-none');
+        e.target.value = '';
+    });
+    
+    // Add song to playlist
+    document.querySelectorAll('.add-song').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const songId = this.dataset.id;
+            const songName = this.dataset.name;
+            
+            // Check if already in playlist
+            if (document.querySelector(`#playlist-songs [data-id="${songId}"]`)) {
+                alert('Song is already in the playlist');
+                return;
+            }
+            
+            const li = document.createElement('li');
+            li.className = 'list-group-item song-item d-flex justify-content-between align-items-center';
+            li.dataset.id = songId;
+            li.innerHTML = `
+                <span>
+                    <i class="bi bi-grip-vertical me-2"></i>
+                    ${songName}
+                </span>
+                <button type="button" class="btn btn-sm btn-outline-danger remove-song" data-id="${songId}">
+                    <i class="bi bi-x"></i>
+                </button>
+            `;
+            
+            playlistSongsEl.appendChild(li);
+            attachRemoveHandler(li.querySelector('.remove-song'));
+            document.getElementById('save-order').disabled = false;
+        });
+    });
+    
+    // Remove song from playlist
+    function attachRemoveHandler(btn) {
+        btn.addEventListener('click', function() {
+            this.closest('li').remove();
+        });
+    }
+    
+    document.querySelectorAll('.remove-song').forEach(attachRemoveHandler);
+    
+    // Save song order
+    document.getElementById('save-order')?.addEventListener('click', async function() {
+        const songIds = Array.from(playlistSongsEl.querySelectorAll('li')).map(li => parseInt(li.dataset.id));
+        
+        try {
+            const response = await fetch(`/api/playlists/${playlistId}/songs`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ song_ids: songIds })
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                alert('Song order saved successfully!');
+            } else {
+                alert('Error: ' + data.error);
+            }
+        } catch (err) {
+            alert('Failed to save: ' + err.message);
+        }
+    });
+</script>
+{% endblock %}

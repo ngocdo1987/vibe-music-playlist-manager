@@ -1,0 +1,249 @@
+{% extends "base.html" %}
+
+{% block title %}{{ playlist.name }} - Music Playlists{% endblock %}
+
+{% block extra_css %}
+<style>
+    .player-container {
+        background: var(--bs-body-bg);
+        border-radius: 12px;
+        padding: 2rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    
+    .now-playing {
+        font-size: 1.25rem;
+        font-weight: 500;
+    }
+    
+    .song-list-item {
+        cursor: pointer;
+        transition: background-color 0.2s;
+    }
+    
+    .song-list-item:hover {
+        background-color: var(--bs-tertiary-bg);
+    }
+    
+    .song-list-item.active {
+        background-color: var(--bs-primary);
+        color: white;
+    }
+    
+    .song-list-item.active .text-muted {
+        color: rgba(255, 255, 255, 0.7) !important;
+    }
+    
+    audio {
+        width: 100%;
+    }
+    
+    .progress-time {
+        font-size: 0.875rem;
+        color: var(--bs-secondary-color);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<nav class="navbar navbar-expand-lg bg-body-tertiary">
+    <div class="container">
+        <a class="navbar-brand" href="/">
+            <i class="bi bi-music-note-beamed"></i> Music Playlists
+        </a>
+        <ul class="navbar-nav ms-auto">
+            <li class="nav-item">
+                <span class="nav-link theme-toggle" onclick="toggleTheme()">
+                    <i class="bi bi-moon-fill" id="theme-icon"></i>
+                </span>
+            </li>
+        </ul>
+    </div>
+</nav>
+
+<div class="container mt-4">
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="/">Playlists</a></li>
+            <li class="breadcrumb-item active">{{ playlist.name }}</li>
+        </ol>
+    </nav>
+    
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="player-container">
+                <h3 class="mb-3">{{ playlist.name }}</h3>
+                {% if playlist.description %}
+                <p class="text-muted">{{ playlist.description }}</p>
+                {% endif %}
+                
+                {% if songs %}
+                <div class="mb-4">
+                    <div class="now-playing mb-2">
+                        <i class="bi bi-music-note"></i>
+                        <span id="current-song-title">{{ songs.0.original_name }}</span>
+                    </div>
+                    
+                    <audio id="audio-player" controls>
+                        <source id="audio-source" src="/mp3/{{ songs.0.filename }}" type="audio/mpeg">
+                        Your browser does not support the audio element.
+                    </audio>
+                    
+                    <div class="d-flex justify-content-between mt-2">
+                        <span class="progress-time" id="current-time">0:00</span>
+                        <span class="progress-time" id="duration">0:00</span>
+                    </div>
+                </div>
+                
+                <div class="d-flex justify-content-center gap-3 mb-4">
+                    <button class="btn btn-outline-secondary" id="btn-prev" title="Previous">
+                        <i class="bi bi-skip-start-fill"></i>
+                    </button>
+                    <button class="btn btn-primary btn-lg" id="btn-play" title="Play/Pause">
+                        <i class="bi bi-play-fill" id="play-icon"></i>
+                    </button>
+                    <button class="btn btn-outline-secondary" id="btn-next" title="Next">
+                        <i class="bi bi-skip-end-fill"></i>
+                    </button>
+                </div>
+                {% else %}
+                <div class="alert alert-info">
+                    This playlist has no songs yet.
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="col-lg-4 mt-4 mt-lg-0">
+            <div class="card">
+                <div class="card-header">
+                    <i class="bi bi-list-ol"></i> Songs ({{ songs | length }})
+                </div>
+                <ul class="list-group list-group-flush" id="song-list">
+                    {% for song in songs %}
+                    <li class="list-group-item song-list-item {% if loop.first %}active{% endif %}" 
+                        data-index="{{ loop.index0 }}"
+                        data-src="/mp3/{{ song.filename }}"
+                        data-title="{{ song.original_name }}">
+                        <div class="d-flex align-items-center">
+                            <span class="me-3 text-muted">{{ loop.index }}</span>
+                            <span class="text-truncate">{{ song.original_name }}</span>
+                        </div>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    const audio = document.getElementById('audio-player');
+    const audioSource = document.getElementById('audio-source');
+    const playBtn = document.getElementById('btn-play');
+    const playIcon = document.getElementById('play-icon');
+    const prevBtn = document.getElementById('btn-prev');
+    const nextBtn = document.getElementById('btn-next');
+    const currentTimeEl = document.getElementById('current-time');
+    const durationEl = document.getElementById('duration');
+    const currentSongTitle = document.getElementById('current-song-title');
+    const songList = document.querySelectorAll('.song-list-item');
+    
+    let currentIndex = 0;
+    const songs = Array.from(songList);
+    
+    function formatTime(seconds) {
+        const mins = Math.floor(seconds / 60);
+        const secs = Math.floor(seconds % 60);
+        return `${mins}:${secs.toString().padStart(2, '0')}`;
+    }
+    
+    function updateActiveItem() {
+        songs.forEach((item, index) => {
+            item.classList.toggle('active', index === currentIndex);
+        });
+    }
+    
+    function loadSong(index) {
+        if (index < 0 || index >= songs.length) return;
+        
+        currentIndex = index;
+        const song = songs[index];
+        audioSource.src = song.dataset.src;
+        currentSongTitle.textContent = song.dataset.title;
+        audio.load();
+        updateActiveItem();
+    }
+    
+    function playSong() {
+        audio.play();
+        playIcon.className = 'bi bi-pause-fill';
+    }
+    
+    function pauseSong() {
+        audio.pause();
+        playIcon.className = 'bi bi-play-fill';
+    }
+    
+    if (playBtn) {
+        playBtn.addEventListener('click', () => {
+            if (audio.paused) {
+                playSong();
+            } else {
+                pauseSong();
+            }
+        });
+    }
+    
+    if (prevBtn) {
+        prevBtn.addEventListener('click', () => {
+            loadSong(currentIndex - 1);
+            playSong();
+        });
+    }
+    
+    if (nextBtn) {
+        nextBtn.addEventListener('click', () => {
+            loadSong(currentIndex + 1);
+            playSong();
+        });
+    }
+    
+    if (audio) {
+        audio.addEventListener('timeupdate', () => {
+            currentTimeEl.textContent = formatTime(audio.currentTime);
+        });
+        
+        audio.addEventListener('loadedmetadata', () => {
+            durationEl.textContent = formatTime(audio.duration);
+        });
+        
+        audio.addEventListener('ended', () => {
+            if (currentIndex < songs.length - 1) {
+                loadSong(currentIndex + 1);
+                playSong();
+            } else {
+                pauseSong();
+            }
+        });
+        
+        audio.addEventListener('play', () => {
+            playIcon.className = 'bi bi-pause-fill';
+        });
+        
+        audio.addEventListener('pause', () => {
+            playIcon.className = 'bi bi-play-fill';
+        });
+    }
+    
+    // Click on song list item
+    songs.forEach((item, index) => {
+        item.addEventListener('click', () => {
+            loadSong(index);
+            playSong();
+        });
+    });
+</script>
+{% endblock %}

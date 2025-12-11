@@ -1,0 +1,100 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Songs - Music Manager{% endblock %}
+
+{% block admin_content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Songs</h2>
+    <div>
+        <label class="btn btn-primary">
+            <i class="bi bi-upload"></i> Upload Songs
+            <input type="file" id="mp3-upload" accept=".mp3" multiple hidden>
+        </label>
+    </div>
+</div>
+
+<div id="upload-progress" class="d-none mb-3">
+    <div class="progress">
+        <div class="progress-bar" role="progressbar" style="width: 0%"></div>
+    </div>
+</div>
+<div id="upload-result"></div>
+
+{% if songs %}
+<div class="table-responsive">
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Original Name</th>
+                <th>Filename</th>
+                <th>Created</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for song in songs %}
+            <tr>
+                <td>{{ song.original_name }}</td>
+                <td><code>{{ song.filename }}</code></td>
+                <td>{{ song.created_at }}</td>
+                <td>
+                    <a href="/mp3/{{ song.filename }}" target="_blank" class="btn btn-sm btn-outline-info" title="Play">
+                        <i class="bi bi-play"></i>
+                    </a>
+                    <form method="post" action="/admin/songs/{{ song.id }}/delete" class="d-inline" onsubmit="return confirm('Are you sure you want to delete this song? It will be removed from all playlists.')">
+                        <button type="submit" class="btn btn-sm btn-outline-danger" title="Delete">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </form>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="alert alert-info">
+    No songs uploaded yet. Click "Upload Songs" to add MP3 files.
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.getElementById('mp3-upload').addEventListener('change', async function(e) {
+        const files = e.target.files;
+        if (files.length === 0) return;
+        
+        const formData = new FormData();
+        for (const file of files) {
+            formData.append('files', file);
+        }
+        
+        const progressEl = document.getElementById('upload-progress');
+        const resultEl = document.getElementById('upload-result');
+        progressEl.classList.remove('d-none');
+        resultEl.innerHTML = '';
+        
+        try {
+            const response = await fetch('/api/upload', {
+                method: 'POST',
+                body: formData
+            });
+            
+            const data = await response.json();
+            
+            if (data.success) {
+                resultEl.innerHTML = `<div class="alert alert-success">Uploaded ${data.songs.length} song(s) successfully!</div>`;
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                resultEl.innerHTML = `<div class="alert alert-danger">${data.error}</div>`;
+            }
+        } catch (err) {
+            resultEl.innerHTML = `<div class="alert alert-danger">Upload failed: ${err.message}</div>`;
+        }
+        
+        progressEl.classList.add('d-none');
+        e.target.value = '';
+    });
+</script>
+{% endblock %}
