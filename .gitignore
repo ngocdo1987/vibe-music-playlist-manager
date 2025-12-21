@@ -1,4 +1,8 @@
 database.sqlite
 node_modules
 .env
+mp3
 mp3/*
+build
+target
+*.db

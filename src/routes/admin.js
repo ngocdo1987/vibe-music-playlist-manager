@@ -115,7 +115,9 @@ router.post('/playlist/delete/:id', isAuthenticated, (req, res) => {
       const usageCount = db.prepare('SELECT COUNT(*) as count FROM playlist_songs WHERE song_id = ?').get(song.id);
       if (usageCount.count === 0) {
         // Delete file
-        const filePath = path.join(__dirname, '../../', song.file_path);
+        //const filePath = path.join(__dirname, '../../', song.file_path);
+        const filePath = process.env.MP3_PATH + '/' + song.filename;
+
         if (fs.existsSync(filePath)) {
           fs.unlinkSync(filePath);
         }
@@ -146,7 +148,8 @@ router.post('/song/upload', isAuthenticated, (req, res) => {
   // Generate unique filename
   const timestamp = Date.now();
   const filename = `${timestamp}_${file.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
-  const uploadPath = path.join(__dirname, '../../mp3', filename);
+  //const uploadPath = path.join(__dirname, '../../mp3', filename);
+  const uploadPath = process.env.MP3_PATH + '/' + filename;
 
   // Move file
   file.mv(uploadPath, (err) => {
