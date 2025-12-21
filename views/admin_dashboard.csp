@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Music Playlist Manager</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/css/admin.css" rel="stylesheet">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/admin/dashboard">Music Playlist Manager</a>
+            <div class="d-flex align-items-center">
+                <button class="btn btn-outline-light me-2" id="themeToggle">
+                    <span id="themeIcon">🌙</span>
+                </button>
+                <a href="/admin/logout" class="btn btn-outline-light">Logout</a>
+            </div>
+        </div>
+    </nav>
+    
+    <div class="container mt-4">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2>Playlists</h2>
+            <a href="/admin/playlist/create" class="btn btn-success">Create New Playlist</a>
+        </div>
+        
+        <div class="row" id="playlistsContainer">
+            <%c++
+                auto playlistsStr = @@.get<std::string>("playlists", "[]");
+                Json::Value playlists;
+                Json::Reader reader;
+                reader.parse(playlistsStr, playlists);
+                
+                if (playlists.size() == 0) {
+            %>
+            <div class="col-12">
+                <div class="alert alert-info">
+                    No playlists found. Create your first playlist!
+                </div>
+            </div>
+            <%c++
+                } else {
+                    for (const auto& playlist : playlists) {
+            %>
+            <div class="col-md-6 col-lg-4 mb-4">
+                <div class="card">
+                    <div class="card-body">
+                        <h5 class="card-title"><%c++ $$<<playlist["name"].asString(); %></h5>
+                        <p class="card-text"><%c++ $$<<playlist["description"].asString(); %></p>
+                        <div class="d-flex gap-2">
+                            <a href="/playlist/<%c++$$<<playlist["id"].asInt();%>" 
+                               class="btn btn-sm btn-info" target="_blank">View Player</a>
+                            <a href="/admin/playlist/edit/<%c++$$<<playlist["id"].asInt();%>" 
+                               class="btn btn-sm btn-primary">Edit</a>
+                            <form method="POST" 
+                                  action="/admin/playlist/delete/<%c++$$<<playlist["id"].asInt();%>" 
+                                  class="d-inline" 
+                                  onsubmit="return confirm('Are you sure you want to delete this playlist?')">
+                                <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <%c++
+                    }
+                }
+            %>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="/js/admin.js"></script>
+</body>
+</html>

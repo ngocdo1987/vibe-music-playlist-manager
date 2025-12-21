@@ -1,257 +1,361 @@
-# Music Playlist Manager
-
-A full-featured web application for managing music playlists with an admin panel and public music player.
-
-## Features
-
-- **Admin Panel**: Create, edit, and delete playlists with authentication
-- **File Upload**: Upload multiple MP3 files with validation
-- **Drag & Drop**: Reorder songs in playlists easily
-- **Public Player**: Beautiful music player for listening to playlists
-- **Theme Toggle**: Switch between light and dark themes
-- **SQLite Database**: Lightweight and efficient data storage
-- **Responsive Design**: Works on desktop and mobile devices
+# Music Playlist Manager - Setup Guide
 
 ## Prerequisites
 
-- Node.js (v14 or higher)
-- npm or yarn
-- Linux server (Ubuntu/Debian recommended)
+### 1. Install Required Dependencies on Linux
 
-## Installation Steps
+```bash
+# Update package list
+sudo apt update
+
+# Install build tools
+sudo apt install -y build-essential cmake git
+
+# Install required libraries
+sudo apt install -y libjsoncpp-dev uuid-dev zlib1g-dev openssl libssl-dev sqlite3 libsqlite3-dev
+
+# Install Drogon dependencies
+sudo apt install -y libbrotli-dev
+```
+
+### 2. Install Drogon Framework
+
+```bash
+# Clone Drogon repository
+cd ~
+git clone https://github.com/drogonframework/drogon
+cd drogon
+git submodule update --init
+
+# Build and install
+mkdir build
+cd build
+cmake ..
+make -j$(nproc)
+sudo make install
+
+# Update library cache
+sudo ldconfig
+```
+
+## Project Setup
 
 ### 1. Create Project Directory
 
 ```bash
-mkdir music-playlist-manager
-cd music-playlist-manager
+# Create project directory
+mkdir -p ~/music-playlist-manager
+cd ~/music-playlist-manager
 ```
 
 ### 2. Create Directory Structure
 
 ```bash
-mkdir -p src/{config,middleware,routes,views/{admin,public}}
-mkdir -p public/{css,js}
-mkdir -p mp3
+# Create all necessary directories
+mkdir -p controllers models filters views public/css public/js mp3 logs
 ```
 
 ### 3. Copy All Files
 
 Copy all the files from the artifacts to their respective locations:
-- `package.json` → root directory
-- `.env` → root directory
-- `README.md` → root directory
-- Source files → `src/` directory
-- View files → `src/views/` directory
 
-### 4. Install Dependencies
+**Main files:**
+- `CMakeLists.txt` → Root directory
+- `main.cc` → Root directory
+- `database.sql` → Root directory
+- `config.json` → Root directory
+- `.env` → Root directory
 
-```bash
-npm install
-```
+**Controllers:**
+- `AuthController.h` → `controllers/`
+- `AuthController.cc` → `controllers/`
+- `PlaylistController.h` → `controllers/`
+- `PlaylistController.cc` → `controllers/`
 
-### 5. Configure Environment Variables
+**Models:**
+- `Song.h` → `models/`
+- `Song.cc` → `models/`
+- `Playlist.h` → `models/`
+- `Playlist.cc` → `models/`
 
-Edit `.env` file and update the credentials:
+**Filters:**
+- `AuthFilter.h` → `filters/`
+- `AuthFilter.cc` → `filters/`
+
+**Views:**
+- `admin_login.csp` → `views/`
+- `admin_dashboard.csp` → `views/`
+- `playlist_form.csp` → `views/`
+- `player.csp` → `views/`
+
+**Public files:**
+- `admin.css` → `public/css/`
+- `admin.js` → `public/js/`
+
+### 4. Configure Environment Variables
+
+Edit the `.env` file:
 
 ```bash
 nano .env
 ```
 
-Change the following values:
-- `ADMIN_USERNAME`: Your admin username
-- `ADMIN_PASSWORD`: Your admin password
-- `SESSION_SECRET`: A strong random secret key
+Change the default credentials:
 
-### 6. Start the Application
-
-For development:
-```bash
-npm run dev
+```
+ADMIN_USERNAME=your_username
+ADMIN_PASSWORD=your_secure_password
 ```
 
-For production:
-```bash
-npm start
-```
-
-### 7. Access the Application
-
-- **Public Site**: http://your-server-ip:3000
-- **Admin Panel**: http://your-server-ip:3000/admin/login
-
-## Linux Server Setup (Production)
-
-### 1. Update System
+### 5. Build the Project
 
 ```bash
-sudo apt update
-sudo apt upgrade -y
+# Create build directory
+mkdir build
+cd build
+
+# Run CMake
+cmake ..
+
+# Build the project
+make -j$(nproc)
 ```
 
-### 2. Install Node.js
+## Running the Application
+
+### 1. Run Directly
 
 ```bash
-curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
-sudo apt install -y nodejs
+cd build
+./MusicPlaylistManager
 ```
 
-### 3. Install PM2 (Process Manager)
+The application will be available at:
+- Frontend: `http://your-server-ip:8080`
+- Admin: `http://your-server-ip:8080/admin/login`
+
+### 2. Run as a Systemd Service (Production)
+
+Create a systemd service file:
 
 ```bash
-sudo npm install -g pm2
+sudo nano /etc/systemd/system/music-playlist-manager.service
 ```
 
-### 4. Clone/Upload Project
+Add the following content:
 
-Upload your project to the server (via FTP, Git, or SCP).
+```ini
+[Unit]
+Description=Music Playlist Manager
+After=network.target
 
-### 5. Install Dependencies
+[Service]
+Type=simple
+User=your_username
+WorkingDirectory=/home/your_username/music-playlist-manager/build
+ExecStart=/home/your_username/music-playlist-manager/build/MusicPlaylistManager
+Restart=on-failure
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
+```
+
+Enable and start the service:
 
 ```bash
-cd /path/to/music-playlist-manager
-npm install --production
+# Reload systemd
+sudo systemctl daemon-reload
+
+# Enable service to start on boot
+sudo systemctl enable music-playlist-manager
+
+# Start the service
+sudo systemctl start music-playlist-manager
+
+# Check status
+sudo systemctl status music-playlist-manager
 ```
 
-### 6. Start with PM2
-
-```bash
-pm2 start src/app.js --name music-app
-pm2 save
-pm2 startup
-```
-
-### 7. Configure Nginx (Optional)
+### 3. Setup Nginx Reverse Proxy (Optional)
 
 Install Nginx:
+
 ```bash
-sudo apt install nginx -y
+sudo apt install -y nginx
 ```
 
 Create Nginx configuration:
+
 ```bash
-sudo nano /etc/nginx/sites-available/music-app
+sudo nano /etc/nginx/sites-available/music-playlist-manager
 ```
 
-Add this configuration:
+Add configuration:
+
 ```nginx
 server {
     listen 80;
     server_name your-domain.com;
 
+    client_max_body_size 100M;
+
     location / {
-        proxy_pass http://localhost:3000;
+        proxy_pass http://127.0.0.1:8080;
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection 'upgrade';
         proxy_set_header Host $host;
         proxy_cache_bypass $http_upgrade;
-    }
-
-    location /mp3 {
-        alias /path/to/music-playlist-manager/mp3;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
     }
 }
 ```
 
 Enable the site:
+
 ```bash
-sudo ln -s /etc/nginx/sites-available/music-app /etc/nginx/sites-enabled/
+sudo ln -s /etc/nginx/sites-available/music-playlist-manager /etc/nginx/sites-enabled/
 sudo nginx -t
 sudo systemctl restart nginx
 ```
 
-### 8. Configure Firewall
-
-```bash
-sudo ufw allow 80
-sudo ufw allow 443
-sudo ufw enable
-```
-
-## Usage
+## Usage Guide
 
 ### Admin Panel
 
-1. Login at `/admin/login`
-2. Create a new playlist
-3. Upload MP3 files
-4. Drag and drop to reorder songs
-5. Save changes
+1. **Login**
+   - Navigate to `/admin/login`
+   - Enter your credentials from `.env`
+
+2. **Create Playlist**
+   - Click "Create New Playlist"
+   - Enter playlist name and description
+   - Upload MP3 files (multiple files supported)
+   - Drag and drop to reorder songs
+   - Click "Save Playlist"
+
+3. **Edit Playlist**
+   - Click "Edit" on any playlist
+   - Modify name, description
+   - Add more songs or remove existing ones
+   - Reorder by drag and drop
+   - Click "Save Playlist"
+
+4. **Delete Playlist**
+   - Click "Delete" on any playlist
+   - Confirm deletion
+
+5. **Theme Toggle**
+   - Click the moon/sun icon in the navbar to switch between light/dark mode
 
 ### Public Player
 
-1. Visit the homepage to see all playlists
-2. Click on a playlist to play
-3. Use playback controls or keyboard shortcuts:
-   - Space: Play/Pause
-   - Arrow Left: Previous song
-   - Arrow Right: Next song
-
-## File Structure
-
-```
-music-playlist-manager/
-├── src/
-│   ├── config/
-│   │   └── database.js          # SQLite configuration
-│   ├── middleware/
-│   │   └── auth.js              # Authentication middleware
-│   ├── routes/
-│   │   ├── admin.js             # Admin routes
-│   │   └── public.js            # Public routes
-│   ├── views/
-│   │   ├── admin/               # Admin templates
-│   │   └── public/              # Public templates
-│   └── app.js                   # Main application
-├── public/                      # Static assets
-├── mp3/                         # Uploaded MP3 files
-├── database.sqlite              # SQLite database
-├── .env                         # Environment variables
-└── package.json                 # Dependencies
-```
-
-## Security Notes
-
-- Change default admin credentials in `.env`
-- Use strong passwords
-- Keep `SESSION_SECRET` secure
-- Consider using HTTPS in production
-- Regularly backup the database and mp3 files
+1. From the dashboard, click "View Player" on any playlist
+2. The player will open in a new tab
+3. Features:
+   - Play/pause controls
+   - Previous/next track buttons
+   - Progress bar with seek functionality
+   - Full playlist display
+   - Click any song in the list to play it
+   - Auto-play next song when current song ends
 
 ## Troubleshooting
 
+### Database Issues
+
+If you encounter database errors:
+
+```bash
+cd build
+rm music_playlist.db
+./MusicPlaylistManager
+```
+
+### Permission Issues
+
+Ensure the application has write permissions:
+
+```bash
+chmod -R 755 ~/music-playlist-manager
+chmod -R 777 ~/music-playlist-manager/build/mp3
+chmod -R 777 ~/music-playlist-manager/build/logs
+```
+
 ### Port Already in Use
-```bash
-# Find process using port 3000
-sudo lsof -i :3000
-# Kill the process
-sudo kill -9 <PID>
+
+If port 8080 is already in use, edit `config.json`:
+
+```json
+{
+    "listeners": [
+        {
+            "address": "0.0.0.0",
+            "port": 8081,  // Change to available port
+            "https": false
+        }
+    ],
+    ...
+}
 ```
 
-### Permission Issues with MP3 Directory
+### View Logs
+
 ```bash
-sudo chown -R $USER:$USER mp3/
-sudo chmod -R 755 mp3/
+# If running with systemd
+sudo journalctl -u music-playlist-manager -f
+
+# If running directly, logs are in
+tail -f logs/music-app.log
 ```
 
-### Database Locked Error
+## Security Recommendations
+
+1. **Change Default Credentials**
+   - Always change the default admin credentials in `.env`
+
+2. **Use HTTPS**
+   - Setup SSL certificate with Let's Encrypt
+   - Configure Nginx with SSL
+
+3. **Firewall**
+   ```bash
+   sudo ufw allow 80/tcp
+   sudo ufw allow 443/tcp
+   sudo ufw enable
+   ```
+
+4. **File Upload Limits**
+   - The default max file size is 50MB (configured in `config.json`)
+   - Adjust based on your needs
+
+5. **Backup Database Regularly**
+   ```bash
+   # Create backup script
+   cp build/music_playlist.db backups/music_playlist_$(date +%Y%m%d_%H%M%S).db
+   ```
+
+## Updating the Application
+
 ```bash
-# Stop the application
-pm2 stop music-app
-# Remove database lock
-rm database.sqlite-wal database.sqlite-shm
-# Restart
-pm2 start music-app
+# Stop the service
+sudo systemctl stop music-playlist-manager
+
+# Rebuild
+cd ~/music-playlist-manager/build
+make -j$(nproc)
+
+# Restart the service
+sudo systemctl start music-playlist-manager
 ```
-
-## License
-
-ISC
 
 ## Support
 
-For issues or questions, please check the application logs:
-```bash
-pm2 logs music-app
-```
+For issues or questions:
+- Check the logs first
+- Verify all dependencies are installed
+- Ensure database permissions are correct
+- Check that port 8080 is not blocked by firewall

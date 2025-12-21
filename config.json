@@ -1,0 +1,30 @@
+{
+    "listeners": [
+        {
+            "address": "0.0.0.0",
+            "port": 3534,
+            "https": false
+        }
+    ],
+    "app": {
+        "threads_num": 4,
+        "enable_session": true,
+        "session_timeout": 3600,
+        "document_root": "./public",
+        "upload_path": "./mp3",
+        "max_file_size": 52428800,
+        "log": {
+            "log_path": "./logs",
+            "logfile_base_name": "music-app",
+            "log_level": "INFO"
+        }
+    },
+    "db_clients": [
+        {
+            "name": "default",
+            "rdbms": "sqlite3",
+            "filename": "./music_playlist.db",
+            "connection_number": 1
+        }
+    ]
+}
