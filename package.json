@@ -4,8 +4,8 @@
   "description": "Music playlist management system with admin panel",
   "main": "src/app.js",
   "scripts": {
-    "start": "node src/app.js",
-    "dev": "nodemon src/app.js"
+    "start": "bun src/app.js",
+    "dev": "bun --watch src/app.js"
   },
   "keywords": ["music", "playlist", "mp3"],
   "author": "",
@@ -14,12 +14,8 @@
     "express": "^4.18.2",
     "express-session": "^1.17.3",
     "express-fileupload": "^1.4.3",
-    "better-sqlite3": "^9.2.2",
     "ejs": "^3.1.9",
     "dotenv": "^16.3.1",
     "bcryptjs": "^2.4.3"
-  },
-  "devDependencies": {
-    "nodemon": "^3.0.2"
   }
 }

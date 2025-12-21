@@ -1,11 +1,14 @@
-const Database = require('better-sqlite3');
+const { Database } = require('bun:sqlite');
 const path = require('path');
 
-// Initialize database
-const db = new Database(path.join(__dirname, '../../database.sqlite'));
+// Initialize database with Bun's native SQLite
+const db = new Database(path.join(__dirname, '../../database.sqlite'), { 
+  create: true,
+  readwrite: true 
+});
 
 // Enable foreign keys
-db.pragma('foreign_keys = ON');
+db.exec('PRAGMA foreign_keys = ON');
 
 // Create tables
 const initDatabase = () => {
@@ -47,7 +50,7 @@ const initDatabase = () => {
     )
   `);
 
-  console.log('Database initialized successfully');
+  console.log('Database initialized successfully with Bun SQLite');
 };
 
 // Initialize on first run
