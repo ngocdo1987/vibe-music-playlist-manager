@@ -1,0 +1,48 @@
+@layout('layouts/frontend')
+
+@section('content')
+  <div class="text-center text-white mb-5">
+    <h1 class="display-4 fw-bold">Music Playlists</h1>
+    <p class="lead">Browse and listen to curated playlists</p>
+  </div>
+
+  <div class="row g-4">
+    @each(playlist in playlists)
+      <div class="col-md-4">
+        <a href="/playlist/{{ playlist.slug }}" class="text-decoration-none">
+          <div class="card playlist-card h-100">
+            <div class="card-body">
+              <div class="d-flex align-items-center mb-3">
+                <div class="bg-primary bg-opacity-10 rounded-circle p-3 me-3">
+                  <i class="bi bi-music-note-list fs-4 text-primary"></i>
+                </div>
+                <div>
+                  <h5 class="card-title mb-0">{{ playlist.name }}</h5>
+                  <small class="text-muted">{{ playlist.$extras.songs_count || 0 }} songs</small>
+                </div>
+              </div>
+              @if(playlist.description)
+                <p class="card-text text-muted small">{{ playlist.description }}</p>
+              @endif
+            </div>
+            <div class="card-footer bg-transparent border-0">
+              <small class="text-primary">
+                <i class="bi bi-play-circle me-1"></i>Listen Now
+              </small>
+            </div>
+          </div>
+        </a>
+      </div>
+    @empty
+      <div class="col-12">
+        <div class="card text-center py-5">
+          <div class="card-body">
+            <i class="bi bi-music-note-beamed fs-1 text-muted mb-3 d-block"></i>
+            <h5>No playlists available</h5>
+            <p class="text-muted">Check back later for new music!</p>
+          </div>
+        </div>
+      </div>
+    @endeach
+  </div>
+@endsection

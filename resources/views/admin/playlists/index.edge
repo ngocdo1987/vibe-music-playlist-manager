@@ -1,0 +1,63 @@
+@layout('layouts/admin')
+
+@section('content')
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Playlists</h1>
+    <a href="/admin/playlists/create" class="btn btn-primary">
+      <i class="bi bi-plus-lg me-2"></i>Create Playlist
+    </a>
+  </div>
+
+  <div class="card">
+    <div class="table-responsive">
+      <table class="table table-hover mb-0">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Name</th>
+            <th>Slug</th>
+            <th>Songs</th>
+            <th>Created</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @each(playlist in playlists)
+            <tr>
+              <td>{{ playlist.id }}</td>
+              <td>
+                <a href="/playlist/{{ playlist.slug }}" target="_blank" class="text-decoration-none fw-medium">
+                  {{ playlist.name }}
+                  <i class="bi bi-box-arrow-up-right ms-1 small"></i>
+                </a>
+              </td>
+              <td><code>{{ playlist.slug }}</code></td>
+              <td>{{ playlist.$extras.songs_count || 0 }}</td>
+              <td>{{ playlist.createdAt.toFormat('dd MMM yyyy') }}</td>
+              <td>
+                <div class="btn-group btn-group-sm">
+                  <a href="/admin/playlists/{{ playlist.id }}/edit" class="btn btn-outline-primary">
+                    <i class="bi bi-pencil"></i>
+                  </a>
+                  <button type="button" class="btn btn-outline-danger" 
+                    onclick="if(confirm('Are you sure you want to delete this playlist?')) document.getElementById('delete-{{ playlist.id }}').submit()">
+                    <i class="bi bi-trash"></i>
+                  </button>
+                </div>
+                <form id="delete-{{ playlist.id }}" action="/admin/playlists/{{ playlist.id }}?_method=DELETE" method="POST" class="d-none">
+                </form>
+              </td>
+            </tr>
+          @empty
+            <tr>
+              <td colspan="6" class="text-center py-4 text-muted">
+                <i class="bi bi-collection fs-1 d-block mb-2"></i>
+                No playlists yet. Create your first one!
+              </td>
+            </tr>
+          @endeach
+        </tbody>
+      </table>
+    </div>
+  </div>
+@endsection

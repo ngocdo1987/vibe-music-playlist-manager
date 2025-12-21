@@ -75,7 +75,8 @@ npm init adonis-ts-app@latest music-playlist
 cd music-playlist
 
 # Install additional dependencies
-npm install @adonisjs/lucid @adonisjs/session @adonisjs/view @adonisjs/shield
+npm install @adonisjs/lucid @adonisjs/session @adonisjs/view @adonisjs/shield # Wrong
+npm install @adonisjs/lucid@18 @adonisjs/session@6 @adonisjs/shield@6 @adonisjs/view@5 # OK
 npm install better-sqlite3
 npm install file-type@16.5.4
 npm install uuid
