@@ -3,3 +3,5 @@ node_modules
 .env
 mp3
 build
+*.db
+music_manager
