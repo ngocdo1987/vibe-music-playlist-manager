@@ -1,0 +1,130 @@
+@model MusicManager.Models.Playlist
+@{
+    ViewData["Title"] = Model.Name;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="row">
+    <div class="col-lg-8 mx-auto">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h2 class="mb-0">@Model.Name</h2>
+                @if (!string.IsNullOrEmpty(Model.Description))
+                {
+                    <p class="mb-0 mt-2">@Model.Description</p>
+                }
+            </div>
+            <div class="card-body">
+                @if (Model.PlaylistSongs.Any())
+                {
+                    <!-- Audio Player -->
+                    <div class="mb-4">
+                        <audio id="audioPlayer" class="w-100" controls>
+                            <source id="audioSource" src="@Model.PlaylistSongs.First().Song.FilePath" type="audio/mpeg">
+                            Your browser does not support the audio element.
+                        </audio>
+                    </div>
+                    
+                    <!-- Current Track Info -->
+                    <div class="alert alert-info" id="currentTrackInfo">
+                        <strong>Now Playing:</strong> <span id="currentTrackTitle">@Model.PlaylistSongs.First().Song.Title</span>
+                    </div>
+                    
+                    <!-- Playlist Track List -->
+                    <h5 class="mb-3">Playlist Tracks (@Model.PlaylistSongs.Count songs)</h5>
+                    <div class="list-group" id="trackList">
+                        @foreach (var ps in Model.PlaylistSongs)
+                        {
+                            <a href="#" 
+                               class="list-group-item list-group-item-action track-item @(ps.Order == 0 ? "active" : "")" 
+                               data-track-index="@ps.Order"
+                               data-track-src="@ps.Song.FilePath"
+                               data-track-title="@ps.Song.Title">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <span class="badge bg-secondary me-2">@(ps.Order + 1)</span>
+                                        <strong>@ps.Song.Title</strong>
+                                    </div>
+                                    <small class="text-muted">@ps.Song.FileName</small>
+                                </div>
+                            </a>
+                        }
+                    </div>
+                }
+                else
+                {
+                    <div class="alert alert-warning">
+                        This playlist is empty. No songs available.
+                    </div>
+                }
+            </div>
+        </div>
+        
+        <div class="text-center mt-4">
+            <a href="/" class="btn btn-secondary">← Back to Playlists</a>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const audioPlayer = document.getElementById('audioPlayer');
+            const audioSource = document.getElementById('audioSource');
+            const currentTrackTitle = document.getElementById('currentTrackTitle');
+            const trackItems = document.querySelectorAll('.track-item');
+            
+            let currentTrackIndex = 0;
+            const tracks = Array.from(trackItems).map(item => ({
+                index: parseInt(item.dataset.trackIndex),
+                src: item.dataset.trackSrc,
+                title: item.dataset.trackTitle
+            }));
+            
+            // Play selected track
+            trackItems.forEach(item => {
+                item.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const trackIndex = parseInt(this.dataset.trackIndex);
+                    playTrack(trackIndex);
+                });
+            });
+            
+            // Auto-play next track when current track ends
+            audioPlayer.addEventListener('ended', function() {
+                playNextTrack();
+            });
+            
+            function playTrack(index) {
+                const track = tracks.find(t => t.index === index);
+                if (!track) return;
+                
+                currentTrackIndex = index;
+                audioSource.src = track.src;
+                audioPlayer.load();
+                audioPlayer.play();
+                
+                currentTrackTitle.textContent = track.title;
+                
+                // Update active state
+                trackItems.forEach(item => {
+                    if (parseInt(item.dataset.trackIndex) === index) {
+                        item.classList.add('active');
+                    } else {
+                        item.classList.remove('active');
+                    }
+                });
+            }
+            
+            function playNextTrack() {
+                const nextIndex = currentTrackIndex + 1;
+                if (nextIndex < tracks.length) {
+                    playTrack(nextIndex);
+                } else {
+                    // Playlist finished, stop at last track
+                    console.log('Playlist finished');
+                }
+            }
+        });
+    </script>
+}

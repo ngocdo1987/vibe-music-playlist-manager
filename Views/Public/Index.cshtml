@@ -1,0 +1,43 @@
+@model IEnumerable<MusicManager.Models.Playlist>
+@{
+    ViewData["Title"] = "Music Playlists";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="text-center mb-5">
+    <h1 class="display-4">Music Playlists</h1>
+    <p class="lead">Browse and listen to our curated playlists</p>
+</div>
+
+@if (Model.Any())
+{
+    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+        @foreach (var playlist in Model)
+        {
+            <div class="col">
+                <div class="card h-100 shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">@playlist.Name</h5>
+                        <p class="card-text">@(playlist.Description ?? "No description")</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <small class="text-muted">@playlist.PlaylistSongs.Count song(s)</small>
+                            <small class="text-muted">@playlist.UpdatedAt.ToString("MMM dd, yyyy")</small>
+                        </div>
+                    </div>
+                    <div class="card-footer bg-transparent">
+                        <a href="/public/player/@playlist.Id" class="btn btn-primary w-100">
+                            ▶️ Play Playlist
+                        </a>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+else
+{
+    <div class="alert alert-info text-center">
+        <h4>No playlists available yet</h4>
+        <p>Check back later for new music!</p>
+    </div>
+}

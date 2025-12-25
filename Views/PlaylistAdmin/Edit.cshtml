@@ -1,0 +1,72 @@
+@model MusicManager.Models.Playlist
+@{
+    ViewData["Title"] = "Edit Playlist";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<h1 class="mb-4">Edit Playlist</h1>
+
+@if (ViewBag.Error != null)
+{
+    <div class="alert alert-danger" role="alert">
+        @ViewBag.Error
+    </div>
+}
+
+<form method="post" enctype="multipart/form-data">
+    <div class="mb-3">
+        <label for="name" class="form-label">Playlist Name</label>
+        <input type="text" class="form-control" id="name" name="name" value="@Model.Name" required>
+    </div>
+    
+    <div class="mb-3">
+        <label for="description" class="form-label">Description</label>
+        <textarea class="form-control" id="description" name="description" rows="3">@Model.Description</textarea>
+    </div>
+    
+    <div class="mb-4">
+        <h4>Songs in Playlist</h4>
+        @if (Model.PlaylistSongs.Any())
+        {
+            <div id="songList" class="list-group">
+                @foreach (var ps in Model.PlaylistSongs.OrderBy(p => p.Order))
+                {
+                    <div class="list-group-item d-flex justify-content-between align-items-center" draggable="true" data-song-id="@ps.SongId">
+                        <div>
+                            <span class="drag-handle me-2" style="cursor: move;">☰</span>
+                            <strong>@ps.Song.Title</strong>
+                            <small class="text-muted">(@ps.Song.FileName)</small>
+                        </div>
+                        <form method="post" action="/playlistadmin/removesong" class="d-inline" onsubmit="return confirm('Remove this song from the playlist?');">
+                            <input type="hidden" name="playlistId" value="@Model.Id" />
+                            <input type="hidden" name="songId" value="@ps.SongId" />
+                            <button type="submit" class="btn btn-sm btn-danger">Remove</button>
+                        </form>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <div class="alert alert-info">No songs in this playlist yet.</div>
+        }
+    </div>
+    
+    <div class="mb-3">
+        <label for="newSongFiles" class="form-label">Add More MP3 Files</label>
+        <input type="file" class="form-control" id="newSongFiles" name="newSongFiles" multiple accept=".mp3">
+        <div class="form-text">You can add additional MP3 files to this playlist.</div>
+    </div>
+    
+    <div>
+        <button type="submit" class="btn btn-primary">Update Playlist</button>
+        <a href="/playlistadmin" class="btn btn-secondary">Cancel</a>
+    </div>
+</form>
+
+@section Scripts {
+    <script src="~/js/playlist-editor.js" asp-append-version="true"></script>
+    <script>
+        initPlaylistEditor(@Model.Id);
+    </script>
+}

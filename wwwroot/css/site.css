@@ -1,0 +1,90 @@
+/* Custom styles for Music Manager */
+
+:root {
+    --primary-color: #667eea;
+    --secondary-color: #764ba2;
+}
+
+/* Footer styling */
+.footer {
+    position: relative;
+    bottom: 0;
+    width: 100%;
+    white-space: nowrap;
+    line-height: 60px;
+}
+
+/* Drag and drop visual feedback */
+.list-group-item[draggable="true"] {
+    cursor: move;
+}
+
+.list-group-item[draggable="true"]:hover {
+    background-color: #f8f9fa;
+}
+
+[data-bs-theme="dark"] .list-group-item[draggable="true"]:hover {
+    background-color: #2b3035;
+}
+
+/* Audio player styling */
+audio {
+    border-radius: 8px;
+}
+
+/* Track list active state */
+.track-item.active {
+    background-color: #667eea !important;
+    color: white !important;
+    border-color: #667eea !important;
+}
+
+.track-item.active .text-muted {
+    color: rgba(255, 255, 255, 0.7) !important;
+}
+
+.track-item.active .badge {
+    background-color: rgba(255, 255, 255, 0.2) !important;
+}
+
+/* Card hover effect */
+.card {
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1) !important;
+}
+
+/* Drag handle */
+.drag-handle {
+    color: #6c757d;
+    font-size: 1.2rem;
+}
+
+/* Dark theme adjustments */
+[data-bs-theme="dark"] {
+    background-color: #212529;
+    color: #dee2e6;
+}
+
+[data-bs-theme="dark"] .card {
+    background-color: #2b3035;
+    border-color: #495057;
+}
+
+[data-bs-theme="dark"] .list-group-item {
+    background-color: #2b3035;
+    border-color: #495057;
+    color: #dee2e6;
+}
+
+[data-bs-theme="dark"] .navbar-light {
+    background-color: #343a40 !important;
+}
+
+[data-bs-theme="dark"] .navbar-light .navbar-brand,
+[data-bs-theme="dark"] .navbar-light .nav-link {
+    color: #dee2e6 !important;
+}

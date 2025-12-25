@@ -1,0 +1,32 @@
+@{
+    ViewData["Title"] = "Dashboard";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="row">
+    <div class="col-12">
+        <h1 class="mb-4">Admin Dashboard</h1>
+        <p>Welcome, <strong>@ViewBag.Username</strong>!</p>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Playlists</h5>
+                <p class="card-text">Manage your music playlists, upload MP3 files, and organize songs.</p>
+                <a href="/playlistadmin" class="btn btn-primary">Manage Playlists</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Frontend</h5>
+                <p class="card-text">View the public-facing music player interface.</p>
+                <a href="/" target="_blank" class="btn btn-secondary">View Frontend</a>
+            </div>
+        </div>
+    </div>
+</div>

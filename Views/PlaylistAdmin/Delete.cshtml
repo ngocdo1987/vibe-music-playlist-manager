@@ -1,0 +1,46 @@
+@model MusicManager.Models.Playlist
+@{
+    ViewData["Title"] = "Delete Playlist";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<h1 class="mb-4">Delete Playlist</h1>
+
+<div class="alert alert-warning" role="alert">
+    <strong>Warning!</strong> Are you sure you want to delete this playlist?
+</div>
+
+<div class="card mb-4">
+    <div class="card-body">
+        <h5 class="card-title">@Model.Name</h5>
+        <p class="card-text">@(Model.Description ?? "No description")</p>
+        <ul class="list-group list-group-flush">
+            <li class="list-group-item">Songs: <strong>@Model.PlaylistSongs.Count</strong></li>
+            <li class="list-group-item">Created: @Model.CreatedAt.ToString("yyyy-MM-dd HH:mm")</li>
+            <li class="list-group-item">Last Updated: @Model.UpdatedAt.ToString("yyyy-MM-dd HH:mm")</li>
+        </ul>
+    </div>
+</div>
+
+@if (Model.PlaylistSongs.Any())
+{
+    <div class="card mb-4">
+        <div class="card-header">Songs in this playlist:</div>
+        <ul class="list-group list-group-flush">
+            @foreach (var ps in Model.PlaylistSongs.OrderBy(p => p.Order))
+            {
+                <li class="list-group-item">@ps.Song.Title <small class="text-muted">(@ps.Song.FileName)</small></li>
+            }
+        </ul>
+    </div>
+}
+
+<form method="post">
+    <button type="submit" class="btn btn-danger">Yes, Delete Playlist</button>
+    <a href="/playlistadmin" class="btn btn-secondary">Cancel</a>
+</form>
+
+<div class="alert alert-info mt-3">
+    <strong>Note:</strong> Deleting this playlist will only remove the playlist itself and its song associations. 
+    The actual MP3 files will remain on the server as they might be used in other playlists.
+</div>

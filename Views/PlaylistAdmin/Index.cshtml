@@ -1,0 +1,49 @@
+@model IEnumerable<MusicManager.Models.Playlist>
+@{
+    ViewData["Title"] = "Playlists";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Playlists</h1>
+    <a href="/playlistadmin/create" class="btn btn-primary">Create New Playlist</a>
+</div>
+
+@if (Model.Any())
+{
+    <div class="table-responsive">
+        <table class="table table-striped table-hover">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Description</th>
+                    <th>Songs</th>
+                    <th>Last Updated</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var playlist in Model)
+                {
+                    <tr>
+                        <td>@playlist.Name</td>
+                        <td>@(playlist.Description ?? "-")</td>
+                        <td>@playlist.PlaylistSongs.Count</td>
+                        <td>@playlist.UpdatedAt.ToString("yyyy-MM-dd HH:mm")</td>
+                        <td>
+                            <a href="/playlistadmin/edit/@playlist.Id" class="btn btn-sm btn-warning">Edit</a>
+                            <a href="/public/player/@playlist.Id" target="_blank" class="btn btn-sm btn-info">Play</a>
+                            <a href="/playlistadmin/delete/@playlist.Id" class="btn btn-sm btn-danger">Delete</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+else
+{
+    <div class="alert alert-info">
+        No playlists found. <a href="/playlistadmin/create">Create your first playlist</a>
+    </div>
+}
