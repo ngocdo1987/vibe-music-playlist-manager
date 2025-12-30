@@ -1,0 +1,106 @@
+# Implementation Plan
+
+- [x] 1. Initialize project structure and build configuration
+  - Create `build.zig` with zig-sqlite dependency
+  - Create `.env` file with ADMIN_USERNAME, ADMIN_PASSWORD
+  - Create directory structure: src/, public/mp3/
+  - _Requirements: 1.1, 2.5_
+
+- [x] 2. Implement database layer
+  - [x] 2.1 Create database connection module
+    - Create `src/db.zig` with SQLite initialization
+    - Implement connection pool and query helpers
+    - _Requirements: 1.1_
+  - [x] 2.2 Create schema and migrations
+    - Implement createTables() for playlists, songs, playlist_songs
+    - Add indexes for slug and position columns
+    - _Requirements: 1.2, 1.3, 1.4_
+
+- [x] 3. Implement HTTP server and router
+  - [x] 3.1 Create main entry point
+    - Create `src/main.zig` with std.http.Server setup
+    - Configure port 8080 and static file serving
+    - _Requirements: 7.5_
+  - [x] 3.2 Create router module
+    - Create `src/router.zig` with route matching
+    - Implement path parameter extraction (:slug, :id)
+    - _Requirements: 7.1_
+
+- [x] 4. Implement session and authentication
+  - [x] 4.1 Create session module
+    - Create `src/utils/session.zig` with cookie handling
+    - Implement session HashMap and token generation
+    - _Requirements: 2.2_
+  - [x] 4.2 Create auth module
+    - Create `src/auth.zig` with login validation
+    - Load credentials from .env file
+    - Implement auth middleware for /admin/* routes
+    - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5_
+
+- [x] 5. Create HTML template system
+  - [x] 5.1 Create layout generator
+    - Create `src/templates/layout.zig` with base HTML
+    - Include Bootstrap 5 CDN, theme toggle script
+    - _Requirements: 6.1, 6.2, 6.3, 8.1_
+  - [x] 5.2 Create admin templates
+    - Create `src/templates/admin.zig` for dashboard, forms, lists
+    - Include SortableJS for drag-and-drop
+    - _Requirements: 5.1, 8.1_
+  - [x] 5.3 Create public templates
+    - Create `src/templates/public.zig` for homepage, player
+    - Include HTML5 audio player with auto-advance
+    - _Requirements: 7.2, 7.3, 7.4, 8.2_
+
+- [x] 6. Implement admin handlers
+  - [x] 6.1 Create login/logout handlers
+    - Create `src/handlers/admin.zig` with loginPage, login, logout
+    - _Requirements: 2.2, 2.3, 2.4_
+  - [x] 6.2 Create playlist list and dashboard
+    - Implement dashboard(), listPlaylists()
+    - _Requirements: 3.5_
+  - [x] 6.3 Create playlist create handler
+    - Implement newPlaylist(), createPlaylist()
+    - _Requirements: 3.1, 3.2_
+  - [x] 6.4 Create playlist edit handler
+    - Implement editPlaylist(), updatePlaylist()
+    - _Requirements: 3.3_
+  - [x] 6.5 Create playlist delete handler
+    - Implement deletePlaylist() with confirmation
+    - _Requirements: 3.4_
+  - [x] 6.6 Create song reorder handler
+    - Implement reorderSongs() for AJAX updates
+    - _Requirements: 5.3, 5.4_
+
+- [x] 7. Implement MP3 upload and validation
+  - [x] 7.1 Create multipart parser
+    - Create `src/utils/multipart.zig` for form parsing
+    - Handle file uploads with boundary detection
+    - _Requirements: 4.5_
+  - [x] 7.2 Create MP3 validator
+    - Create `src/utils/mp3.zig` with isValidMp3()
+    - Check ID3v2 header and MP3 frame sync
+    - _Requirements: 4.1, 4.2_
+  - [x] 7.3 Implement file saving
+    - Save valid MP3s to public/mp3/ folder
+    - Create song records in database
+    - _Requirements: 4.3, 4.4_
+
+- [x] 8. Implement public handlers
+  - [x] 8.1 Create homepage handler
+    - Create `src/handlers/public.zig` with index()
+    - List all playlists with links
+    - _Requirements: 7.5_
+  - [x] 8.2 Create playlist player handler
+    - Implement playlist() with slug lookup
+    - Return player page with song list
+    - _Requirements: 7.1, 7.2_
+  - [x] 8.3 Create MP3 serving handler
+    - Implement serveMP3() for audio streaming
+    - Set correct Content-Type header
+    - _Requirements: 7.1_
+
+- [x] 9. Write unit tests
+  - Test MP3 validation with valid/invalid samples
+  - Test slug generation from playlist names
+  - Test route matching and parameter extraction
+  - _Requirements: 4.1, 4.2, 1.2_

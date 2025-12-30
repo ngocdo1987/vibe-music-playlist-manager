@@ -1,7 +1,4 @@
-database.sqlite
-node_modules
-.env
-mp3
-build
 *.db
-music_manager
+.zig-cache
+zig-out
+.env

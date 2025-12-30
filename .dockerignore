@@ -1,0 +1,23 @@
+# Build artifacts
+zig-out/
+.zig-cache/
+
+# Database
+*.db
+
+# Environment file (contains secrets)
+.env
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor files
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+
+# Uploaded files (optional - remove if you want to include)
+# public/mp3/*.mp3
