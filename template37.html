@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Ticket Master | Airline Player</title>
+    
+    <!-- Typography: Playfair Display (Luxury Header) & Oswald (Bold Labels) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;600&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            /* Airline Palette */
+            --sky-blue: #e3f2fd;
+            --ocean-blue: #1976d2;
+            --navy: #0d47a1;
+            --paper: #ffffff;
+            --accent-red: #d32f2f;
+            --gray-text: #546e7a;
+        }
+
+        * {
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--sky-blue);
+            font-family: 'Oswald', sans-serif;
+            color: var(--navy);
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            /* Cloud pattern */
+            background-image: radial-gradient(rgba(25, 118, 210, 0.1) 2px, transparent 2px);
+            background-size: 30px 30px;
+        }
+
+        /* --- The Boarding Pass Container --- */
+        .boarding-pass {
+            position: relative;
+            z-index: 10;
+            width: 1000px;
+            max-width: 95%;
+            height: 600px;
+            background: var(--paper);
+            border-radius: 10px;
+            box-shadow: 0 20px 50px rgba(13, 71, 161, 0.3);
+            display: grid;
+            grid-template-columns: 2fr 1.2fr;
+            overflow: hidden;
+        }
+
+        /* Ticket Notches (Semicircles) */
+        .notch {
+            position: absolute;
+            width: 30px; height: 30px;
+            background: var(--sky-blue); /* Matches body to look like cutout */
+            border-radius: 50%;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 20;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.1); /* Inner shadow for depth */
+        }
+        .notch.left { left: -15px; }
+        .notch.right { right: -15px; }
+
+        /* Perforated Line (Middle) */
+        .perforation {
+            position: absolute;
+            left: 2fr;
+            top: 10px; bottom: 10px;
+            width: 0;
+            border-left: 4px dashed #cfd8dc;
+            z-index: 5;
+        }
+
+        /* --- Left Panel: Flight Info --- */
+        .panel-flight {
+            padding: 40px;
+            border-right: 4px dashed #cfd8dc; /* The tear line */
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            background: url("data:image/svg+xml,%3Csvg width='4' height='4' viewBox='0 0 4 4' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 3h1v1H1V3zm2-2h1v1H3V1z' fill='%23e1f5fe' fill-opacity='0.4' fill-rule='evenodd'/%3E%3C/svg%3E");
+        }
+
+        .airline-brand {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--navy);
+            letter-spacing: 1px;
+            border-bottom: 2px solid var(--accent-red);
+            padding-bottom: 5px;
+            display: inline-block;
+            margin-bottom: 20px;
+        }
+
+        .route-visual {
+            height: 200px;
+            background: #f5f5f5;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            position: relative;
+            margin-bottom: 30px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Map Grid */
+        .map-grid {
+            position: absolute;
+            width: 100%; height: 100%;
+            background-image: 
+                linear-gradient(#e0e0e0 1px, transparent 1px),
+                linear-gradient(90deg, #e0e0e0 1px, transparent 1px);
+            background-size: 40px 40px;
+            opacity: 0.5;
+        }
+
+        /* Flight Path Animation */
+        .flight-path {
+            position: relative;
+            width: 80%;
+            height: 2px;
+            background: #ccc;
+        }
+        
+        .flight-path::after {
+            content: '';
+            position: absolute;
+            width: 100%; height: 100%;
+            background: var(--navy);
+            width: 0%; /* Progress */
+            transition: width 0.2s linear;
+        }
+
+        .plane-icon {
+            position: absolute;
+            top: 50%; left: 0%; /* Start */
+            width: 0; height: 0;
+            transform: translate(-50%, -50%);
+            transition: left 0.2s linear;
+        }
+        
+        .playing .flight-path::after {
+            background: var(--accent-red);
+        }
+
+        .playing .plane-icon {
+            animation: flyPlane 2s infinite linear;
+        }
+
+        @keyframes flyPlane {
+            0% { left: 0%; transform: translate(-50%, -50%) rotate(0deg); }
+            50% { transform: translate(-50%, -60%) rotate(-5deg); } /* Turbulence */
+            100% { left: 100%; transform: translate(-50%, -50%) rotate(0deg); }
+        }
+
+        .track-info-display {
+            text-align: center;
+        }
+
+        .dest-code {
+            font-size: 4rem;
+            font-weight: 700;
+            line-height: 1;
+            color: var(--navy);
+        }
+        
+        .city-name {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.5rem;
+            color: var(--gray-text);
+            font-style: italic;
+        }
+
+        /* --- Right Panel: Details & Playlist --- */
+        .panel-details {
+            background: var(--ocean-blue);
+            color: #fff;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        /* Flight Data Row */
+        .flight-data {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+            font-size: 0.9rem;
+            color: rgba(255,255,255,0.9);
+        }
+
+        .data-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            opacity: 0.7;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+            display: block;
+        }
+        
+        .data-val {
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        /* Barcode */
+        .barcode-strip {
+            height: 40px;
+            width: 100%;
+            background: repeating-linear-gradient(
+                90deg,
+                #fff 0, #fff 2px,
+                transparent 2px, transparent 4px,
+                #fff 4px, #fff 5px,
+                transparent 5px, transparent 6px
+            );
+            margin-bottom: 20px;
+            opacity: 0.7;
+        }
+
+        /* Playlist: Manifest */
+        .manifest-list {
+            flex-grow: 1;
+            overflow-y: auto;
+            background: rgba(255,255,255,0.1);
+            border-radius: 4px;
+            padding: 10px;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .dest-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .dest-item:hover {
+            background: rgba(255,255,255,0.15);
+        }
+
+        .dest-item.active {
+            background: #fff;
+            color: var(--navy);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+
+        .d-code { font-weight: 700; font-size: 1.1rem; }
+        .d-city { font-family: 'Playfair Display', serif; font-style: italic; font-size: 0.9rem; }
+        
+        .gate-status {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            border: 1px solid currentColor;
+            padding: 2px 6px;
+            border-radius: 4px;
+            opacity: 0;
+        }
+
+        .dest-item.active.playing .gate-status {
+            opacity: 1;
+            animation: blink-status 1s infinite;
+        }
+
+        @keyframes blink-status { 50% { opacity: 0.5; } }
+
+        /* --- Bottom: Controls (Gate) --- */
+        .control-deck {
+            margin-top: 10px;
+            background: rgba(0,0,0,0.2);
+            padding: 10px;
+            border-radius: 4px;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+
+        .btn-gate {
+            background: #fff;
+            border: none;
+            color: var(--navy);
+            padding: 12px;
+            font-family: 'Oswald', sans-serif;
+            font-weight: 600;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.2s;
+            border-radius: 2px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-gate:hover {
+            background: var(--accent-red);
+            color: #fff;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        .btn-gate.main {
+            grid-column: span 2;
+            background: var(--navy);
+            color: #fff;
+            font-size: 1.1rem;
+        }
+
+        .btn-gate.main:hover {
+            background: var(--ocean-blue);
+            color: #fff;
+        }
+
+        /* Responsive */
+        @media (max-width: 850px) {
+            .boarding-pass {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto 1fr;
+                height: 90vh;
+                overflow-y: auto;
+                display: flex;
+                flex-direction: column;
+            }
+            .panel-flight {
+                border-right: none;
+                border-bottom: 4px dashed #cfd8dc;
+                padding: 20px;
+            }
+            .notch { display: none; }
+            .perforation { display: none; }
+            .route-visual { height: 120px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="boarding-pass">
+        <!-- Notches -->
+        <div class="notch left"></div>
+        <div class="notch right"></div>
+        <div class="perforation"></div>
+
+        <!-- Left: Flight Info -->
+        <section class="panel-flight">
+            
+            <div class="airline-brand">SONIC AIR</div>
+
+            <div class="route-visual">
+                <div class="map-grid"></div>
+                <div class="flight-path">
+                    <div class="flight-path-fill" id="routeFill"></div>
+                    <div class="plane-icon" id="planeIcon">✈</div>
+                </div>
+            </div>
+
+            <div class="track-info-display">
+                <div class="city-name" id="artistName">AIRPORT</div>
+                <div class="dest-code" id="trackName">READY</div>
+            </div>
+        </section>
+
+        <!-- Right: Details & Controls -->
+        <section class="panel-details">
+            
+            <div class="flight-data">
+                <div>
+                    <span class="data-label">Date</span>
+                    <span class="data-val" id="currentTime">Today</span>
+                </div>
+                <div>
+                    <span class="data-label">Gate</span>
+                    <span class="data-val" id="trackIndex">01</span>
+                </div>
+                <div>
+                    <span class="data-label">Departs</span>
+                    <span class="data-val" id="totalTime">Now</span>
+                </div>
+                <div>
+                    <span class="data-label">Class</span>
+                    <span class="data-val">AUDIO</span>
+                </div>
+            </div>
+
+            <div class="barcode-strip"></div>
+
+            <div class="manifest-list" id="manifestList">
+                <!-- JS Injected -->
+            </div>
+
+            <div class="control-deck">
+                <button class="btn-gate" id="prevBtn">&lt;&lt;</button>
+                <button class="btn-gate" id="stopBtn">CANCEL</button>
+                <button class="btn-gate main" id="playBtn">
+                    <span id="iconPlay">DEPART</span>
+                    <span id="iconPause" style="display:none;">HOLD</span>
+                </button>
+                <button class="btn-gate" id="nextBtn">&gt;&gt;</button>
+            </div>
+
+        </section>
+
+    </div>
+
+    <script>
+        // --- Data ---
+        const tracks = [
+            {
+                title: "I Just Called To Say I Love You",
+                artist: "Stevie Wonder",
+                url: "https://music.giau.info/mp3/1765329418087_I_Just_Called_To_Say_I_Love_You.mp3"
+            },
+            {
+                title: "Another Day In Paradise",
+                artist: "Phil Collins",
+                url: "https://music.giau.info/mp3/1765329417208_Another_Day_In_Paradise.mp3"
+            },
+            {
+                title: "If Life Is So Short",
+                artist: "The Moffatts",
+                url: "https://music.giau.info/mp3/1765329418894_If_Life_Is_So_Short.mp3"
+            }
+        ];
+
+        const audio = new Audio();
+
+        // --- DOM ---
+        const playBtn = document.getElementById('playBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const prevBtn = document.getElementById('prevBtn');
+        const iconPlay = document.getElementById('iconPlay');
+        const iconPause = document.getElementById('iconPause');
+        
+        const trackName = document.getElementById('trackName');
+        const artistName = document.getElementById('artistName');
+        const currentTime = document.getElementById('currentTime');
+        const trackIndex = document.getElementById('trackIndex');
+        const totalTime = document.getElementById('totalTime');
+        
+        const routeFill = document.getElementById('routeFill');
+        const planeIcon = document.getElementById('planeIcon');
+        const manifestList = document.getElementById('manifestList');
+
+        // --- State ---
+        let currentIndex = 0;
+        let isPlaying = false;
+        let isStopped = true;
+
+        function init() {
+            renderManifest();
+            loadTrack(0);
+        }
+
+        function loadTrack(index) {
+            currentIndex = index;
+            const track = tracks[index];
+            
+            audio.src = track.url;
+            audio.load();
+            
+            trackName.innerText = "FLYING TO";
+            artistName.innerText = track.artist.toUpperCase() + " INTL";
+            trackIndex.innerText = (index + 1).toString().padStart(2, '0');
+            
+            updateManifestUI();
+            
+            // Reset Visuals
+            routeFill.style.width = '0%';
+            planeIcon.style.left = '0%';
+            currentTime.innerText = "BOARDING";
+            totalTime.innerText = "--:--";
+            
+            if (!isStopped && isPlaying) {
+                playAudio();
+            } else {
+                pauseAudio();
+            }
+        }
+
+        function togglePlay() {
+            if (isPlaying) pauseAudio();
+            else playAudio();
+        }
+
+        function playAudio() {
+            audio.play().then(() => {
+                isPlaying = true;
+                isStopped = false;
+                updateIcons();
+                document.body.classList.add('playing');
+                trackName.innerText = tracks[currentIndex].title.toUpperCase();
+                updateManifestPlaying(true);
+            }).catch(e => console.error(e));
+        }
+
+        function pauseAudio() {
+            audio.pause();
+            isPlaying = false;
+            updateIcons();
+            document.body.classList.remove('playing');
+            trackName.innerText = "DELAYED";
+            updateManifestPlaying(false);
+        }
+
+        function stopAudio() {
+            audio.pause();
+            audio.currentTime = 0;
+            isPlaying = false;
+            isStopped = true;
+            updateIcons();
+            document.body.classList.remove('playing');
+            trackName.innerText = "CANCELLED";
+            
+            routeFill.style.width = '0%';
+            planeIcon.style.left = '0%';
+            currentTime.innerText = "CANCELLED";
+            updateManifestPlaying(false);
+        }
+
+        function nextTrack() {
+            const nextIndex = (currentIndex + 1) % tracks.length;
+            loadTrack(nextIndex);
+            playAudio();
+        }
+
+        function prevTrack() {
+            const prevIndex = (currentIndex - 1 + tracks.length) % tracks.length;
+            loadTrack(prevIndex);
+            playAudio();
+        }
+
+        function formatTime(s) {
+            if(isNaN(s)) return "--:--";
+            const m = Math.floor(s / 60).toString().padStart(2, '0');
+            const sec = Math.floor(s % 60).toString().padStart(2, '0');
+            return `${m}:${sec}`;
+        }
+
+        function updateIcons() {
+            if (isPlaying) {
+                iconPlay.style.display = 'none';
+                iconPause.style.display = 'block';
+            } else {
+                iconPlay.style.display = 'block';
+                iconPause.style.display = 'none';
+            }
+        }
+
+        function renderManifest() {
+            manifestList.innerHTML = '';
+            tracks.forEach((track, index) => {
+                const div = document.createElement('div');
+                div.className = 'dest-item';
+                div.innerHTML = `
+                    <div>
+                        <span class="d-code"> ${(index+1).toString().padStart(2,'0')} </span>
+                        <span class="d-city">${track.artist}</span>
+                    </div>
+                    <div class="gate-status">ON TIME</div>
+                `;
+                div.onclick = () => {
+                    loadTrack(index);
+                    playAudio();
+                };
+                manifestList.appendChild(div);
+            });
+        }
+
+        function updateManifestUI() {
+            const items = document.querySelectorAll('.dest-item');
+            items.forEach((item, idx) => {
+                if (idx === currentIndex) item.classList.add('active');
+                else item.classList.remove('active');
+            });
+        }
+
+        function updateManifestPlaying(playing) {
+            const activeItem = document.querySelector('.dest-item.active');
+            if(activeItem) {
+                const status = activeItem.querySelector('.gate-status');
+                if(playing) {
+                    status.innerText = "DEPARTING";
+                    status.style.borderColor = "var(--accent-red)";
+                } else {
+                    status.innerText = "ON TIME";
+                    status.style.borderColor = "#fff";
+                }
+            }
+        }
+
+        // --- Events ---
+        audio.addEventListener('timeupdate', () => {
+            if (!isNaN(audio.duration)) {
+                const pct = (audio.currentTime / audio.duration) * 100;
+                routeFill.style.width = `${pct}%`;
+                planeIcon.style.left = `${pct}%`; // Move plane
+                
+                currentTime.innerText = formatTime(audio.currentTime);
+                totalTime.innerText = formatTime(audio.duration);
+            }
+        });
+
+        audio.addEventListener('loadedmetadata', () => {
+            totalTime.innerText = formatTime(audio.duration);
+        });
+
+        audio.addEventListener('ended', nextTrack);
+
+        playBtn.addEventListener('click', togglePlay);
+        stopBtn.addEventListener('click', stopAudio);
+        nextBtn.addEventListener('click', nextTrack);
+        prevBtn.addEventListener('click', prevTrack);
+
+        init();
+
+    </script>
+</body>
+</html>

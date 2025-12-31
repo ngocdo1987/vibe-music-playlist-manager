@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aether Steamworks | Steampunk Player</title>
+    
+    <!-- Typography: Rye (Vintage Display) & Courier Prime (Telegraph) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Rye&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            /* Steampunk Palette */
+            --bg-oil: #2b1d0e;
+            --brass-light: #f5e6a3;
+            --brass-mid: #c5a059;
+            --brass-dark: #8d6e43;
+            --copper: #b87333;
+            --parchment: #f0e6d2;
+            --leather: #3e2723;
+            --steam: rgba(255, 255, 255, 0.2);
+            
+            /* Dimensions */
+            --rivet: 8px;
+        }
+
+        * {
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-oil);
+            font-family: 'Courier Prime', monospace;
+            color: var(--parchment);
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            /* Oily texture */
+            background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.6' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.15'/%3E%3C/svg%3E");
+        }
+
+        /* --- The Main Apparatus --- */
+        .steam-machine {
+            width: 1000px;
+            max-width: 95%;
+            height: 700px;
+            background: var(--leather);
+            border: 8px solid var(--brass-mid);
+            border-radius: 15px;
+            box-shadow: 
+                0 0 0 4px var(--brass-dark),
+                0 20px 50px rgba(0,0,0,0.8),
+                inset 0 0 50px rgba(0,0,0,0.5);
+            display: grid;
+            grid-template-columns: 1.2fr 0.8fr;
+            position: relative;
+        }
+
+        /* Leather Texture */
+        .steam-machine::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-image: repeating-linear-gradient(45deg, transparent 0, transparent 2px, rgba(0,0,0,0.1) 2px, rgba(0,0,0,0.1) 4px);
+            pointer-events: none;
+            border-radius: 7px;
+            z-index: 0;
+        }
+
+        /* --- Left: The Boiler Room (Visuals) --- */
+        .boiler-room {
+            grid-column: 1 / 2;
+            background: radial-gradient(circle at center, #4e342e, #21120d);
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-right: 4px solid var(--brass-dark);
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Gears System */
+        .gear-train {
+            position: relative;
+            width: 320px;
+            height: 320px;
+            margin-bottom: 30px;
+        }
+
+        .gear {
+            position: absolute;
+            border-radius: 50%;
+            background: 
+                conic-gradient(from 0deg, var(--brass-dark), var(--brass-light), var(--brass-dark));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+        }
+
+        /* Gear Teeth (Simulated with border dashed/gradient tricks or pseudo elements) */
+        .gear::after {
+            content: '';
+            position: absolute;
+            width: 100%; height: 100%;
+            border-radius: 50%;
+            border: 10px dashed var(--bg-oil); /* The gaps */
+            box-sizing: border-box;
+            opacity: 0.6;
+        }
+
+        .gear::before {
+            content: '';
+            z-index: 2;
+            width: 20%; height: 20%;
+            background: var(--bg-oil);
+            border-radius: 50%;
+            border: 2px solid var(--brass-dark);
+        }
+
+        .gear-lg {
+            width: 220px; height: 220px;
+            top: 50px; left: 50px;
+            border: 10px solid var(--brass-mid);
+        }
+
+        .gear-md {
+            width: 140px; height: 140px;
+            top: 120px; left: 180px;
+            background: conic-gradient(from 0deg, var(--copper), #d48e65, var(--copper));
+            border: 8px solid #8a5a2b;
+        }
+
+        .gear-sm {
+            width: 90px; height: 90px;
+            top: 50px; left: 60px;
+            background: var(--brass-mid);
+            border: 6px solid var(--brass-dark);
+        }
+
+        /* Spinning Animation */
+        .playing .gear-lg { animation: spin 8s linear infinite; }
+        .playing .gear-md { animation: spin-rev 5.3s linear infinite; } /* Ratio ~1.5 */
+        .playing .gear-sm { animation: spin 3.2s linear infinite; }
+
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        @keyframes spin-rev { 100% { transform: rotate(-360deg); } }
+
+        /* Pressure Gauge */
+        .pressure-gauge {
+            width: 180px;
+            height: 180px;
+            background: radial-gradient(circle, #fff, #ddd);
+            border-radius: 50%;
+            border: 6px solid var(--brass-mid);
+            position: relative;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.3);
+        }
+
+        .gauge-face {
+            width: 100%; height: 100%;
+            position: relative;
+        }
+        
+        /* Ticks */
+        .gauge-tick {
+            position: absolute;
+            top: 10px; left: 50%;
+            width: 2px; height: 10px;
+            background: #333;
+            transform-origin: center 80px;
+        }
+
+        .gauge-needle {
+            position: absolute;
+            bottom: 50%; left: 50%;
+            width: 4px; height: 70px;
+            background: #c0392b;
+            transform-origin: bottom center;
+            transform: rotate(-135deg); /* Start */
+            transition: transform 0.5s ease-out;
+            z-index: 5;
+            box-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .gauge-needle::after {
+            content: '';
+            position: absolute;
+            bottom: -8px; left: -6px;
+            width: 16px; height: 16px;
+            background: #333;
+            border-radius: 50%;
+            border: 2px solid var(--brass-mid);
+        }
+
+        .playing .pressure-gauge {
+            animation: vibrate 0.2s infinite;
+        }
+
+        @keyframes vibrate {
+            0% { transform: translate(0,0); }
+            25% { transform: translate(1px, 1px); }
+            50% { transform: translate(-1px, -1px); }
+            75% { transform: translate(-1px, 1px); }
+            100% { transform: translate(1px, -1px); }
+        }
+
+        /* --- Right: The Manifest (Controls & Playlist) --- */
+        .manifest-panel {
+            grid-column: 2 / 3;
+            background: var(--parchment);
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            z-index: 1;
+            background-image: url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23bcaaa4' fill-opacity='0.2' fill-rule='evenodd'%3E%3Ccircle cx='3' cy='3' r='3'/%3E%3Ccircle cx='13' cy='13' r='3'/%3E%3C/g%3E%3C/svg%3E");
+        }
+
+        /* Paper Header */
+        .manifest-header {
+            border-bottom: 3px double var(--leather);
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .title-engraved {
+            font-family: 'Rye', serif;
+            font-size: 2rem;
+            color: var(--leather);
+            text-shadow: 1px 1px 0px rgba(0,0,0,0.2);
+        }
+
+        .subtitle-tech {
+            font-family: 'Courier Prime', monospace;
+            font-size: 0.8rem;
+            color: #5d4037;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        /* Track Info Card */
+        .info-parchment {
+            background: #fff;
+            padding: 15px;
+            border: 1px solid #d7ccc8;
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            transform: rotate(-1deg);
+        }
+
+        .track-name-display {
+            font-family: 'Rye', serif;
+            font-size: 1.5rem;
+            color: #3e2723;
+            margin-bottom: 5px;
+        }
+
+        .artist-name-display {
+            color: var(--copper);
+            font-weight: bold;
+            font-size: 0.9rem;
+            font-family: 'Courier Prime', monospace;
+            text-transform: uppercase;
+        }
+
+        /* Controls: Levers */
+        .control-rack {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .steam-lever {
+            width: 50px; height: 50px;
+            background: var(--brass-mid);
+            border-radius: 4px;
+            border: 2px solid var(--brass-dark);
+            cursor: pointer;
+            box-shadow: 0 4px 0 var(--brass-dark), inset 0 2px 5px rgba(255,255,255,0.4);
+            position: relative;
+            transition: transform 0.1s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Rye', serif;
+            color: #3e2723;
+            font-size: 1.2rem;
+        }
+
+        .steam-lever:active {
+            transform: translateY(4px);
+            box-shadow: 0 0 0 var(--brass-dark), inset 0 5px 10px rgba(0,0,0,0.4);
+        }
+
+        .steam-lever.big {
+            width: 70px; height: 70px;
+            background: var(--copper);
+            font-size: 1.5rem;
+            box-shadow: 0 6px 0 #6f4e37, inset 0 2px 5px rgba(255,255,255,0.4);
+        }
+        .steam-lever.big:active { box-shadow: 0 0 0 #6f4e37; }
+
+        /* Playlist List */
+        .telegraph-list {
+            flex-grow: 1;
+            overflow-y: auto;
+            border: 1px solid #d7ccc8;
+            background: rgba(255,255,255,0.5);
+            padding: 10px;
+        }
+
+        .telegram-item {
+            background: #fff;
+            padding: 12px;
+            border-bottom: 1px dashed #a1887f;
+            cursor: pointer;
+            transition: background 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .telegram-item:hover {
+            background: #efebe9;
+        }
+
+        .telegram-item.active {
+            background: var(--leather);
+            color: var(--brass-light);
+            border-bottom-style: solid;
+        }
+
+        .stamp-circle {
+            width: 30px; height: 30px;
+            border: 2px solid var(--copper);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Rye', serif;
+            font-size: 0.8rem;
+            opacity: 0.7;
+        }
+        
+        .telegram-item.active .stamp-circle {
+            background: var(--copper);
+            color: #fff;
+            opacity: 1;
+        }
+
+        .text-body {
+            flex-grow: 1;
+        }
+
+        .t-title {
+            font-family: 'Courier Prime', monospace;
+            font-weight: 700;
+            font-size: 1rem;
+            text-transform: uppercase;
+        }
+
+        .t-artist {
+            font-size: 0.8rem;
+            font-style: italic;
+            opacity: 0.8;
+        }
+
+        /* Progress Pipe */
+        .pipe-container {
+            margin-top: 20px;
+            height: 12px;
+            background: #3e2723;
+            border-radius: 6px;
+            position: relative;
+            border: 1px solid #5d4037;
+        }
+
+        .pipe-fill {
+            height: 100%;
+            width: 0%;
+            background: repeating-linear-gradient(
+                90deg,
+                var(--brass-light),
+                var(--brass-light) 10px,
+                var(--brass-mid) 10px,
+                var(--brass-mid) 20px
+            );
+            border-radius: 6px;
+            transition: width 0.1s linear;
+            box-shadow: 0 0 10px var(--brass-light);
+        }
+
+        /* Responsive */
+        @media (max-width: 850px) {
+            .steam-machine {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto 1fr;
+                height: 90vh;
+            }
+            .boiler-room { border-right: none; border-bottom: 4px solid var(--brass-dark); }
+            .gear-train { width: 250px; height: 250px; margin-bottom: 10px; }
+            .gear-lg { width: 160px; height: 160px; top: 40px; left: 40px; }
+            .gear-md { width: 100px; height: 100px; top: 80px; left: 140px; }
+            .gear-sm { width: 70px; height: 70px; top: 40px; left: 50px; }
+            .pressure-gauge { width: 120px; height: 120px; margin-top: 10px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="steam-machine">
+        
+        <!-- Left: Boiler Room -->
+        <div class="boiler-room" id="boilerRoom">
+            
+            <div class="gear-train">
+                <div class="gear gear-sm"></div>
+                <div class="gear gear-lg"></div>
+                <div class="gear gear-md"></div>
+            </div>
+
+            <div class="pressure-gauge">
+                <div class="gauge-face">
+                    <!-- Ticks generated by JS or static -->
+                    <div class="gauge-needle" id="gaugeNeedle"></div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Right: Manifest -->
+        <div class="manifest-panel">
+            <div class="manifest-header">
+                <h1 class="title-engraved">Aether Audio</h1>
+                <div class="subtitle-tech">Est. 1885</div>
+            </div>
+
+            <div class="info-parchment">
+                <div class="track-name-display" id="trackName">Standby</div>
+                <div class="artist-name-display" id="artistName">System Idle</div>
+            </div>
+
+            <div class="pipe-container">
+                <div class="pipe-fill" id="steamProgress"></div>
+            </div>
+            <div style="display:flex; justify-content:space-between; font-size:0.8rem; margin-top:5px; color:#5d4037;">
+                <span id="currTime">00:00</span>
+                <span>PSI</span>
+                <span id="totalTime">00:00</span>
+            </div>
+
+            <div class="control-rack">
+                <button class="steam-lever" id="prevBtn">&lt;</button>
+                <button class="steam-lever" id="stopBtn">X</button>
+                <button class="steam-lever big" id="playBtn">
+                    <span id="iconPlay">►</span>
+                    <span id="iconPause" style="display:none">||</span>
+                </button>
+                <button class="steam-lever" id="nextBtn">&gt;</button>
+            </div>
+
+            <div class="telegraph-list" id="telegramList">
+                <!-- Items injected via JS -->
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // --- Data ---
+        const tracks = [
+            {
+                title: "I Just Called To Say I Love You",
+                artist: "Stevie Wonder",
+                url: "https://music.giau.info/mp3/1765329418087_I_Just_Called_To_Say_I_Love_You.mp3"
+            },
+            {
+                title: "Another Day In Paradise",
+                artist: "Phil Collins",
+                url: "https://music.giau.info/mp3/1765329417208_Another_Day_In_Paradise.mp3"
+            },
+            {
+                title: "If Life Is So Short",
+                artist: "The Moffatts",
+                url: "https://music.giau.info/mp3/1765329418894_If_Life_Is_So_Short.mp3"
+            }
+        ];
+
+        const audio = new Audio();
+        
+        // DOM
+        const playBtn = document.getElementById('playBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const prevBtn = document.getElementById('prevBtn');
+        const iconPlay = document.getElementById('iconPlay');
+        const iconPause = document.getElementById('iconPause');
+        
+        const boilerRoom = document.getElementById('boilerRoom');
+        const gaugeNeedle = document.getElementById('gaugeNeedle');
+        const steamProgress = document.getElementById('steamProgress');
+        
+        const trackName = document.getElementById('trackName');
+        const artistName = document.getElementById('artistName');
+        const currTime = document.getElementById('currTime');
+        const totalTime = document.getElementById('totalTime');
+        const telegramList = document.getElementById('telegramList');
+
+        // State
+        let currentIndex = 0;
+        let isPlaying = false;
+        let isStopped = true;
+        let gaugeInterval;
+
+        function init() {
+            renderTelegrams();
+            loadTrack(0);
+            // Create Ticks for Gauge
+            const gaugeFace = document.querySelector('.gauge-face');
+            for(let i=0; i<30; i++) {
+                const tick = document.createElement('div');
+                tick.className = 'gauge-tick';
+                tick.style.transform = `rotate(${i * 9}deg)`;
+                if(i % 5 === 0) tick.style.height = '15px';
+                gaugeFace.appendChild(tick);
+            }
+        }
+
+        function loadTrack(index) {
+            currentIndex = index;
+            const track = tracks[index];
+            
+            audio.src = track.url;
+            audio.load();
+            
+            trackName.innerText = track.title;
+            artistName.innerText = track.artist;
+            
+            updateTelegrams();
+            steamProgress.style.width = '0%';
+            currTime.innerText = "00:00";
+            totalTime.innerText = "00:00";
+
+            if (!isStopped && isPlaying) {
+                playAudio();
+            } else {
+                pauseAudio();
+            }
+        }
+
+        function togglePlay() {
+            if (isPlaying) pauseAudio();
+            else playAudio();
+        }
+
+        function playAudio() {
+            audio.play().then(() => {
+                isPlaying = true;
+                isStopped = false;
+                updateIcons();
+                boilerRoom.classList.add('playing');
+                startGauge();
+            }).catch(e => console.error(e));
+        }
+
+        function pauseAudio() {
+            audio.pause();
+            isPlaying = false;
+            updateIcons();
+            boilerRoom.classList.remove('playing');
+            stopGauge();
+        }
+
+        function stopAudio() {
+            audio.pause();
+            audio.currentTime = 0;
+            isPlaying = false;
+            isStopped = true;
+            updateIcons();
+            boilerRoom.classList.remove('playing');
+            stopGauge();
+            steamProgress.style.width = '0%';
+            currTime.innerText = "00:00";
+        }
+
+        function nextTrack() {
+            const nextIndex = (currentIndex + 1) % tracks.length;
+            loadTrack(nextIndex);
+            playAudio();
+        }
+
+        function prevTrack() {
+            const prevIndex = (currentIndex - 1 + tracks.length) % tracks.length;
+            loadTrack(prevIndex);
+            playAudio();
+        }
+
+        // --- Gauge Logic ---
+        function startGauge() {
+            clearInterval(gaugeInterval);
+            gaugeInterval = setInterval(() => {
+                // Random fluctuation between -135 and 135 deg
+                // High pressure (playing) should be higher generally
+                const base = -50; 
+                const flux = Math.floor(Math.random() * 100); // 0 to 100
+                const deg = base + flux;
+                gaugeNeedle.style.transform = `rotate(${deg}deg)`;
+            }, 200);
+        }
+
+        function stopGauge() {
+            clearInterval(gaugeInterval);
+            gaugeNeedle.style.transform = `rotate(-135deg)`;
+        }
+
+        function formatTime(s) {
+            if(isNaN(s)) return "00:00";
+            const m = Math.floor(s / 60).toString().padStart(2, '0');
+            const sec = Math.floor(s % 60).toString().padStart(2, '0');
+            return `${m}:${sec}`;
+        }
+
+        function updateIcons() {
+            if (isPlaying) {
+                iconPlay.style.display = 'none';
+                iconPause.style.display = 'block';
+            } else {
+                iconPlay.style.display = 'block';
+                iconPause.style.display = 'none';
+            }
+        }
+
+        function renderTelegrams() {
+            telegramList.innerHTML = '';
+            tracks.forEach((track, index) => {
+                const item = document.createElement('div');
+                item.className = 'telegram-item';
+                item.innerHTML = `
+                    <div class="stamp-circle">${(index+1)}</div>
+                    <div class="text-body">
+                        <div class="t-title">${track.title}</div>
+                        <div class="t-artist">${track.artist}</div>
+                    </div>
+                `;
+                item.onclick = () => {
+                    loadTrack(index);
+                    playAudio();
+                };
+                telegramList.appendChild(item);
+            });
+        }
+
+        function updateTelegrams() {
+            const items = document.querySelectorAll('.telegram-item');
+            items.forEach((item, idx) => {
+                if (idx === currentIndex) item.classList.add('active');
+                else item.classList.remove('active');
+            });
+        }
+
+        // Events
+        audio.addEventListener('timeupdate', () => {
+            if (!isNaN(audio.duration)) {
+                const pct = (audio.currentTime / audio.duration) * 100;
+                steamProgress.style.width = `${pct}%`;
+                currTime.innerText = formatTime(audio.currentTime);
+            }
+        });
+
+        audio.addEventListener('loadedmetadata', () => {
+            totalTime.innerText = formatTime(audio.duration);
+        });
+
+        audio.addEventListener('ended', nextTrack);
+
+        playBtn.addEventListener('click', togglePlay);
+        stopBtn.addEventListener('click', stopAudio);
+        nextBtn.addEventListener('click', nextTrack);
+        prevBtn.addEventListener('click', prevTrack);
+
+        init();
+
+    </script>
+</body>
+</html>

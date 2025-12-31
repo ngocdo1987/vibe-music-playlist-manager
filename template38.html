@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bio-Lab | Alchemist Player</title>
+    
+    <!-- Typography: Cinzel Decorative (Mystical) & Space Mono (Data) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            /* Lab Palette */
+            --lab-dark: #0f0c29;
+            --bio-green: #00ff9d;
+            --bio-purple: #b829dd;
+            --glass-thick: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(184, 41, 221, 0.3);
+        }
+
+        * {
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--lab-dark);
+            font-family: 'Space Mono', monospace;
+            color: #e0e6ed;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            /* Foggy background */
+            background-image: radial-gradient(circle at 50% 50%, #1a163a 0%, #0f0c29 70%);
+        }
+
+        /* --- Floating Spores Background --- */
+        .spore-bg {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .spore {
+            position: absolute;
+            border-radius: 50%;
+            background: radial-gradient(circle, var(--bio-purple) 0%, transparent 70%);
+            opacity: 0.3;
+            filter: blur(8px);
+            animation: floatSpore 15s infinite ease-in-out;
+        }
+
+        @keyframes floatSpore {
+            0%, 100% { transform: translate(0, 0); }
+            50% { transform: translate(20px, -30px); }
+        }
+
+        /* --- Main Lab Bench --- */
+        .lab-bench {
+            position: relative;
+            z-index: 10;
+            width: 1000px;
+            max-width: 95%;
+            height: 650px;
+            background: rgba(15, 12, 41, 0.6);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            box-shadow: 0 0 50px rgba(184, 41, 221, 0.1);
+            display: grid;
+            grid-template-columns: 1.2fr 0.8fr;
+            overflow: hidden;
+        }
+
+        /* --- Left: The Specimen Tank (Visualizer) --- */
+        .specimen-tank {
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-right: 1px solid var(--glass-border);
+            position: relative;
+        }
+
+        .tank-glass {
+            width: 280px;
+            height: 350px;
+            border-bottom-left-radius: 140px;
+            border-bottom-right-radius: 140px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-top: none;
+            background: linear-gradient(to top, rgba(0, 255, 157, 0.1) 0%, rgba(0, 255, 157, 0.05) 100%);
+            position: relative;
+            overflow: hidden;
+            box-shadow: inset 0 0 20px rgba(0, 255, 157, 0.1);
+        }
+
+        /* Reflection on glass */
+        .tank-glass::before {
+            content: '';
+            position: absolute;
+            top: 20%; left: 10%;
+            width: 10px; height: 40px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 10px;
+            filter: blur(2px);
+            transform: rotate(-20deg);
+        }
+
+        /* The Specimen (Visualizer Blob) */
+        .specimen-core {
+            position: absolute;
+            bottom: 40px; left: 50%;
+            transform: translateX(-50%);
+            width: 150px; height: 150px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, #fff, var(--bio-purple));
+            box-shadow: 0 0 30px var(--bio-purple);
+            opacity: 0.8;
+            transition: all 0.5s;
+        }
+
+        .playing .specimen-core {
+            animation: pulseSpecimen 3s infinite alternate, coreShift 10s infinite ease-in-out;
+            background: radial-gradient(circle at 30% 30%, #fff, var(--bio-green));
+            box-shadow: 0 0 50px var(--bio-green);
+        }
+
+        @keyframes pulseSpecimen {
+            0% { transform: translateX(-50%) scale(0.9); }
+            100% { transform: translateX(-50%) scale(1.1); }
+        }
+
+        @keyframes coreShift {
+            0%, 100% { border-radius: 50%; }
+            50% { border-radius: 40% 60% 60% 40%; }
+        }
+
+        /* Bubbles */
+        .bubble {
+            position: absolute;
+            bottom: 20px;
+            background: rgba(255,255,255,0.4);
+            border-radius: 50%;
+            opacity: 0;
+        }
+
+        .playing .bubble {
+            animation: riseBubble 4s infinite ease-in;
+        }
+
+        @keyframes riseBubble {
+            0% { bottom: 20px; opacity: 0; transform: translateX(0); }
+            20% { opacity: 0.8; }
+            100% { bottom: 90%; opacity: 0; transform: translateX(20px); }
+        }
+
+        .tank-label {
+            margin-top: 20px;
+            font-family: 'Cinzel Decorative', cursive;
+            color: var(--bio-green);
+            font-size: 1.5rem;
+            text-shadow: 0 0 10px var(--bio-green);
+            opacity: 0.8;
+        }
+
+        /* --- Right: Data & Recipe --- */
+        .data-panel {
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* Formula Display */
+        .formula-display {
+            background: var(--glass-thick);
+            border: 1px solid var(--glass-border);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .chem-name {
+            font-family: 'Cinzel Decorative', cursive;
+            font-size: 2rem;
+            color: #fff;
+            margin-bottom: 5px;
+            text-shadow: 0 0 15px var(--bio-purple);
+        }
+
+        .chem-formula {
+            font-family: 'Space Mono', monospace;
+            font-size: 1rem;
+            color: var(--bio-green);
+            letter-spacing: 2px;
+        }
+
+        /* Test Tube Progress */
+        .test-tube-rack {
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-between;
+            height: 150px;
+            margin-bottom: 20px;
+            background: rgba(0,0,0,0.2);
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+        .tube-glass {
+            width: 20px;
+            height: 100px;
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-bottom-left-radius: 10px;
+            border-bottom-right-radius: 10px;
+            border-top: none;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tube-liquid {
+            position: absolute;
+            bottom: 0; left: 0; width: 100%;
+            background: var(--bio-purple);
+            box-shadow: 0 0 10px var(--bio-purple);
+            transition: height 0.2s;
+        }
+        
+        /* The Main Progress Tube */
+        .tube-main {
+            width: 40px;
+            height: 120px;
+            z-index: 5;
+        }
+        .tube-liquid.main-fill {
+            background: var(--bio-green);
+            box-shadow: 0 0 15px var(--bio-green);
+        }
+
+        /* Time Labels */
+        .tube-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            color: var(--bio-purple);
+            margin-top: 5px;
+            text-transform: uppercase;
+        }
+
+        /* Recipe List (Playlist) */
+        .recipe-book {
+            flex-grow: 1;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            padding: 15px;
+            overflow-y: auto;
+        }
+
+        .recipe-header {
+            font-family: 'Cinzel Decorative', cursive;
+            color: var(--bio-purple);
+            border-bottom: 1px solid var(--glass-border);
+            padding-bottom: 10px;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .compound-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px dashed rgba(255,255,255,0.1);
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .compound-item:hover {
+            background: rgba(0, 255, 157, 0.1);
+        }
+
+        .compound-item.active {
+            background: rgba(184, 41, 221, 0.2);
+            border-bottom: 1px solid var(--bio-purple);
+            color: #fff;
+        }
+
+        .compound-icon {
+            width: 24px; height: 24px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.1);
+            margin-right: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            color: var(--bio-green);
+        }
+
+        .compound-item.active .compound-icon {
+            background: var(--bio-purple);
+            color: #fff;
+            box-shadow: 0 0 10px var(--bio-purple);
+        }
+
+        .c-info { display: flex; flex-direction: column; }
+        .c-name { font-weight: bold; font-size: 0.9rem; }
+        .c-formula { font-size: 0.75rem; color: #888; margin-top: 2px; }
+
+        .molecule-status {
+            width: 10px; height: 10px;
+            border-radius: 50%;
+            background: #333;
+            margin-left: auto;
+            box-shadow: 0 0 5px currentColor;
+        }
+        
+        .compound-item.active.playing .molecule-status {
+            background: var(--bio-green);
+            animation: spinMol 1s infinite linear;
+        }
+
+        @keyframes spinMol { 100% { transform: rotate(360deg); } }
+
+        /* --- Controls: Switches --- */
+        .control-rack {
+            display: flex;
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .btn-lab {
+            flex: 1;
+            background: transparent;
+            border: 1px solid var(--bio-green);
+            color: var(--bio-green);
+            padding: 15px;
+            font-family: 'Cinzel Decorative', cursive;
+            font-weight: 700;
+            cursor: pointer;
+            border-radius: 30px;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            font-size: 1rem;
+        }
+
+        .btn-lab:hover {
+            background: var(--bio-green);
+            color: var(--lab-dark);
+            box-shadow: 0 0 20px var(--bio-green);
+        }
+
+        .btn-lab.danger {
+            border-color: var(--bio-purple);
+            color: var(--bio-purple);
+        }
+        
+        .btn-lab.danger:hover {
+            background: var(--bio-purple);
+            box-shadow: 0 0 20px var(--bio-purple);
+        }
+
+        /* Responsive */
+        @media (max-width: 850px) {
+            .lab-bench {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto 1fr;
+                height: 90vh;
+            }
+            .specimen-tank { border-right: none; border-bottom: 1px solid var(--glass-border); }
+            .tank-glass { width: 200px; height: 250px; border-bottom-left-radius: 100px; border-bottom-right-radius: 100px; }
+            .specimen-core { width: 100px; height: 100px; }
+            .chem-name { font-size: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Spore Background -->
+    <div class="spore-bg" id="sporeBg">
+        <!-- Generated via JS -->
+    </div>
+
+    <div class="lab-bench">
+        
+        <!-- Left: Specimen Tank -->
+        <section class="specimen-tank">
+            <div class="tank-glass">
+                <div class="specimen-core"></div>
+                <!-- Bubbles -->
+                <div class="bubble" style="width:10px; height:10px; left:40%; animation-delay:0s;"></div>
+                <div class="bubble" style="width:6px; height:6px; left:60%; animation-delay:1.5s;"></div>
+                <div class="bubble" style="width:14px; height:14px; left:50%; animation-delay:0.5s;"></div>
+            </div>
+            <div class="tank-label">SAMPLE #01</div>
+        </section>
+
+        <!-- Right: Data Panel -->
+        <section class="data-panel">
+            
+            <div class="formula-display">
+                <div class="chem-name" id="trackName">UNKNOWN</div>
+                <div class="chem-formula" id="trackFormula">C??H??O??</div>
+            </div>
+
+            <div class="test-tube-rack">
+                <div class="tube-glass"><div class="tube-liquid" style="height: 40%"></div></div>
+                <div class="tube-glass"><div class="tube-liquid" style="height: 70%"></div></div>
+                <div class="tube-glass tube-main">
+                    <div class="tube-liquid main-fill" id="tubeFill" style="height: 0%"></div>
+                </div>
+                <div class="tube-glass"><div class="tube-liquid" style="height: 30%"></div></div>
+                <div class="tube-glass"><div class="tube-liquid" style="height: 50%"></div></div>
+            </div>
+
+            <div class="tube-labels">
+                <span id="currentTime">00:00</span>
+                <span>CONCENTRATION</span>
+                <span id="totalTime">00:00</span>
+            </div>
+
+            <div class="recipe-book" id="recipeBook">
+                <div class="recipe-header">Experiment Log</div>
+                <!-- JS Injected -->
+            </div>
+
+            <div class="control-rack">
+                <button class="btn-lab" id="prevBtn">&lt;&lt;</button>
+                <button class="btn-lab danger" id="stopBtn">PURGE</button>
+                <button class="btn-lab" id="playBtn">SYNTHESIZE</button>
+                <button class="btn-lab" id="nextBtn">&gt;&gt;</button>
+            </div>
+
+        </section>
+
+    </div>
+
+    <script>
+        // --- Data ---
+        const tracks = [
+            {
+                title: "I Just Called To Say I Love You",
+                formula: "C8H11NO3",
+                url: "https://music.giau.info/mp3/1765329418087_I_Just_Called_To_Say_I_Love_You.mp3"
+            },
+            {
+                title: "Another Day In Paradise",
+                formula: "C10H12N2O",
+                url: "https://music.giau.info/mp3/1765329417208_Another_Day_In_Paradise.mp3"
+            },
+            {
+                title: "If Life Is So Short",
+                formula: "C6H12O6",
+                url: "https://music.giau.info/mp3/1765329418894_If_Life_Is_So_Short.mp3"
+            }
+        ];
+
+        const audio = new Audio();
+
+        // --- DOM ---
+        const playBtn = document.getElementById('playBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const prevBtn = document.getElementById('prevBtn');
+        
+        const trackName = document.getElementById('trackName');
+        const trackFormula = document.getElementById('trackFormula');
+        const tubeFill = document.getElementById('tubeFill');
+        const currentTime = document.getElementById('currentTime');
+        const totalTime = document.getElementById('totalTime');
+        const recipeBook = document.getElementById('recipeBook');
+        const sporeBg = document.getElementById('sporeBg');
+        const tankGlass = document.querySelector('.tank-glass');
+
+        // --- State ---
+        let currentIndex = 0;
+        let isPlaying = false;
+        let isStopped = true;
+
+        // Generate Spores
+        for(let i=0; i<15; i++) {
+            const s = document.createElement('div');
+            s.className = 'spore';
+            s.style.width = (Math.random() * 100 + 50) + 'px';
+            s.style.height = s.style.width;
+            s.style.left = Math.random() * 100 + '%';
+            s.style.top = Math.random() * 100 + '%';
+            s.style.animationDelay = Math.random() * 10 + 's';
+            sporeBg.appendChild(s);
+        }
+
+        function init() {
+            renderRecipe();
+            loadTrack(0);
+        }
+
+        function loadTrack(index) {
+            currentIndex = index;
+            const track = tracks[index];
+            
+            audio.src = track.url;
+            audio.load();
+            
+            trackName.innerText = track.title.toUpperCase();
+            trackFormula.innerText = track.formula;
+            
+            updateRecipeUI();
+            tubeFill.style.height = '0%';
+            currentTime.innerText = "00:00";
+            totalTime.innerText = "00:00";
+
+            if (!isStopped && isPlaying) {
+                playAudio();
+            } else {
+                pauseAudio();
+            }
+        }
+
+        function togglePlay() {
+            if (isPlaying) pauseAudio();
+            else playAudio();
+        }
+
+        function playAudio() {
+            audio.play().then(() => {
+                isPlaying = true;
+                isStopped = false;
+                updateButtonLabel();
+                tankGlass.classList.add('playing');
+                updateRecipePlaying(true);
+            }).catch(e => console.error(e));
+        }
+
+        function pauseAudio() {
+            audio.pause();
+            isPlaying = false;
+            updateButtonLabel();
+            tankGlass.classList.remove('playing');
+            updateRecipePlaying(false);
+        }
+
+        function stopAudio() {
+            audio.pause();
+            audio.currentTime = 0;
+            isPlaying = false;
+            isStopped = true;
+            updateButtonLabel();
+            tankGlass.classList.remove('playing');
+            tubeFill.style.height = '0%';
+            currentTime.innerText = "00:00";
+            updateRecipePlaying(false);
+        }
+
+        function nextTrack() {
+            const nextIndex = (currentIndex + 1) % tracks.length;
+            loadTrack(nextIndex);
+            playAudio();
+        }
+
+        function prevTrack() {
+            const prevIndex = (currentIndex - 1 + tracks.length) % tracks.length;
+            loadTrack(prevIndex);
+            playAudio();
+        }
+
+        function formatTime(s) {
+            if(isNaN(s)) return "00:00";
+            const m = Math.floor(s / 60).toString().padStart(2, '0');
+            const sec = Math.floor(s % 60).toString().padStart(2, '0');
+            return `${m}:${sec}`;
+        }
+
+        function updateButtonLabel() {
+            playBtn.innerText = isPlaying ? "ANALYZE" : "SYNTHESIZE";
+        }
+
+        function renderRecipe() {
+            recipeBook.innerHTML = '';
+            tracks.forEach((track, index) => {
+                const div = document.createElement('div');
+                div.className = 'compound-item';
+                div.innerHTML = `
+                    <div class="compound-icon">${(index+1)}</div>
+                    <div class="c-info">
+                        <div class="c-name">${track.title}</div>
+                        <div class="c-formula">${track.formula}</div>
+                    </div>
+                    <div class="molecule-status"></div>
+                `;
+                div.onclick = () => {
+                    loadTrack(index);
+                    playAudio();
+                };
+                recipeBook.appendChild(div);
+            });
+        }
+
+        function updateRecipeUI() {
+            const items = document.querySelectorAll('.compound-item');
+            items.forEach((item, idx) => {
+                if (idx === currentIndex) item.classList.add('active');
+                else item.classList.remove('active');
+            });
+        }
+
+        function updateRecipePlaying(playing) {
+            const activeItem = document.querySelector('.compound-item.active');
+            if (activeItem) {
+                if(playing) activeItem.classList.add('playing');
+                else activeItem.classList.remove('playing');
+            }
+        }
+
+        // --- Events ---
+        audio.addEventListener('timeupdate', () => {
+            if (!isNaN(audio.duration)) {
+                const pct = (audio.currentTime / audio.duration) * 100;
+                tubeFill.style.height = `${pct}%`;
+                currentTime.innerText = formatTime(audio.currentTime);
+            }
+        });
+
+        audio.addEventListener('loadedmetadata', () => {
+            totalTime.innerText = formatTime(audio.duration);
+        });
+
+        audio.addEventListener('ended', nextTrack);
+
+        playBtn.addEventListener('click', togglePlay);
+        stopBtn.addEventListener('click', stopAudio);
+        nextBtn.addEventListener('click', nextTrack);
+        prevBtn.addEventListener('click', prevTrack);
+
+        // Click on main tube to seek
+        document.querySelector('.tube-main').addEventListener('click', (e) => {
+            if (!audio.duration) return;
+            const rect = e.currentTarget.getBoundingClientRect();
+            const y = e.clientY - rect.top;
+            const height = rect.height;
+            const pct = 1 - (y / height); // Invert because liquid fills from bottom
+            audio.currentTime = pct * audio.duration;
+        });
+
+        init();
+
+    </script>
+</body>
+</html>

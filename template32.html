@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Heavy Industry | Machine Deck</title>
+    
+    <!-- Typography: Teko (Industrial Condensed) & Share Tech Mono (Data) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Teko:wght@300;500;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            /* Industrial Palette */
+            --metal-dark: #2b2b2b;
+            --metal-light: #3a3a3a;
+            --safety-yellow: #FFC107;
+            --hazard-black: #1a1a1a;
+            --rust-red: #D32F2F;
+            --text-dim: #888;
+            
+            /* Dimensions */
+            --rivet-size: 6px;
+        }
+
+        * {
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--metal-dark);
+            font-family: 'Share Tech Mono', monospace;
+            color: var(--text-dim);
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            /* Brushed Metal Texture */
+            background-image: repeating-linear-gradient(90deg, transparent 0, transparent 2px, rgba(0,0,0,0.2) 2px, rgba(0,0,0,0.2) 4px);
+        }
+
+        /* --- Main Chassis --- */
+        .machine-chassis {
+            width: 1000px;
+            max-width: 95%;
+            height: 700px;
+            background: var(--metal-light);
+            border: 4px solid #111;
+            box-shadow: 
+                inset 0 0 20px rgba(0,0,0,0.8),
+                0 20px 50px rgba(0,0,0,0.5);
+            display: grid;
+            grid-template-columns: 1.2fr 0.8fr;
+            position: relative;
+        }
+
+        /* Rivets Utility */
+        .rivet-corner {
+            position: absolute;
+            width: var(--rivet-size); height: var(--rivet-size);
+            background: #111;
+            border-radius: 50%;
+            box-shadow: inset 1px 1px 1px rgba(255,255,255,0.2);
+        }
+
+        /* --- Left: The Gauge Panel --- */
+        .panel-gauge {
+            padding: 40px;
+            border-right: 2px solid #111;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            background: radial-gradient(circle at center, #444, #2b2b2b);
+        }
+
+        /* The RPM Gauge */
+        .tachometer {
+            width: 320px;
+            height: 320px;
+            background: #1a1a1a;
+            border-radius: 50%;
+            border: 8px solid #555;
+            position: relative;
+            box-shadow: 
+                0 0 0 4px #111,
+                0 10px 20px rgba(0,0,0,0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Gauge Face Lines */
+        .dial-lines {
+            position: absolute;
+            width: 100%; height: 100%;
+            border-radius: 50%;
+            background: conic-gradient(from 225deg, 
+                var(--text-dim) 0deg, var(--text-dim) 2deg, 
+                transparent 2deg, transparent 10deg);
+            opacity: 0.3;
+        }
+
+        .gauge-needle {
+            position: absolute;
+            width: 4px; height: 140px;
+            background: var(--rust-red);
+            bottom: 50%; left: calc(50% - 2px);
+            transform-origin: bottom center;
+            transform: rotate(-135deg); /* Start position */
+            transition: transform 0.1s ease-out;
+            z-index: 5;
+            box-shadow: 0 0 5px rgba(211, 47, 47, 0.5);
+        }
+        
+        .gauge-needle::after {
+            content: '';
+            position: absolute;
+            width: 16px; height: 16px;
+            background: #silver;
+            background: radial-gradient(circle, #fff, #999);
+            border-radius: 50%;
+            bottom: -8px; left: -6px;
+        }
+
+        .gauge-center-text {
+            z-index: 6;
+            text-align: center;
+            margin-top: 80px;
+        }
+
+        .rpm-value {
+            font-family: 'Teko', sans-serif;
+            font-size: 4rem;
+            font-weight: 500;
+            color: var(--safety-yellow);
+            line-height: 1;
+            text-shadow: 0 0 10px rgba(255, 193, 7, 0.3);
+        }
+
+        .rpm-label {
+            color: #666;
+            font-size: 0.8rem;
+            letter-spacing: 2px;
+        }
+
+        /* Vibration Effect when playing */
+        .playing .tachometer {
+            animation: rumble 0.1s infinite;
+        }
+
+        @keyframes rumble {
+            0% { transform: translate(0,0); }
+            25% { transform: translate(1px, 1px); }
+            50% { transform: translate(0, -1px); }
+            75% { transform: translate(-1px, 0); }
+            100% { transform: translate(0,0); }
+        }
+
+        /* --- Right: The Control Panel --- */
+        .panel-controls {
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+            background-color: #333;
+            background-image: 
+                linear-gradient(45deg, #2b2b2b 25%, transparent 25%, transparent 75%, #2b2b2b 75%, #2b2b2b),
+                linear-gradient(45deg, #2b2b2b 25%, transparent 25%, transparent 75%, #2b2b2b 75%, #2b2b2b);
+            background-size: 20px 20px;
+            background-position: 0 0, 10px 10px;
+        }
+
+        /* Info Plate */
+        .info-plate {
+            background: #222;
+            border: 2px solid #444;
+            padding: 20px;
+            position: relative;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.5);
+        }
+
+        .track-title {
+            font-family: 'Teko', sans-serif;
+            font-size: 2.2rem;
+            color: #fff;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin: 0;
+        }
+
+        .track-artist {
+            color: var(--safety-yellow);
+            font-size: 1rem;
+            text-transform: uppercase;
+            margin-top: 5px;
+        }
+
+        /* Hazard Progress Bar */
+        .progress-container {
+            position: relative;
+            border: 2px solid #111;
+            padding: 2px;
+            background: #000;
+        }
+
+        .progress-bar-stripe {
+            height: 10px;
+            width: 0%;
+            background: repeating-linear-gradient(
+                45deg,
+                var(--safety-yellow),
+                var(--safety-yellow) 10px,
+                #111 10px,
+                #111 20px
+            );
+            transition: width 0.1s linear;
+        }
+
+        .time-digits {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 5px;
+            font-size: 0.8rem;
+            color: var(--safety-yellow);
+        }
+
+        /* Industrial Switches */
+        .switch-bank {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+        }
+
+        .ind-btn {
+            background: linear-gradient(to bottom, #555, #333);
+            border: 2px solid #111;
+            height: 60px;
+            color: #ddd;
+            font-family: 'Teko', sans-serif;
+            font-size: 1.2rem;
+            cursor: pointer;
+            box-shadow: 0 4px 0 #111;
+            transition: transform 0.1s, box-shadow 0.1s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-transform: uppercase;
+        }
+
+        .ind-btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 0 0 #111;
+        }
+
+        .ind-btn.primary {
+            background: linear-gradient(to bottom, #FFC107, #FF8F00);
+            color: #111;
+            font-weight: 700;
+            grid-column: span 2;
+        }
+
+        .ind-btn.danger {
+            background: linear-gradient(to bottom, #e53935, #b71c1c);
+            color: white;
+        }
+
+        /* Playlist: Manifest */
+        .manifest-list {
+            flex-grow: 1;
+            background: rgba(0,0,0,0.2);
+            border: 1px inset #111;
+            padding: 15px;
+            overflow-y: auto;
+        }
+
+        .man-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px dashed #444;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .man-item:hover {
+            background: rgba(255, 193, 7, 0.1);
+        }
+
+        .man-item.active {
+            background: rgba(255, 193, 7, 0.2);
+            border-left: 4px solid var(--safety-yellow);
+        }
+
+        .man-num {
+            font-family: 'Teko', sans-serif;
+            font-size: 1.5rem;
+            color: #666;
+            margin-right: 15px;
+            width: 30px;
+        }
+
+        .man-info { display: flex; flex-direction: column; }
+        .man-title { color: #fff; font-weight: bold; font-size: 0.9rem; }
+        .man-artist { font-size: 0.8rem; color: #888; }
+
+        .status-led {
+            width: 10px; height: 10px;
+            background: #333;
+            border-radius: 50%;
+            margin-left: auto;
+            border: 1px solid #000;
+        }
+
+        .active.playing .status-led {
+            background: #00e676;
+            box-shadow: 0 0 5px #00e676;
+        }
+
+        /* Responsive */
+        @media (max-width: 850px) {
+            .machine-chassis {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto 1fr;
+                height: 90vh;
+            }
+            .panel-gauge { padding: 20px; border-right: none; border-bottom: 2px solid #111; }
+            .tachometer { width: 200px; height: 200px; }
+            .rpm-value { font-size: 2.5rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="machine-chassis">
+        
+        <!-- Rivets -->
+        <div class="rivet-corner" style="top:10px; left:10px;"></div>
+        <div class="rivet-corner" style="top:10px; right:10px;"></div>
+        <div class="rivet-corner" style="bottom:10px; left:10px;"></div>
+        <div class="rivet-corner" style="bottom:10px; right:10px;"></div>
+
+        <!-- Left: Gauge -->
+        <div class="panel-gauge" id="gaugePanel">
+            <div class="tachometer">
+                <div class="dial-lines"></div>
+                <div class="gauge-needle" id="rpmNeedle"></div>
+                <div class="gauge-center-text">
+                    <div class="rpm-value" id="rpmDisplay">0</div>
+                    <div class="rpm-label">RPM</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right: Controls -->
+        <div class="panel-controls">
+            
+            <div class="info-plate">
+                <h1 class="track-title" id="trackTitle">OFFLINE</h1>
+                <div class="track-artist" id="trackArtist">SYSTEM STANDBY</div>
+            </div>
+
+            <div>
+                <div class="progress-container">
+                    <div class="progress-bar-stripe" id="progressFill"></div>
+                </div>
+                <div class="time-digits">
+                    <span id="currentTime">00:00</span>
+                    <span id="totalTime">00:00</span>
+                </div>
+            </div>
+
+            <div class="switch-bank">
+                <button class="ind-btn" id="prevBtn">|&lt;</button>
+                <button class="ind-btn danger" id="stopBtn">STOP</button>
+                <button class="ind-btn primary" id="playBtn">START</button>
+                <button class="ind-btn" id="nextBtn">&gt;|</button>
+            </div>
+
+            <div class="manifest-list" id="manifestList">
+                <!-- JS Injected -->
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        // --- Data ---
+        const tracks = [
+            {
+                title: "I Just Called To Say...",
+                artist: "Stevie Wonder",
+                url: "https://music.giau.info/mp3/1765329418087_I_Just_Called_To_Say_I_Love_You.mp3"
+            },
+            {
+                title: "Another Day In Paradise",
+                artist: "Phil Collins",
+                url: "https://music.giau.info/mp3/1765329417208_Another_Day_In_Paradise.mp3"
+            },
+            {
+                title: "If Life Is So Short",
+                artist: "The Moffatts",
+                url: "https://music.giau.info/mp3/1765329418894_If_Life_Is_So_Short.mp3"
+            }
+        ];
+
+        const audio = new Audio();
+
+        // --- DOM ---
+        const gaugePanel = document.getElementById('gaugePanel');
+        const rpmNeedle = document.getElementById('rpmNeedle');
+        const rpmDisplay = document.getElementById('rpmDisplay');
+        
+        const trackTitle = document.getElementById('trackTitle');
+        const trackArtist = document.getElementById('trackArtist');
+        const progressFill = document.getElementById('progressFill');
+        const currentTimeEl = document.getElementById('currentTime');
+        const totalTimeEl = document.getElementById('totalTime');
+        const manifestList = document.getElementById('manifestList');
+        
+        const playBtn = document.getElementById('playBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+
+        // --- State ---
+        let currentIndex = 0;
+        let isPlaying = false;
+        let isStopped = true;
+        let rpmInterval;
+
+        function init() {
+            renderManifest();
+            loadTrack(0);
+        }
+
+        function loadTrack(index) {
+            currentIndex = index;
+            const track = tracks[index];
+            
+            audio.src = track.url;
+            audio.load();
+            
+            trackTitle.innerText = track.title;
+            trackArtist.innerText = track.artist;
+            
+            updateManifestUI();
+            progressFill.style.width = '0%';
+            currentTimeEl.innerText = "00:00";
+            totalTimeEl.innerText = "00:00";
+            
+            if (!isStopped && isPlaying) {
+                playAudio();
+            } else {
+                pauseAudio();
+            }
+        }
+
+        function togglePlay() {
+            if (isPlaying) pauseAudio();
+            else playAudio();
+        }
+
+        function playAudio() {
+            audio.play().then(() => {
+                isPlaying = true;
+                isStopped = false;
+                
+                playBtn.innerText = "PAUSE";
+                gaugePanel.classList.add('playing');
+                
+                startRpmSimulation();
+                updateManifestPlaying(true);
+            }).catch(e => console.error(e));
+        }
+
+        function pauseAudio() {
+            audio.pause();
+            isPlaying = false;
+            
+            playBtn.innerText = "START";
+            gaugePanel.classList.remove('playing');
+            
+            stopRpmSimulation();
+            updateManifestPlaying(false);
+        }
+
+        function stopAudio() {
+            audio.pause();
+            audio.currentTime = 0;
+            isPlaying = false;
+            isStopped = true;
+            
+            playBtn.innerText = "START";
+            gaugePanel.classList.remove('playing');
+            
+            stopRpmSimulation();
+            updateManifestPlaying(false);
+            
+            progressFill.style.width = '0%';
+            currentTimeEl.innerText = "00:00";
+            
+            // Reset Gauge
+            rpmNeedle.style.transform = `rotate(-135deg)`;
+            rpmDisplay.innerText = "0";
+        }
+
+        function nextTrack() {
+            const nextIndex = (currentIndex + 1) % tracks.length;
+            loadTrack(nextIndex);
+            playAudio();
+        }
+
+        function prevTrack() {
+            const prevIndex = (currentIndex - 1 + tracks.length) % tracks.length;
+            loadTrack(prevIndex);
+            playAudio();
+        }
+
+        // --- Gauge Logic ---
+        function startRpmSimulation() {
+            clearInterval(rpmInterval);
+            rpmInterval = setInterval(() => {
+                // Random RPM between 3000 and 8000
+                const rpm = Math.floor(Math.random() * (8000 - 3000 + 1) + 3000);
+                rpmDisplay.innerText = rpm;
+                
+                // Map 0-10000 RPM to -135 to 135 degrees rotation
+                // 0 = -135deg, 10000 = 135deg
+                const rotation = -135 + (rpm / 10000) * 270;
+                rpmNeedle.style.transform = `rotate(${rotation}deg)`;
+            }, 200);
+        }
+
+        function stopRpmSimulation() {
+            clearInterval(rpmInterval);
+            rpmDisplay.innerText = "0";
+            rpmNeedle.style.transform = `rotate(-135deg)`;
+        }
+
+        function formatTime(s) {
+            if(isNaN(s)) return "00:00";
+            const m = Math.floor(s / 60).toString().padStart(2, '0');
+            const sec = Math.floor(s % 60).toString().padStart(2, '0');
+            return `${m}:${sec}`;
+        }
+
+        // --- UI Helpers ---
+        function renderManifest() {
+            manifestList.innerHTML = '';
+            tracks.forEach((track, index) => {
+                const div = document.createElement('div');
+                div.className = 'man-item';
+                div.innerHTML = `
+                    <div class="man-num">${(index + 1)}</div>
+                    <div class="man-info">
+                        <div class="man-title">${track.title}</div>
+                        <div class="man-artist">${track.artist}</div>
+                    </div>
+                    <div class="status-led"></div>
+                `;
+                div.onclick = () => {
+                    loadTrack(index);
+                    playAudio();
+                };
+                manifestList.appendChild(div);
+            });
+        }
+
+        function updateManifestUI() {
+            const items = document.querySelectorAll('.man-item');
+            items.forEach((item, idx) => {
+                if (idx === currentIndex) item.classList.add('active');
+                else item.classList.remove('active');
+            });
+        }
+
+        function updateManifestPlaying(playing) {
+            const activeItem = document.querySelector('.man-item.active');
+            if (activeItem) {
+                if (playing) activeItem.classList.add('playing');
+                else activeItem.classList.remove('playing');
+            }
+        }
+
+        // --- Events ---
+        audio.addEventListener('timeupdate', () => {
+            if (!isNaN(audio.duration)) {
+                const pct = (audio.currentTime / audio.duration) * 100;
+                progressFill.style.width = `${pct}%`;
+                currentTimeEl.innerText = formatTime(audio.currentTime);
+            }
+        });
+
+        audio.addEventListener('loadedmetadata', () => {
+            totalTimeEl.innerText = formatTime(audio.duration);
+        });
+
+        audio.addEventListener('ended', nextTrack);
+
+        playBtn.addEventListener('click', togglePlay);
+        stopBtn.addEventListener('click', stopAudio);
+        nextBtn.addEventListener('click', nextTrack);
+        prevBtn.addEventListener('click', prevTrack);
+
+        init();
+
+    </script>
+</body>
+</html>

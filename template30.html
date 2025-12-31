@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Heritage Turntable | Hi-Fi System</title>
+    
+    <!-- Typography: Cinzel (Engraved Serif) & Share Tech Mono (Digital) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            /* Material Palette */
+            --wood-dark: #3e2723;
+            --wood-light: #5d4037;
+            --gold: #c5a059;
+            --gold-shadow: #8d6e63;
+            --vinyl: #121212;
+            --label-red: #b71c1c;
+            
+            /* Dimensions */
+            --turntable-size: 300px;
+            --platter-size: 280px;
+        }
+
+        * {
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #2a1a16;
+            /* Wood Grain Texture */
+            background-image: 
+                repeating-linear-gradient(45deg, rgba(0,0,0,0.05) 0px, rgba(0,0,0,0.05) 2px, transparent 2px, transparent 8px),
+                linear-gradient(to bottom, #2d1e1b, #1a100e);
+            font-family: 'Share Tech Mono', monospace;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #e0e0e0;
+            overflow: hidden;
+        }
+
+        /* --- Main Cabinet --- */
+        .hifi-cabinet {
+            display: flex;
+            width: 1000px;
+            max-width: 95%;
+            height: 650px;
+            background: var(--wood-dark);
+            border-radius: 8px;
+            box-shadow: 
+                0 20px 50px rgba(0,0,0,0.8),
+                inset 0 1px 1px rgba(255,255,255,0.2);
+            border: 8px solid #251614;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* Wood Border/Trim */
+        .hifi-cabinet::before {
+            content: '';
+            position: absolute;
+            top: 10px; left: 10px; right: 10px; bottom: 10px;
+            border: 2px solid rgba(0,0,0,0.5);
+            pointer-events: none;
+            border-radius: 4px;
+        }
+
+        /* --- Left: The Turntable Plinth --- */
+        .plinth {
+            flex: 1.2;
+            background: radial-gradient(circle, var(--wood-light) 0%, var(--wood-dark) 90%);
+            border-right: 4px solid #1a100e;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Vinyl Record */
+        .record-container {
+            width: var(--turntable-size);
+            height: var(--turntable-size);
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .platter {
+            width: var(--platter-size);
+            height: var(--platter-size);
+            border-radius: 50%;
+            background: #1a1a1a;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+            position: absolute;
+            border: 2px solid #333;
+        }
+
+        .vinyl {
+            width: 96%;
+            height: 96%;
+            border-radius: 50%;
+            background: 
+                repeating-radial-gradient(
+                #111 0, 
+                #111 2px, 
+                #222 3px, 
+                #222 4px
+                );
+            position: absolute;
+            box-shadow: inset 0 0 10px #000;
+            transition: transform 0.5s;
+        }
+
+        .vinyl.spinning {
+            animation: spin 2s linear infinite;
+        }
+
+        @keyframes spin {
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Record Label */
+        .label {
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            background: var(--label-red);
+            border-radius: 50%;
+            border: 4px solid #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2;
+        }
+
+        .label-text {
+            font-family: 'Cinzel', serif;
+            color: #fff;
+            font-size: 0.8rem;
+            text-align: center;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+            transform: rotate(-15deg); /* Label is slightly crooked */
+        }
+
+        /* Tone Arm (The needle) */
+        .tone-arm-assembly {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 200px;
+            height: 300px;
+            transform-origin: 90% 10%; /* Pivot point */
+            transform: rotate(-30deg); /* Rest position */
+            transition: transform 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 10;
+            pointer-events: none;
+        }
+
+        .arm-engaged {
+            transform: rotate(15deg); /* Playing position */
+        }
+
+        .arm-pivot {
+            width: 40px;
+            height: 40px;
+            background: radial-gradient(circle at 30% 30%, #fff, var(--gold-shadow));
+            border-radius: 50%;
+            position: absolute;
+            top: 0; right: 0;
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.5);
+            border: 1px solid #8d6e63;
+        }
+
+        .arm-rod {
+            width: 10px;
+            height: 250px;
+            background: linear-gradient(to right, #d7ccc8, #a1887f);
+            position: absolute;
+            top: 20px; right: 20px;
+            transform: rotate(25deg);
+            transform-origin: top center;
+            border-radius: 5px;
+        }
+
+        .arm-head {
+            width: 30px;
+            height: 50px;
+            background: #333;
+            position: absolute;
+            bottom: -40px;
+            left: -10px;
+            transform: rotate(-25deg); /* Counter rotate to look flat */
+            border-radius: 4px;
+        }
+
+        /* --- Right: Control Panel & Sleeve --- */
+        .console-panel {
+            flex: 1;
+            background: #1f1f1f;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+            border-left: 2px solid #000;
+            background-image: 
+                linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+            background-size: 20px 20px;
+        }
+
+        /* Brand Plate */
+        .brand-plate {
+            background: linear-gradient(to bottom, #d4af37, #aa8c2c);
+            padding: 15px;
+            text-align: center;
+            border: 1px solid #555;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.6);
+            margin-bottom: 10px;
+        }
+
+        .brand-name {
+            font-family: 'Cinzel', serif;
+            font-weight: 700;
+            font-size: 1.5rem;
+            color: #2a1a16;
+            letter-spacing: 2px;
+            text-shadow: 0 1px 0 rgba(255,255,255,0.4);
+        }
+
+        /* Track Display (LED Style) */
+        .led-display {
+            background: #000;
+            border: 4px solid #333;
+            padding: 15px;
+            border-radius: 4px;
+            color: var(--gold);
+            font-size: 1rem;
+            text-align: center;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.8);
+            height: 80px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .led-title {
+            font-size: 1.2rem;
+            margin-bottom: 5px;
+            color: #fff;
+            text-shadow: 0 0 5px var(--gold);
+        }
+
+        .led-artist {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        /* Controls: Toggle Switches */
+        .switch-panel {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #222;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #444;
+        }
+
+        .switch-group {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+            cursor: pointer;
+        }
+
+        .switch-label {
+            font-family: 'Cinzel', serif;
+            font-size: 0.7rem;
+            color: #aaa;
+            text-transform: uppercase;
+        }
+
+        .toggle-lever {
+            width: 40px;
+            height: 20px;
+            background: #444;
+            border-radius: 10px;
+            position: relative;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.8);
+        }
+
+        .toggle-lever::after {
+            content: '';
+            position: absolute;
+            top: 2px; left: 2px;
+            width: 16px; height: 16px;
+            background: linear-gradient(to bottom, #eee, #999);
+            border-radius: 50%;
+            transition: transform 0.2s;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+        }
+
+        .active .toggle-lever::after {
+            transform: translateX(20px);
+            background: linear-gradient(to bottom, #fff, var(--gold));
+        }
+
+        /* Playlist: The Sleeve */
+        .sleeve-area {
+            flex-grow: 1;
+            background: #e0e0e0;
+            border-radius: 4px;
+            padding: 20px;
+            font-family: 'Cinzel', serif;
+            color: #000;
+            position: relative;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.2);
+            overflow-y: auto;
+            /* Paper texture */
+            background-image: url("data:image/svg+xml,%3Csvg width='4' height='4' viewBox='0 0 4 4' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 3h1v1H1V3zm2-2h1v1H3V1z' fill='%23000000' fill-opacity='0.05' fill-rule='evenodd'/%3E%3C/svg%3E");
+        }
+
+        .sleeve-header {
+            border-bottom: 2px solid #000;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+
+        .track-row {
+            display: flex;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #ccc;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .track-row:hover {
+            background: rgba(0,0,0,0.05);
+        }
+
+        .track-row.active {
+            background: rgba(0,0,0,0.1);
+            font-weight: 700;
+            color: #b71c1c;
+        }
+
+        .row-num {
+            width: 30px;
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .row-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .row-title {
+            font-size: 0.9rem;
+        }
+        .row-artist {
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 0.75rem;
+            color: #555;
+        }
+
+        /* Progress Bar (Visual Style) */
+        .progress-track {
+            width: 100%;
+            height: 6px;
+            background: #333;
+            margin-top: 10px;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--gold);
+            width: 0%;
+            box-shadow: 0 0 8px var(--gold);
+            transition: width 0.1s linear;
+        }
+
+        /* Responsive */
+        @media (max-width: 850px) {
+            .hifi-cabinet {
+                flex-direction: column;
+                height: auto;
+                width: 95%;
+            }
+            .plinth { padding: 40px 0; border-right: none; border-bottom: 4px solid #1a100e; }
+            .console-panel { padding: 20px; }
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="hifi-cabinet">
+        
+        <!-- Turntable Area -->
+        <div class="plinth">
+            <div class="record-container">
+                <div class="platter"></div>
+                <div class="vinyl" id="vinylRecord">
+                    <div class="label">
+                        <div class="label-text" id="vinylLabel">01</div>
+                    </div>
+                </div>
+                
+                <!-- Tone Arm -->
+                <div class="tone-arm-assembly" id="toneArm">
+                    <div class="arm-pivot"></div>
+                    <div class="arm-rod"></div>
+                    <div class="arm-head"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Console Area -->
+        <div class="console-panel">
+            
+            <!-- Branding -->
+            <div class="brand-plate">
+                <div class="brand-name">HERITAGE AUDIO</div>
+            </div>
+
+            <!-- LED Display -->
+            <div class="led-display">
+                <div class="led-title" id="displayTitle">STOPPED</div>
+                <div class="led-artist" id="displayArtist">--</div>
+                <div class="progress-track" id="progressBar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+            </div>
+
+            <!-- Mechanical Switches -->
+            <div class="switch-panel">
+                <div class="switch-group" id="prevBtn">
+                    <div class="toggle-lever"></div>
+                    <span class="switch-label">Prev</span>
+                </div>
+
+                <div class="switch-group" id="stopBtn">
+                    <div class="toggle-lever"></div>
+                    <span class="switch-label">Stop</span>
+                </div>
+
+                <div class="switch-group" id="playBtn">
+                    <div class="toggle-lever" id="playLever"></div>
+                    <span class="switch-label" style="color:var(--gold)">Play</span>
+                </div>
+
+                <div class="switch-group" id="nextBtn">
+                    <div class="toggle-lever"></div>
+                    <span class="switch-label">Next</span>
+                </div>
+            </div>
+
+            <!-- Sleeve Playlist -->
+            <div class="sleeve-area">
+                <div class="sleeve-header">
+                    <span>TRACKLIST</span>
+                    <span style="font-size: 0.8rem">STEREO</span>
+                </div>
+                <div id="sleeveTracks">
+                    <!-- Tracks injected here -->
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+        const tracks = [
+            {
+                title: "I Just Called To Say...",
+                artist: "Stevie Wonder",
+                url: "https://music.giau.info/mp3/1765329418087_I_Just_Called_To_Say_I_Love_You.mp3"
+            },
+            {
+                title: "Another Day In Paradise",
+                artist: "Phil Collins",
+                url: "https://music.giau.info/mp3/1765329417208_Another_Day_In_Paradise.mp3"
+            },
+            {
+                title: "If Life Is So Short",
+                artist: "The Moffatts",
+                url: "https://music.giau.info/mp3/1765329418894_If_Life_Is_So_Short.mp3"
+            }
+        ];
+
+        const audio = new Audio();
+
+        // DOM Elements
+        const playBtn = document.getElementById('playBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const prevBtn = document.getElementById('prevBtn');
+        
+        const playLever = document.getElementById('playLever');
+        const toneArm = document.getElementById('toneArm');
+        const vinylRecord = document.getElementById('vinylRecord');
+        const vinylLabel = document.getElementById('vinylLabel');
+        
+        const displayTitle = document.getElementById('displayTitle');
+        const displayArtist = document.getElementById('displayArtist');
+        const progressFill = document.getElementById('progressFill');
+        const progressBar = document.getElementById('progressBar');
+        const sleeveTracks = document.getElementById('sleeveTracks');
+
+        // State
+        let currentIndex = 0;
+        let isPlaying = false;
+        let isStopped = true;
+
+        function init() {
+            renderSleeve();
+            loadTrack(0);
+        }
+
+        function loadTrack(index) {
+            currentIndex = index;
+            const track = tracks[index];
+            
+            audio.src = track.url;
+            audio.load();
+            
+            displayTitle.innerText = track.title;
+            displayArtist.innerText = track.artist;
+            vinylLabel.innerText = (index + 1).toString().padStart(2, '0');
+            
+            updateSleeveUI();
+            progressFill.style.width = '0%';
+
+            // Handle Mechanics based on current state
+            if (isPlaying) {
+                // If we were playing, keep playing new track (simulates auto-change)
+                // Quick animation for changing records would be complex, so we just reset arm slightly
+                resetArmAndPlay();
+            } else {
+                // If stopped, ensure arm is at rest
+                if(isStopped) {
+                    toneArm.classList.remove('arm-engaged');
+                    vinylRecord.classList.remove('spinning');
+                }
+            }
+        }
+
+        function togglePlay() {
+            if (isPlaying) pauseAudio();
+            else playAudio();
+        }
+
+        function playAudio() {
+            // Animation Sequence: Move Arm -> Spin Record
+            audio.play().then(() => {
+                isPlaying = true;
+                isStopped = false;
+                
+                // UI Toggles
+                playBtn.classList.add('active');
+                playLever.parentElement.classList.add('active');
+                
+                // Mechanics
+                toneArm.classList.add('arm-engaged');
+                setTimeout(() => {
+                    if(isPlaying) vinylRecord.classList.add('spinning');
+                }, 800); // Wait for arm to settle before spinning
+            }).catch(e => console.error(e));
+        }
+
+        function pauseAudio() {
+            // Animation Sequence: Stop Spin -> Arm Stays
+            audio.pause();
+            isPlaying = false;
+            
+            playBtn.classList.remove('active');
+            playLever.parentElement.classList.remove('active');
+            
+            vinylRecord.classList.remove('spinning');
+            // Arm stays on record (paused position)
+        }
+
+        function stopAudio() {
+            // Animation Sequence: Stop Spin -> Lift Arm (Rest)
+            audio.pause();
+            audio.currentTime = 0;
+            isPlaying = false;
+            isStopped = true;
+            
+            playBtn.classList.remove('active');
+            playLever.parentElement.classList.remove('active');
+            
+            vinylRecord.classList.remove('spinning');
+            toneArm.classList.remove('arm-engaged');
+            
+            progressFill.style.width = '0%';
+        }
+
+        function resetArmAndPlay() {
+            // Visual trick for next/prev: Lift arm, wait, drop arm
+            vinylRecord.classList.remove('spinning');
+            toneArm.classList.remove('arm-engaged');
+            
+            setTimeout(() => {
+                audio.play();
+                toneArm.classList.add('arm-engaged');
+                setTimeout(() => {
+                    vinylRecord.classList.add('spinning');
+                }, 800);
+            }, 500);
+        }
+
+        function nextTrack() {
+            const nextIndex = (currentIndex + 1) % tracks.length;
+            loadTrack(nextIndex);
+            resetArmAndPlay();
+        }
+
+        function prevTrack() {
+            const prevIndex = (currentIndex - 1 + tracks.length) % tracks.length;
+            loadTrack(prevIndex);
+            resetArmAndPlay();
+        }
+
+        // --- UI Helpers ---
+
+        function renderSleeve() {
+            sleeveTracks.innerHTML = '';
+            tracks.forEach((track, index) => {
+                const row = document.createElement('div');
+                row.className = 'track-row';
+                row.innerHTML = `
+                    <div class="row-num">${(index + 1)}.</div>
+                    <div class="row-info">
+                        <div class="row-title">${track.title}</div>
+                        <div class="row-artist">${track.artist}</div>
+                    </div>
+                `;
+                row.onclick = () => {
+                    loadTrack(index);
+                    resetArmAndPlay();
+                };
+                sleeveTracks.appendChild(row);
+            });
+        }
+
+        function updateSleeveUI() {
+            const rows = document.querySelectorAll('.track-row');
+            rows.forEach((row, idx) => {
+                if (idx === currentIndex) row.classList.add('active');
+                else row.classList.remove('active');
+            });
+        }
+
+        // --- Event Listeners ---
+
+        playBtn.addEventListener('click', togglePlay);
+        stopBtn.addEventListener('click', stopAudio);
+        nextBtn.addEventListener('click', nextTrack);
+        prevBtn.addEventListener('click', prevTrack);
+
+        audio.addEventListener('timeupdate', () => {
+            if (!isNaN(audio.duration)) {
+                const pct = (audio.currentTime / audio.duration) * 100;
+                progressFill.style.width = `${pct}%`;
+            }
+        });
+
+        audio.addEventListener('ended', nextTrack);
+
+        progressBar.addEventListener('click', (e) => {
+            if (!audio.duration) return;
+            const rect = progressBar.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const width = rect.width;
+            audio.currentTime = (x / width) * audio.duration;
+        });
+
+        init();
+
+    </script>
+</body>
+</html>

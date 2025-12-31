@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Y2K Vaporwave | Chrome Deck</title>
+    
+    <!-- Typography: Rajdhani (Tech Square) & VT323 (Terminal) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@500;700&family=VT323&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            /* Vaporwave Palette */
+            --vapor-dark: #2b0c38;
+            --vapor-purple: #7b2cbf;
+            --neon-pink: #ff00cc;
+            --neon-cyan: #00ffff;
+            --chrome-light: #f0f0f0;
+            --chrome-mid: #a0a0a0;
+            --chrome-dark: #505050;
+            
+            /* Bevel depth */
+            --bevel: 4px;
+        }
+
+        * {
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: var(--vapor-dark);
+            /* Retro Grid Floor */
+            background-image: 
+                linear-gradient(rgba(123, 44, 191, 0.3) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(123, 44, 191, 0.3) 1px, transparent 1px),
+                linear-gradient(rgba(43, 12, 56, 0) 0%, rgba(43, 12, 56, 0.8) 100%);
+            background-size: 40px 40px, 40px 40px, 100% 100%;
+            font-family: 'Rajdhani', sans-serif;
+            color: var(--chrome-light);
+            overflow: hidden;
+        }
+
+        /* --- The Main Unit --- */
+        .y2k-deck {
+            width: 900px;
+            max-width: 95%;
+            height: 650px;
+            background: rgba(0,0,0,0.6);
+            border: 2px solid var(--neon-pink);
+            box-shadow: 
+                0 0 20px var(--neon-pink),
+                0 0 40px var(--vapor-purple),
+                inset 0 0 20px rgba(0,0,0,0.8);
+            border-radius: 10px;
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            position: relative;
+            z-index: 10;
+            backdrop-filter: blur(5px);
+        }
+
+        /* Glass Panel Overlay (Top gloss) */
+        .y2k-deck::before {
+            content: "";
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, transparent 40%);
+            pointer-events: none;
+            z-index: 20;
+            border-radius: 8px;
+        }
+
+        /* --- Left: The Visual Stage --- */
+        .stage-area {
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            border-right: 2px solid var(--neon-cyan);
+            position: relative;
+        }
+
+        /* The Vaporwave Sun */
+        .sun-container {
+            width: 250px;
+            height: 250px;
+            position: relative;
+            margin-bottom: 30px;
+        }
+
+        .sun-core {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 150px; height: 150px;
+            background: radial-gradient(circle, #fff, var(--neon-pink));
+            border-radius: 50%;
+            box-shadow: 0 0 30px var(--neon-pink);
+            z-index: 2;
+        }
+        
+        .sun-lines {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 240px; height: 240px;
+            border-radius: 50%;
+            background: repeating-conic-gradient(
+                from 0deg,
+                var(--neon-cyan) 0deg 5deg,
+                transparent 5deg 15deg,
+                var(--vapor-purple) 15deg 20deg,
+                transparent 20deg 30deg
+            );
+            z-index: 1;
+            opacity: 0.6;
+        }
+
+        .playing .sun-lines {
+            animation: spinSun 10s linear infinite;
+        }
+
+        @keyframes spinSun {
+            from { transform: translate(-50%, -50%) rotate(0deg); }
+            to { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+        /* Track Info - Marquee Style */
+        .track-display {
+            width: 100%;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .digital-text {
+            font-family: 'VT323', monospace;
+            color: var(--neon-cyan);
+            font-size: 1.2rem;
+            text-shadow: 0 0 5px var(--neon-cyan);
+            background: #000;
+            padding: 5px 10px;
+            display: inline-block;
+            border: 1px solid var(--neon-cyan);
+            margin-bottom: 10px;
+        }
+
+        .glitch-title {
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 2.5rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            background: linear-gradient(to bottom, #fff, #aaa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 5px rgba(255, 0, 204, 0.5));
+        }
+
+        /* --- Chrome Buttons --- */
+        .controls-area {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* Liquid Progress Bar */
+        .liquid-progress {
+            width: 100%;
+            height: 16px;
+            background: #222;
+            border: 2px solid var(--chrome-mid);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: inset 0 0 5px #000;
+            position: relative;
+        }
+
+        .progress-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--neon-cyan), var(--neon-pink));
+            box-shadow: 0 0 10px var(--neon-pink);
+            transition: width 0.1s linear;
+        }
+
+        .progress-overlay {
+            position: absolute;
+            top: 2px; left: 2px; right: 2px; bottom: 2px;
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 6px;
+            pointer-events: none;
+        }
+
+        .time-stamps {
+            display: flex;
+            justify-content: space-between;
+            font-family: 'VT323', monospace;
+            color: var(--chrome-light);
+            font-size: 1.1rem;
+        }
+
+        .btn-row {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+
+        /* The Button Style */
+        .chrome-btn {
+            width: 60px; height: 60px;
+            border: none;
+            border-radius: 10px;
+            background: linear-gradient(180deg, var(--chrome-light) 0%, var(--chrome-mid) 50%, var(--chrome-dark) 100%);
+            box-shadow: 
+                inset 0 1px 0 rgba(255,255,255,0.8),
+                0 4px 0 #333,
+                0 5px 5px rgba(0,0,0,0.5);
+            cursor: pointer;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.1s;
+        }
+
+        .chrome-btn:active {
+            transform: translateY(4px);
+            box-shadow: 
+                inset 0 1px 0 rgba(255,255,255,0.8),
+                0 0 0 #333,
+                inset 0 2px 5px rgba(0,0,0,0.5);
+        }
+
+        .chrome-btn::after {
+            content: '';
+            position: absolute;
+            top: 5px; left: 5px; right: 5px; bottom: 5px;
+            border-radius: 5px;
+            background: linear-gradient(180deg, rgba(0,0,0,0.1), rgba(0,0,0,0.3));
+            pointer-events: none;
+        }
+
+        .chrome-btn.play-btn {
+            width: 80px; height: 80px;
+            background: linear-gradient(180deg, var(--neon-pink) 0%, #99007a 50%, #660052 100%);
+            box-shadow: 
+                inset 0 1px 0 rgba(255,255,255,0.5),
+                0 4px 0 #4a004a,
+                0 5px 5px rgba(0,0,0,0.5);
+        }
+        
+        .chrome-btn.play-btn:active {
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.5);
+        }
+
+        .icon {
+            width: 24px; height: 24px;
+            fill: #333;
+            filter: drop-shadow(0 1px 0 rgba(255,255,255,0.5));
+            z-index: 2;
+        }
+        
+        .play-btn .icon {
+            fill: white;
+            width: 32px; height: 32px;
+        }
+
+        /* --- Right: Playlist (Holographic) --- */
+        .playlist-holo {
+            padding: 20px;
+            background: rgba(255,255,255,0.05);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .holo-header {
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 700;
+            font-size: 1.2rem;
+            color: var(--neon-cyan);
+            text-transform: uppercase;
+            border-bottom: 2px solid var(--neon-pink);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            letter-spacing: 2px;
+        }
+
+        .track-list {
+            overflow-y: auto;
+            flex-grow: 1;
+        }
+
+        .track-item {
+            background: rgba(0,0,0,0.3);
+            border: 1px solid var(--chrome-mid);
+            margin-bottom: 10px;
+            padding: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .track-item:hover {
+            border-color: var(--neon-cyan);
+            background: rgba(0, 255, 255, 0.1);
+        }
+
+        .track-item.active {
+            background: var(--neon-pink);
+            border-color: #fff;
+            color: #fff;
+        }
+
+        .track-item.active .item-num {
+            color: #fff;
+        }
+
+        .item-row {
+            display: flex;
+            align-items: center;
+        }
+
+        .item-num {
+            font-family: 'VT323', monospace;
+            font-size: 1.2rem;
+            color: var(--neon-cyan);
+            margin-right: 10px;
+        }
+
+        .item-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .item-title {
+            font-size: 0.9rem;
+            font-weight: 700;
+        }
+        .item-artist {
+            font-size: 0.75rem;
+            opacity: 0.8;
+        }
+
+        /* Visual equalizer bar for playlist */
+        .eq-bar {
+            height: 3px;
+            background: var(--neon-cyan);
+            width: 100%;
+            margin-top: 5px;
+            opacity: 0;
+        }
+
+        .track-item.active.playing .eq-bar {
+            opacity: 1;
+            animation: eq-hop 0.5s infinite alternate;
+        }
+
+        @keyframes eq-hop {
+            from { width: 30%; }
+            to { width: 90%; }
+        }
+
+        /* Responsive */
+        @media (max-width: 800px) {
+            .y2k-deck {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto 1fr;
+                height: 90vh;
+            }
+            .stage-area { border-right: none; border-bottom: 2px solid var(--neon-cyan); }
+            .sun-container { width: 180px; height: 180px; }
+            .sun-core { width: 100px; height: 100px; }
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="y2k-deck">
+        
+        <!-- Left Stage -->
+        <section class="stage-area">
+            
+            <div class="sun-container">
+                <div class="sun-lines" id="sunLines"></div>
+                <div class="sun-core"></div>
+            </div>
+
+            <div class="track-display">
+                <div class="digital-text" id="displayStatus">READY</div>
+                <h1 class="glitch-title" id="trackTitle">NO DISC</h1>
+            </div>
+
+            <div class="controls-area">
+                <div>
+                    <div class="liquid-progress" id="progressBar">
+                        <div class="progress-fill" id="progressFill"></div>
+                        <div class="progress-overlay"></div>
+                    </div>
+                    <div class="time-stamps">
+                        <span id="currentTime">00:00</span>
+                        <span id="totalTime">00:00</span>
+                    </div>
+                </div>
+
+                <div class="btn-row">
+                    <button class="chrome-btn" id="prevBtn">
+                        <svg class="icon" viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
+                    </button>
+                    
+                    <button class="chrome-btn" id="stopBtn">
+                        <svg class="icon" viewBox="0 0 24 24"><path d="M6 6h12v12H6z"/></svg>
+                    </button>
+
+                    <button class="chrome-btn play-btn" id="playBtn">
+                        <!-- Play -->
+                        <svg class="icon" id="iconPlay" style="display:block" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                        <!-- Pause -->
+                        <svg class="icon" id="iconPause" style="display:none" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+                    </button>
+
+                    <button class="chrome-btn" id="nextBtn">
+                        <svg class="icon" viewBox="0 0 24 24"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Right Playlist -->
+        <aside class="playlist-holo">
+            <div class="holo-header">Memory Bank</div>
+            <div class="track-list" id="trackList">
+                <!-- Injected via JS -->
+            </div>
+        </aside>
+
+    </div>
+
+    <script>
+        // --- Data ---
+        const tracks = [
+            {
+                title: "I Just Called To Say I Love You",
+                artist: "Stevie Wonder",
+                url: "https://music.giau.info/mp3/1765329418087_I_Just_Called_To_Say_I_Love_You.mp3"
+            },
+            {
+                title: "Another Day In Paradise",
+                artist: "Phil Collins",
+                url: "https://music.giau.info/mp3/1765329417208_Another_Day_In_Paradise.mp3"
+            },
+            {
+                title: "If Life Is So Short",
+                artist: "The Moffatts",
+                url: "https://music.giau.info/mp3/1765329418894_If_Life_Is_So_Short.mp3"
+            }
+        ];
+
+        const audio = new Audio();
+
+        // --- DOM ---
+        const playBtn = document.getElementById('playBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const prevBtn = document.getElementById('prevBtn');
+        const iconPlay = document.getElementById('iconPlay');
+        const iconPause = document.getElementById('iconPause');
+        const sunLines = document.getElementById('sunLines');
+        const trackTitle = document.getElementById('trackTitle');
+        const displayStatus = document.getElementById('displayStatus');
+        const progressBar = document.getElementById('progressBar');
+        const progressFill = document.getElementById('progressFill');
+        const currentTimeEl = document.getElementById('currentTime');
+        const totalTimeEl = document.getElementById('totalTime');
+        const trackList = document.getElementById('trackList');
+
+        // --- State ---
+        let currentIndex = 0;
+        let isPlaying = false;
+        let isStopped = true;
+
+        function init() {
+            renderPlaylist();
+            loadTrack(0);
+        }
+
+        function loadTrack(index) {
+            currentIndex = index;
+            const track = tracks[index];
+            
+            audio.src = track.url;
+            audio.load();
+            
+            trackTitle.innerText = track.title.toUpperCase();
+            displayStatus.innerText = "PLAYING >>";
+            
+            updatePlaylistUI();
+            progressFill.style.width = '0%';
+            currentTimeEl.innerText = "00:00";
+            totalTimeEl.innerText = "00:00";
+
+            if (!isStopped && isPlaying) {
+                playAudio();
+            } else {
+                pauseAudio();
+            }
+        }
+
+        function togglePlay() {
+            if (isPlaying) pauseAudio();
+            else playAudio();
+        }
+
+        function playAudio() {
+            audio.play().then(() => {
+                isPlaying = true;
+                isStopped = false;
+                updateIcons();
+                sunLines.parentElement.parentElement.classList.add('playing');
+                displayStatus.innerText = "PLAYING >>";
+                updatePlaylistPlaying(true);
+            }).catch(e => console.error(e));
+        }
+
+        function pauseAudio() {
+            audio.pause();
+            isPlaying = false;
+            updateIcons();
+            sunLines.parentElement.parentElement.classList.remove('playing');
+            displayStatus.innerText = "PAUSED ||";
+            updatePlaylistPlaying(false);
+        }
+
+        function stopAudio() {
+            audio.pause();
+            audio.currentTime = 0;
+            isPlaying = false;
+            isStopped = true;
+            updateIcons();
+            sunLines.parentElement.parentElement.classList.remove('playing');
+            progressFill.style.width = '0%';
+            currentTimeEl.innerText = "00:00";
+            displayStatus.innerText = "STOPPED []";
+            updatePlaylistPlaying(false);
+        }
+
+        function nextTrack() {
+            const nextIndex = (currentIndex + 1) % tracks.length;
+            loadTrack(nextIndex);
+            playAudio();
+        }
+
+        function prevTrack() {
+            const prevIndex = (currentIndex - 1 + tracks.length) % tracks.length;
+            loadTrack(prevIndex);
+            playAudio();
+        }
+
+        function formatTime(s) {
+            if(isNaN(s)) return "00:00";
+            const m = Math.floor(s / 60).toString().padStart(2, '0');
+            const sec = Math.floor(s % 60).toString().padStart(2, '0');
+            return `${m}:${sec}`;
+        }
+
+        function updateIcons() {
+            if (isPlaying) {
+                iconPlay.style.display = 'none';
+                iconPause.style.display = 'block';
+            } else {
+                iconPlay.style.display = 'block';
+                iconPause.style.display = 'none';
+            }
+        }
+
+        function renderPlaylist() {
+            trackList.innerHTML = '';
+            tracks.forEach((track, index) => {
+                const div = document.createElement('div');
+                div.className = 'track-item';
+                div.innerHTML = `
+                    <div class="item-row">
+                        <div class="item-num">${(index+1).toString().padStart(2,'0')}</div>
+                        <div class="item-info">
+                            <div class="item-title">${track.title}</div>
+                            <div class="item-artist">${track.artist}</div>
+                        </div>
+                    </div>
+                    <div class="eq-bar"></div>
+                `;
+                div.onclick = () => {
+                    loadTrack(index);
+                    playAudio();
+                };
+                trackList.appendChild(div);
+            });
+        }
+
+        function updatePlaylistUI() {
+            const items = document.querySelectorAll('.track-item');
+            items.forEach((item, idx) => {
+                if (idx === currentIndex) item.classList.add('active');
+                else item.classList.remove('active');
+            });
+        }
+
+        function updatePlaylistPlaying(playing) {
+            const activeItem = document.querySelector('.track-item.active');
+            if (activeItem) {
+                if (playing) activeItem.classList.add('playing');
+                else activeItem.classList.remove('playing');
+            }
+        }
+
+        // --- Events ---
+        audio.addEventListener('timeupdate', () => {
+            if (!isNaN(audio.duration)) {
+                const pct = (audio.currentTime / audio.duration) * 100;
+                progressFill.style.width = `${pct}%`;
+                currentTimeEl.innerText = formatTime(audio.currentTime);
+            }
+        });
+
+        audio.addEventListener('loadedmetadata', () => {
+            totalTimeEl.innerText = formatTime(audio.duration);
+        });
+
+        audio.addEventListener('ended', nextTrack);
+
+        progressBar.addEventListener('click', (e) => {
+            if (!audio.duration) return;
+            const rect = progressBar.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const width = rect.width;
+            audio.currentTime = (x / width) * audio.duration;
+        });
+
+        playBtn.addEventListener('click', togglePlay);
+        stopBtn.addEventListener('click', stopAudio);
+        nextBtn.addEventListener('click', nextTrack);
+        prevBtn.addEventListener('click', prevTrack);
+
+        init();
+
+    </script>
+</body>
+</html>

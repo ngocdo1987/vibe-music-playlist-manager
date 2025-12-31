@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Orbital Command | Deep Space</title>
+    
+    <!-- Typography: Chakra Petch (Wide Tech) & Share Tech Mono (Data) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            /* Space Palette */
+            --void: #030305;
+            --hud-white: #e0e6ed;
+            --hud-dim: #5c677d;
+            --signal-orange: #ff9f1c;
+            --alert-red: #e71d36;
+            
+            /* Grid */
+            --grid-line: rgba(224, 230, 237, 0.1);
+        }
+
+        * {
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--void);
+            font-family: 'Share Tech Mono', monospace;
+            color: var(--hud-white);
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        /* --- Starfield Background --- */
+        .starfield {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 0;
+            perspective: 1000px;
+        }
+
+        .star {
+            position: absolute;
+            background: #fff;
+            border-radius: 50%;
+            opacity: 0.8;
+            animation: twinkle 4s infinite ease-in-out;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; transform: scale(0.8); }
+            50% { opacity: 1; transform: scale(1.2); }
+        }
+
+        /* --- Main HUD Frame --- */
+        .orbital-interface {
+            position: relative;
+            z-index: 10;
+            width: 1000px;
+            max-width: 95%;
+            height: 700px;
+            border: 1px solid var(--hud-dim);
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            background: rgba(3, 3, 5, 0.8);
+            backdrop-filter: blur(5px);
+            box-shadow: 0 0 50px rgba(0,0,0,0.8);
+        }
+
+        /* Corner Brackets */
+        .bracket {
+            position: absolute;
+            width: 20px; height: 20px;
+            border: 2px solid var(--signal-orange);
+            transition: all 0.3s;
+        }
+        .bracket.tl { top: -2px; left: -2px; border-right: none; border-bottom: none; }
+        .bracket.tr { top: -2px; right: -2px; border-left: none; border-bottom: none; }
+        .bracket.bl { bottom: -2px; left: -2px; border-right: none; border-top: none; }
+        .bracket.br { bottom: -2px; right: -2px; border-left: none; border-top: none; }
+
+        /* --- Left Panel: Navigation & Info --- */
+        .panel-nav {
+            padding: 30px;
+            border-right: 1px solid var(--grid-line);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .sys-header {
+            font-family: 'Chakra Petch', sans-serif;
+            font-size: 1.5rem;
+            letter-spacing: 2px;
+            color: var(--signal-orange);
+            border-bottom: 1px solid var(--grid-line);
+            padding-bottom: 10px;
+            margin-bottom: 30px;
+            text-transform: uppercase;
+        }
+
+        /* The Planetary System */
+        .system-view {
+            width: 100%;
+            aspect-ratio: 1;
+            border: 1px solid var(--hud-dim);
+            border-radius: 50%; /* Just a guide */
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 30px;
+            background: radial-gradient(circle, rgba(255, 159, 28, 0.05) 0%, transparent 70%);
+        }
+
+        .star-core {
+            width: 40px; height: 40px;
+            background: #fff;
+            border-radius: 50%;
+            box-shadow: 0 0 20px var(--signal-orange);
+            z-index: 5;
+            position: absolute;
+        }
+
+        .orbit-ring {
+            width: 220px; height: 220px;
+            border: 1px dashed var(--hud-dim);
+            border-radius: 50%;
+            position: absolute;
+            animation: spin 20s linear infinite;
+        }
+
+        .planet {
+            width: 16px; height: 16px;
+            background: var(--hud-white);
+            border-radius: 50%;
+            position: absolute;
+            top: 0; left: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 10px var(--hud-white);
+        }
+
+        .playing .orbit-ring {
+            animation-duration: 5s; /* Faster orbit */
+            border-color: var(--signal-orange);
+        }
+        .playing .star-core {
+            box-shadow: 0 0 40px var(--signal-orange);
+            background: var(--signal-orange);
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* Data Readout */
+        .data-readout {
+            font-size: 0.8rem;
+            color: var(--hud-dim);
+            line-height: 1.6;
+        }
+        .data-line {
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(92, 103, 125, 0.2);
+            padding: 4px 0;
+        }
+        .data-val { color: var(--hud-white); }
+
+        /* --- Right Panel: Viewport & Controls --- */
+        .panel-viewport {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Top: Trajectory (Progress) */
+        .trajectory-panel {
+            height: 100px;
+            border-bottom: 1px solid var(--grid-line);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .traj-label {
+            font-family: 'Chakra Petch', sans-serif;
+            font-size: 0.8rem;
+            color: var(--signal-orange);
+            margin-bottom: 5px;
+        }
+
+        .traj-bar-container {
+            width: 100%;
+            height: 6px;
+            background: #111;
+            position: relative;
+        }
+
+        .traj-fill {
+            height: 100%;
+            background: var(--hud-white);
+            width: 0%;
+            box-shadow: 0 0 10px var(--hud-white);
+        }
+
+        .traj-ticks {
+            position: absolute;
+            top: -10px; left: 0; width: 100%;
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.7rem;
+            color: var(--hud-dim);
+        }
+
+        /* Center: Track Title & Status */
+        .target-display {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            position: relative;
+            background: 
+                linear-gradient(0deg, transparent 24%, rgba(255, 159, 28, .05) 25%, rgba(255, 159, 28, .05) 26%, transparent 27%, transparent 74%, rgba(255, 159, 28, .05) 75%, rgba(255, 159, 28, .05) 76%, transparent 77%, transparent),
+                linear-gradient(90deg, transparent 24%, rgba(255, 159, 28, .05) 25%, rgba(255, 159, 28, .05) 26%, transparent 27%, transparent 74%, rgba(255, 159, 28, .05) 75%, rgba(255, 159, 28, .05) 76%, transparent 77%, transparent);
+            background-size: 50px 50px;
+        }
+
+        /* Targeting Reticle */
+        .reticle {
+            position: absolute;
+            width: 300px; height: 300px;
+            border: 1px solid rgba(255, 159, 28, 0.3);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: pulse-reticle 3s infinite ease-in-out;
+        }
+        .reticle::before, .reticle::after {
+            content: '';
+            position: absolute;
+            background: var(--signal-orange);
+        }
+        .reticle::before { width: 100%; height: 1px; }
+        .reticle::after { width: 1px; height: 100%; }
+
+        @keyframes pulse-reticle {
+            0%, 100% { opacity: 0.3; transform: scale(0.9); }
+            50% { opacity: 0.8; transform: scale(1.1); }
+        }
+
+        .target-name {
+            font-family: 'Chakra Petch', sans-serif;
+            font-size: 2.5rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            z-index: 5;
+            text-shadow: 0 0 10px rgba(255,255,255,0.3);
+        }
+
+        .target-coords {
+            font-family: 'Share Tech Mono', monospace;
+            color: var(--hud-dim);
+            font-size: 1.2rem;
+            margin-top: 10px;
+        }
+
+        /* Bottom: Mission Log (Playlist) & Controls */
+        .mission-deck {
+            height: 250px;
+            border-top: 1px solid var(--grid-line);
+            display: grid;
+            grid-template-columns: 1fr 200px;
+        }
+
+        .log-list {
+            padding: 15px;
+            overflow-y: auto;
+            border-right: 1px solid var(--grid-line);
+        }
+
+        .log-entry {
+            padding: 10px;
+            border-bottom: 1px solid rgba(92, 103, 125, 0.3);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            transition: background 0.2s;
+            position: relative;
+        }
+
+        .log-entry:hover {
+            background: rgba(255, 159, 28, 0.1);
+        }
+
+        .log-entry.active {
+            background: rgba(255, 159, 28, 0.15);
+            border-left: 3px solid var(--signal-orange);
+        }
+
+        .log-id {
+            font-family: 'Chakra Petch', sans-serif;
+            color: var(--hud-dim);
+            font-size: 1.2rem;
+        }
+        
+        .log-entry.active .log-id { color: var(--signal-orange); }
+
+        .log-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .log-title { font-size: 0.9rem; font-weight: bold; }
+        .log-artist { font-size: 0.75rem; color: var(--hud-dim); }
+
+        .status-dot {
+            width: 8px; height: 8px;
+            border-radius: 50%;
+            background: #333;
+            margin-left: auto;
+            box-shadow: 0 0 5px currentColor;
+        }
+        .log-entry.active.playing .status-dot {
+            background: var(--signal-orange);
+            animation: blink-dot 1s infinite;
+        }
+
+        @keyframes blink-dot { 50% { opacity: 0; } }
+
+        /* Tactical Buttons */
+        .control-tactical {
+            padding: 15px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .btn-tac {
+            background: transparent;
+            border: 1px solid var(--hud-dim);
+            color: var(--hud-white);
+            font-family: 'Chakra Petch', sans-serif;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            clip-path: polygon(10% 0, 100% 0, 100% 90%, 90% 100%, 0 100%, 0 10%);
+        }
+
+        .btn-tac:hover {
+            background: rgba(255, 159, 28, 0.2);
+            border-color: var(--signal-orange);
+            color: var(--signal-orange);
+        }
+        
+        .btn-tac:active {
+            transform: scale(0.95);
+        }
+
+        .btn-main {
+            background: var(--signal-orange);
+            border-color: var(--signal-orange);
+            color: #000;
+            grid-column: span 2;
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+        
+        .btn-main:hover {
+            background: #ffb74d;
+            box-shadow: 0 0 15px var(--signal-orange);
+        }
+
+        /* Responsive */
+        @media (max-width: 850px) {
+            .orbital-interface {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto 1fr auto;
+                height: 95vh;
+                overflow-y: auto;
+            }
+            .panel-nav { border-right: none; border-bottom: 1px solid var(--grid-line); }
+            .system-view { width: 150px; height: 150px; margin: 0 auto 20px auto; }
+            .orbit-ring { width: 140px; height: 140px; }
+            .target-name { font-size: 1.8rem; }
+            .mission-deck { height: auto; grid-template-columns: 1fr; }
+            .control-tactical { grid-template-columns: repeat(4, 1fr); }
+            .log-list { height: 200px; }
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- Starfield -->
+    <div class="starfield" id="starfield"></div>
+
+    <div class="orbital-interface">
+        
+        <!-- Decorative Brackets -->
+        <div class="bracket tl"></div>
+        <div class="bracket tr"></div>
+        <div class="bracket bl"></div>
+        <div class="bracket br"></div>
+
+        <!-- Left: Navigation -->
+        <aside class="panel-nav">
+            <div class="sys-header">System Nav</div>
+
+            <div class="system-view">
+                <div class="star-core"></div>
+                <div class="orbit-ring">
+                    <div class="planet"></div>
+                </div>
+            </div>
+
+            <div class="data-readout">
+                <div class="data-line">
+                    <span>SECTOR</span> <span class="data-val">ALPHA-9</span>
+                </div>
+                <div class="data-line">
+                    <span>STATUS</span> <span class="data-val" id="sysStatus">IDLE</span>
+                </div>
+                <div class="data-line">
+                    <span>ORBIT</span> <span class="data-val" id="orbitTime">00:00</span>
+                </div>
+                <div class="data-line">
+                    <span>SIGNAL</span> <span class="data-val">100%</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Right: Viewport -->
+        <main class="panel-viewport">
+            
+            <!-- Trajectory Bar -->
+            <div class="trajectory-panel">
+                <div class="traj-label">TRAJECTORY PROGRESS</div>
+                <div class="traj-bar-container">
+                    <div class="traj-fill" id="trajFill"></div>
+                </div>
+                <div class="traj-ticks">
+                    <span id="currTime">00:00</span>
+                    <span id="totalTime">00:00</span>
+                </div>
+            </div>
+
+            <!-- Target Display -->
+            <div class="target-display">
+                <div class="reticle"></div>
+                <h1 class="target-name" id="targetName">NO TARGET</h1>
+                <div class="target-coords" id="targetCoords">WAITING FOR INPUT...</div>
+            </div>
+
+            <!-- Mission Deck -->
+            <div class="mission-deck">
+                <div class="log-list" id="logList">
+                    <!-- JS Injected -->
+                </div>
+                <div class="control-tactical">
+                    <button class="btn-tac" id="prevBtn">&lt;&lt; PREV</button>
+                    <button class="btn-tac" id="stopBtn">ABORT</button>
+                    <button class="btn-tac btn-main" id="playBtn">ENGAGE</button>
+                    <button class="btn-tac" id="nextBtn">NEXT &gt;&gt;</button>
+                </div>
+            </div>
+
+        </main>
+
+    </div>
+
+    <script>
+        // --- Data ---
+        const tracks = [
+            {
+                title: "I Just Called To Say I Love You",
+                artist: "Stevie Wonder",
+                url: "https://music.giau.info/mp3/1765329418087_I_Just_Called_To_Say_I_Love_You.mp3"
+            },
+            {
+                title: "Another Day In Paradise",
+                artist: "Phil Collins",
+                url: "https://music.giau.info/mp3/1765329417208_Another_Day_In_Paradise.mp3"
+            },
+            {
+                title: "If Life Is So Short",
+                artist: "The Moffatts",
+                url: "https://music.giau.info/mp3/1765329418894_If_Life_Is_So_Short.mp3"
+            }
+        ];
+
+        const audio = new Audio();
+        
+        // --- DOM ---
+        const playBtn = document.getElementById('playBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const prevBtn = document.getElementById('prevBtn');
+        
+        const targetName = document.getElementById('targetName');
+        const targetCoords = document.getElementById('targetCoords');
+        const sysStatus = document.getElementById('sysStatus');
+        const orbitTime = document.getElementById('orbitTime');
+        const trajFill = document.getElementById('trajFill');
+        const currTime = document.getElementById('currTime');
+        const totalTime = document.getElementById('totalTime');
+        const logList = document.getElementById('logList');
+
+        // --- State ---
+        let currentIndex = 0;
+        let isPlaying = false;
+        let isStopped = true;
+
+        // Generate Stars
+        const starfield = document.getElementById('starfield');
+        for(let i=0; i<100; i++) {
+            const s = document.createElement('div');
+            s.className = 'star';
+            s.style.width = Math.random() * 2 + 'px';
+            s.style.height = s.style.width;
+            s.style.left = Math.random() * 100 + '%';
+            s.style.top = Math.random() * 100 + '%';
+            s.style.animationDelay = Math.random() * 5 + 's';
+            starfield.appendChild(s);
+        }
+
+        function init() {
+            renderLogs();
+            loadTrack(0);
+        }
+
+        function loadTrack(index) {
+            currentIndex = index;
+            const track = tracks[index];
+            
+            audio.src = track.url;
+            audio.load();
+            
+            targetName.innerText = track.title;
+            targetCoords.innerText = `ARTIST: ${track.artist.toUpperCase()} // ID: ${Math.floor(Math.random()*9999)}`;
+            
+            updateLogs();
+            trajFill.style.width = '0%';
+            currTime.innerText = "00:00";
+            totalTime.innerText = "00:00";
+            orbitTime.innerText = "00:00";
+
+            if (!isStopped && isPlaying) {
+                playAudio();
+            } else {
+                pauseAudio();
+            }
+        }
+
+        function togglePlay() {
+            if (isPlaying) pauseAudio();
+            else playAudio();
+        }
+
+        function playAudio() {
+            audio.play().then(() => {
+                isPlaying = true;
+                isStopped = false;
+                
+                playBtn.innerText = "DISENGAGE";
+                sysStatus.innerText = "ENGAGED";
+                sysStatus.style.color = "var(--signal-orange)";
+                
+                document.body.classList.add('playing');
+                updateLogsPlaying(true);
+            }).catch(e => console.error(e));
+        }
+
+        function pauseAudio() {
+            audio.pause();
+            isPlaying = false;
+            
+            playBtn.innerText = "ENGAGE";
+            sysStatus.innerText = "PAUSED";
+            sysStatus.style.color = "var(--hud-white)";
+            
+            document.body.classList.remove('playing');
+            updateLogsPlaying(false);
+        }
+
+        function stopAudio() {
+            audio.pause();
+            audio.currentTime = 0;
+            isPlaying = false;
+            isStopped = true;
+            
+            playBtn.innerText = "ENGAGE";
+            sysStatus.innerText = "ABORTED";
+            sysStatus.style.color = "var(--alert-red)";
+            
+            document.body.classList.remove('playing');
+            updateLogsPlaying(false);
+            
+            trajFill.style.width = '0%';
+            currTime.innerText = "00:00";
+            orbitTime.innerText = "00:00";
+        }
+
+        function nextTrack() {
+            const nextIndex = (currentIndex + 1) % tracks.length;
+            loadTrack(nextIndex);
+            playAudio();
+        }
+
+        function prevTrack() {
+            const prevIndex = (currentIndex - 1 + tracks.length) % tracks.length;
+            loadTrack(prevIndex);
+            playAudio();
+        }
+
+        function formatTime(s) {
+            if(isNaN(s)) return "00:00";
+            const m = Math.floor(s / 60).toString().padStart(2, '0');
+            const sec = Math.floor(s % 60).toString().padStart(2, '0');
+            return `${m}:${sec}`;
+        }
+
+        function renderLogs() {
+            logList.innerHTML = '';
+            tracks.forEach((track, index) => {
+                const div = document.createElement('div');
+                div.className = 'log-entry';
+                div.innerHTML = `
+                    <div class="log-id">${(index + 1).toString().padStart(2, '0')}</div>
+                    <div class="log-info">
+                        <div class="log-title">${track.title.toUpperCase()}</div>
+                        <div class="log-artist">${track.artist}</div>
+                    </div>
+                    <div class="status-dot"></div>
+                `;
+                div.onclick = () => {
+                    loadTrack(index);
+                    playAudio();
+                };
+                logList.appendChild(div);
+            });
+        }
+
+        function updateLogs() {
+            const items = document.querySelectorAll('.log-entry');
+            items.forEach((item, idx) => {
+                if (idx === currentIndex) item.classList.add('active');
+                else item.classList.remove('active');
+            });
+        }
+
+        function updateLogsPlaying(playing) {
+            const activeItem = document.querySelector('.log-entry.active');
+            if(activeItem) {
+                if(playing) activeItem.classList.add('playing');
+                else activeItem.classList.remove('playing');
+            }
+        }
+
+        // --- Events ---
+        audio.addEventListener('timeupdate', () => {
+            if (!isNaN(audio.duration)) {
+                const pct = (audio.currentTime / audio.duration) * 100;
+                trajFill.style.width = `${pct}%`;
+                currTime.innerText = formatTime(audio.currentTime);
+                orbitTime.innerText = formatTime(audio.currentTime);
+            }
+        });
+
+        audio.addEventListener('loadedmetadata', () => {
+            totalTime.innerText = formatTime(audio.duration);
+        });
+
+        audio.addEventListener('ended', nextTrack);
+
+        playBtn.addEventListener('click', togglePlay);
+        stopBtn.addEventListener('click', stopAudio);
+        nextBtn.addEventListener('click', nextTrack);
+        prevBtn.addEventListener('click', prevTrack);
+
+        init();
+
+    </script>
+</body>
+</html>

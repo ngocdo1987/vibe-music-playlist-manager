@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Director's Cut | Cinema Player</title>
+    
+    <!-- Typography: Cinzel (Credits) & Special Elite (Typewriter) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Special+Elite&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            /* Cinema Palette */
+            --velvet-dark: #050505;
+            --velvet-red: #2a0a0a;
+            --gold-light: #f1c40f;
+            --gold-dim: #b7950b;
+            --film-base: #1a1a1a;
+            --text-cream: #e0d6c2;
+            
+            /* Dimensions */
+            --reel-size: 280px;
+        }
+
+        * {
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--velvet-dark);
+            font-family: 'Special Elite', monospace;
+            color: var(--text-cream);
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            /* Velvet Texture */
+            background-image: 
+                linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)),
+                url("data:image/svg+xml,%3Csvg width='4' height='4' viewBox='0 0 4 4' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 3h1v1H1V3zm2-2h1v1H3V1z' fill='%23ffffff' fill-opacity='0.05' fill-rule='evenodd'/%3E%3C/svg%3E");
+        }
+
+        /* --- Projector Light Beam --- */
+        .projector-beam {
+            position: fixed;
+            top: -50%; left: 50%;
+            width: 1000px; height: 200%;
+            background: radial-gradient(ellipse at top, rgba(241, 196, 15, 0.05), transparent 70%);
+            transform: translateX(-50%) rotate(-10deg);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* Dust Particles */
+        .dust {
+            position: absolute;
+            background: #fff;
+            border-radius: 50%;
+            opacity: 0;
+            animation: floatDust 10s infinite linear;
+        }
+
+        @keyframes floatDust {
+            0% { top: 100%; opacity: 0; transform: translateX(0); }
+            20% { opacity: 0.6; }
+            80% { opacity: 0.6; }
+            100% { top: -20%; opacity: 0; transform: translateX(50px); }
+        }
+
+        /* --- Main Booth --- */
+        .cinema-booth {
+            position: relative;
+            z-index: 10;
+            width: 1000px;
+            max-width: 95%;
+            height: 650px;
+            background: var(--velvet-red);
+            border: 8px solid #000;
+            border-radius: 10px;
+            box-shadow: 
+                inset 0 0 100px #000,
+                0 30px 60px rgba(0,0,0,0.8);
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            overflow: hidden;
+        }
+
+        /* Curtains (Left & Right Overlay) */
+        .curtain {
+            position: absolute;
+            top: 0; bottom: 0; width: 60px;
+            background: repeating-linear-gradient(90deg, #3e0e0e, #3e0e0e 20px, #2a0a0a 20px, #2a0a0a 40px);
+            z-index: 20;
+            box-shadow: 10px 0 20px rgba(0,0,0,0.8);
+        }
+        .curtain.left { left: 0; border-right: 2px solid #1a0505; }
+        .curtain.right { right: 0; border-left: 2px solid #1a0505; }
+
+        /* --- Left Stage: Projector Reel --- */
+        .stage-projector {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-right: 1px solid rgba(0,0,0,0.5);
+        }
+
+        /* The Film Reel */
+        .film-reel {
+            width: var(--reel-size);
+            height: var(--reel-size);
+            background: radial-gradient(circle at 30% 30%, #444, #111);
+            border-radius: 50%;
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 10px dashed #2a2a2a; /* Sprocket holes */
+        }
+
+        .reel-shine {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            border-radius: 50%;
+            background: conic-gradient(transparent 40%, rgba(255,255,255,0.1) 50%, transparent 60%);
+            pointer-events: none;
+        }
+
+        .reel-center {
+            width: 100px; height: 100px;
+            background: #111;
+            border-radius: 50%;
+            border: 4px solid var(--gold-dim);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: inset 0 0 10px #000;
+        }
+
+        .reel-number {
+            font-family: 'Cinzel', serif;
+            font-size: 3rem;
+            color: var(--gold-light);
+            text-shadow: 0 0 10px rgba(241, 196, 15, 0.5);
+        }
+
+        .playing .film-reel {
+            animation: spinReel 4s linear infinite;
+        }
+
+        @keyframes spinReel {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* Track Title Overlay */
+        .film-title-overlay {
+            margin-top: 40px;
+            text-align: center;
+            background: rgba(0,0,0,0.6);
+            padding: 10px 30px;
+            border: 1px solid var(--gold-dim);
+            transform: skewX(-10deg);
+        }
+
+        .overlay-title {
+            font-family: 'Cinzel', serif;
+            font-size: 1.8rem;
+            color: #fff;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        
+        .overlay-subtitle {
+            color: var(--gold-light);
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+
+        /* --- Right Stage: Script & Controls --- */
+        .stage-script {
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            background: rgba(0,0,0,0.2);
+        }
+
+        .script-header {
+            font-family: 'Cinzel', serif;
+            color: var(--gold-light);
+            text-align: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--gold-dim);
+            padding-bottom: 10px;
+        }
+
+        /* Film Strip Playlist */
+        .script-pages {
+            flex-grow: 1;
+            overflow-y: auto;
+            border: 1px solid rgba(255,255,255,0.1);
+            background: #fff; /* Paper */
+            padding: 20px;
+            background-image: 
+                linear-gradient(#e1e1e1 1px, transparent 1px),
+                linear-gradient(90deg, #e1e1e1 1px, transparent 1px);
+            background-size: 20px 20px;
+            background-color: #fdfdfd;
+            color: #111;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.2);
+        }
+
+        .script-page {
+            padding: 15px;
+            border-bottom: 2px dashed #ccc;
+            cursor: pointer;
+            transition: background 0.2s;
+            position: relative;
+        }
+
+        .script-page:hover {
+            background: rgba(241, 196, 15, 0.1);
+        }
+
+        .script-page.active {
+            background: #111;
+            color: #fff;
+            border-bottom: 2px solid var(--gold-light);
+        }
+
+        .script-page.active .s-num { color: var(--gold-light); }
+
+        .s-top {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-size: 0.8rem;
+            color: #888;
+        }
+
+        .script-page.active .s-top { color: #aaa; }
+
+        .s-title {
+            font-family: 'Cinzel', serif;
+            font-weight: 700;
+            font-size: 1.1rem;
+            margin-bottom: 2px;
+        }
+        
+        .s-artist { font-style: italic; font-size: 0.9rem; }
+
+        /* Film Sprocket Holes decoration on playlist */
+        .sprocket-left, .sprocket-right {
+            position: absolute;
+            top: 0; bottom: 0; width: 15px;
+            background-image: radial-gradient(#111 3px, transparent 4px);
+            background-size: 10px 20px;
+            opacity: 0.3;
+        }
+        .sprocket-left { left: 5px; }
+        .sprocket-right { right: 5px; }
+
+        /* Controls: Clapperboard style */
+        .control-deck {
+            margin-top: 20px;
+            background: #222;
+            border: 4px solid #000;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5);
+        }
+
+        .timecode {
+            font-family: 'Special Elite', monospace;
+            color: var(--gold-light);
+            font-size: 1.2rem;
+            text-align: center;
+            background: #000;
+            padding: 5px;
+            border: 1px solid #444;
+            margin-bottom: 5px;
+        }
+
+        .progress-bar-container {
+            width: 100%;
+            height: 10px;
+            background: #444;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--gold-light);
+            width: 0%;
+            box-shadow: 0 0 10px var(--gold-light);
+        }
+
+        .btn-row {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .clapper-btn {
+            background: linear-gradient(to bottom, #333, #111);
+            border: 2px solid #555;
+            color: #fff;
+            width: 50px; height: 50px;
+            font-family: 'Special Elite', monospace;
+            cursor: pointer;
+            box-shadow: 0 4px 0 #000;
+            transition: all 0.1s;
+        }
+
+        .clapper-btn:active {
+            transform: translateY(4px);
+            box-shadow: none;
+        }
+
+        .clapper-btn.main {
+            background: linear-gradient(to bottom, var(--gold-dim), #8a7305);
+            border-color: #000;
+            color: #000;
+            font-weight: bold;
+            width: 70px;
+            height: 50px;
+        }
+
+        /* Responsive */
+        @media (max-width: 850px) {
+            .cinema-booth {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto 1fr;
+                height: 90vh;
+                overflow-y: auto;
+            }
+            .curtain { display: none; }
+            .stage-projector { padding: 40px 0; border-right: none; border-bottom: 1px solid rgba(255,255,255,0.1); }
+            :root { --reel-size: 180px; }
+            .reel-number { font-size: 2rem; }
+            .overlay-title { font-size: 1.2rem; }
+            .script-pages { max-height: 300px; }
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="projector-beam" id="beam">
+        <!-- JS generates dust -->
+    </div>
+
+    <div class="cinema-booth">
+        <div class="curtain left"></div>
+        <div class="curtain right"></div>
+
+        <!-- Left: Projector -->
+        <section class="stage-projector">
+            <div class="film-reel">
+                <div class="reel-shine"></div>
+                <div class="reel-center">
+                    <span class="reel-number" id="reelNum">01</span>
+                </div>
+            </div>
+
+            <div class="film-title-overlay">
+                <div class="overlay-title" id="filmTitle">REEL 01</div>
+                <div class="overlay-subtitle" id="filmArtist">UNKNOWN DIRECTOR</div>
+            </div>
+        </section>
+
+        <!-- Right: Script -->
+        <section class="stage-script">
+            <div class="script-header">PRODUCTION NOTES</div>
+
+            <div class="script-pages" id="scriptList">
+                <!-- JS Injected -->
+            </div>
+
+            <div class="control-deck">
+                <div class="timecode" id="timecodeDisplay">00:00:00:00</div>
+                
+                <div class="progress-bar-container" id="progressBar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+
+                <div class="btn-row">
+                    <button class="clapper-btn" id="prevBtn">&lt;&lt;</button>
+                    <button class="clapper-btn" id="stopBtn">STOP</button>
+                    <button class="clapper-btn main" id="playBtn">
+                        <span id="iconPlay">ACTION</span>
+                        <span id="iconPause" style="display:none;">CUT</span>
+                    </button>
+                    <button class="clapper-btn" id="nextBtn">&gt;&gt;</button>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+    <script>
+        // --- Data ---
+        const tracks = [
+            {
+                title: "I Just Called To Say I Love You",
+                artist: "Stevie Wonder",
+                url: "https://music.giau.info/mp3/1765329418087_I_Just_Called_To_Say_I_Love_You.mp3"
+            },
+            {
+                title: "Another Day In Paradise",
+                artist: "Phil Collins",
+                url: "https://music.giau.info/mp3/1765329417208_Another_Day_In_Paradise.mp3"
+            },
+            {
+                title: "If Life Is So Short",
+                artist: "The Moffatts",
+                url: "https://music.giau.info/mp3/1765329418894_If_Life_Is_So_Short.mp3"
+            }
+        ];
+
+        const audio = new Audio();
+
+        // --- DOM ---
+        const playBtn = document.getElementById('playBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const prevBtn = document.getElementById('prevBtn');
+        const iconPlay = document.getElementById('iconPlay');
+        const iconPause = document.getElementById('iconPause');
+        
+        const reelNum = document.getElementById('reelNum');
+        const filmTitle = document.getElementById('filmTitle');
+        const filmArtist = document.getElementById('filmArtist');
+        const timecodeDisplay = document.getElementById('timecodeDisplay');
+        const progressFill = document.getElementById('progressFill');
+        const progressBar = document.getElementById('progressBar');
+        const scriptList = document.getElementById('scriptList');
+        const beam = document.getElementById('beam');
+
+        // --- State ---
+        let currentIndex = 0;
+        let isPlaying = false;
+        let isStopped = true;
+
+        // Generate Dust
+        for(let i=0; i<20; i++) {
+            const d = document.createElement('div');
+            d.className = 'dust';
+            d.style.left = Math.random() * 100 + '%';
+            d.style.width = Math.random() * 3 + 'px';
+            d.style.height = d.style.width;
+            d.style.animationDuration = (Math.random() * 10 + 10) + 's';
+            d.style.animationDelay = Math.random() * 10 + 's';
+            beam.appendChild(d);
+        }
+
+        function init() {
+            renderScript();
+            loadTrack(0);
+        }
+
+        function loadTrack(index) {
+            currentIndex = index;
+            const track = tracks[index];
+            
+            audio.src = track.url;
+            audio.load();
+            
+            reelNum.innerText = (index + 1).toString().padStart(2, '0');
+            filmTitle.innerText = track.title.toUpperCase();
+            filmArtist.innerText = `DIR. ${track.artist.toUpperCase()}`;
+            
+            updateScriptUI();
+            progressFill.style.width = '0%';
+            timecodeDisplay.innerText = "00:00:00:00";
+
+            if (!isStopped && isPlaying) {
+                playAudio();
+            } else {
+                pauseAudio();
+            }
+        }
+
+        function togglePlay() {
+            if (isPlaying) pauseAudio();
+            else playAudio();
+        }
+
+        function playAudio() {
+            audio.play().then(() => {
+                isPlaying = true;
+                isStopped = false;
+                
+                updateIcons();
+                document.querySelector('.film-reel').classList.add('playing');
+                updateScriptPlaying(true);
+            }).catch(e => console.error(e));
+        }
+
+        function pauseAudio() {
+            audio.pause();
+            isPlaying = false;
+            
+            updateIcons();
+            document.querySelector('.film-reel').classList.remove('playing');
+            updateScriptPlaying(false);
+        }
+
+        function stopAudio() {
+            audio.pause();
+            audio.currentTime = 0;
+            isPlaying = false;
+            isStopped = true;
+            
+            updateIcons();
+            document.querySelector('.film-reel').classList.remove('playing');
+            updateScriptPlaying(false);
+            
+            progressFill.style.width = '0%';
+            timecodeDisplay.innerText = "00:00:00:00";
+        }
+
+        function nextTrack() {
+            const nextIndex = (currentIndex + 1) % tracks.length;
+            loadTrack(nextIndex);
+            playAudio();
+        }
+
+        function prevTrack() {
+            const prevIndex = (currentIndex - 1 + tracks.length) % tracks.length;
+            loadTrack(prevIndex);
+            playAudio();
+        }
+
+        function formatTimecode(s) {
+            if(isNaN(s)) return "00:00:00:00";
+            const hrs = Math.floor(s / 3600).toString().padStart(2,'0');
+            const min = Math.floor((s % 3600) / 60).toString().padStart(2,'0');
+            const sec = Math.floor(s % 60).toString().padStart(2,'0');
+            const frm = Math.floor((s % 1) * 24).toString().padStart(2,'0');
+            return `${hrs}:${min}:${sec}:${frm}`;
+        }
+
+        function updateIcons() {
+            if (isPlaying) {
+                iconPlay.style.display = 'none';
+                iconPause.style.display = 'block';
+            } else {
+                iconPlay.style.display = 'block';
+                iconPause.style.display = 'none';
+            }
+        }
+
+        function renderScript() {
+            scriptList.innerHTML = '';
+            tracks.forEach((track, index) => {
+                const div = document.createElement('div');
+                div.className = 'script-page';
+                div.innerHTML = `
+                    <div class="sprocket-left"></div>
+                    <div class="sprocket-right"></div>
+                    <div class="s-top">
+                        <span class="s-num">SCENE ${(index+1).toString().padStart(2,'0')}</span>
+                        <span>P. 1</span>
+                    </div>
+                    <div class="s-title">${track.title}</div>
+                    <div class="s-artist">- ${track.artist}</div>
+                `;
+                div.onclick = () => {
+                    loadTrack(index);
+                    playAudio();
+                };
+                scriptList.appendChild(div);
+            });
+        }
+
+        function updateScriptUI() {
+            const pages = document.querySelectorAll('.script-page');
+            pages.forEach((page, idx) => {
+                if (idx === currentIndex) page.classList.add('active');
+                else page.classList.remove('active');
+            });
+        }
+
+        function updateScriptPlaying(playing) {
+            const activePage = document.querySelector('.script-page.active');
+            if (activePage) {
+                // Visual cue for playing script could be added here
+            }
+        }
+
+        // --- Events ---
+        audio.addEventListener('timeupdate', () => {
+            if (!isNaN(audio.duration)) {
+                const pct = (audio.currentTime / audio.duration) * 100;
+                progressFill.style.width = `${pct}%`;
+                timecodeDisplay.innerText = formatTimecode(audio.currentTime);
+            }
+        });
+
+        audio.addEventListener('ended', nextTrack);
+
+        progressBar.addEventListener('click', (e) => {
+            if (!audio.duration) return;
+            const rect = progressBar.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const width = rect.width;
+            audio.currentTime = (x / width) * audio.duration;
+        });
+
+        playBtn.addEventListener('click', togglePlay);
+        stopBtn.addEventListener('click', stopAudio);
+        nextBtn.addEventListener('click', nextTrack);
+        prevBtn.addEventListener('click', prevTrack);
+
+        init();
+
+    </script>
+</body>
+</html>

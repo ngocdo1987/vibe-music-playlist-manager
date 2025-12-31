@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cyberpunk HUD | Neural Interface</title>
+    
+    <!-- Typography: Orbitron (Sci-Fi Headers) & Share Tech Mono (Data) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            /* Cyberpunk Palette */
+            --bg-black: #050505;
+            --neon-cyan: #00f3ff;
+            --neon-pink: #ff00ff;
+            --neon-green: #00ff41;
+            --glass-panel: rgba(0, 243, 255, 0.05);
+            --grid-color: rgba(0, 243, 255, 0.1);
+            
+            /* Dimensions */
+            --corner-clip: 20px;
+        }
+
+        * {
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-black);
+            font-family: 'Share Tech Mono', monospace;
+            color: var(--neon-cyan);
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* --- CRT / Scanline Overlay --- */
+        .scanlines {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0) 50%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.2));
+            background-size: 100% 4px;
+            pointer-events: none;
+            z-index: 100;
+            opacity: 0.6;
+        }
+
+        /* Background Grid */
+        .bg-grid {
+            position: absolute;
+            width: 200%; height: 200%;
+            background-image: 
+                linear-gradient(var(--grid-color) 1px, transparent 1px),
+                linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
+            background-size: 40px 40px;
+            transform: perspective(500px) rotateX(60deg);
+            top: -50%; left: -50%;
+            animation: gridMove 20s linear infinite;
+            z-index: -1;
+        }
+
+        @keyframes gridMove {
+            0% { transform: perspective(500px) rotateX(60deg) translateY(0); }
+            100% { transform: perspective(500px) rotateX(60deg) translateY(40px); }
+        }
+
+        /* --- Main Interface --- */
+        .hud-console {
+            width: 1000px;
+            max-width: 95%;
+            height: 700px;
+            display: grid;
+            grid-template-columns: 350px 1fr 250px;
+            gap: 15px;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* Utility Class for Cut Corners */
+        .cyber-box {
+            background: var(--glass-panel);
+            border: 1px solid var(--neon-cyan);
+            position: relative;
+            /* Creating Angled Corners with Clip Path */
+            clip-path: polygon(
+                0 0, 
+                100% 0, 
+                100% calc(100% - var(--corner-clip)), 
+                calc(100% - var(--corner-clip)) 100%, 
+                0 100%
+            );
+            backdrop-filter: blur(2px);
+            box-shadow: 0 0 10px rgba(0, 243, 255, 0.1);
+        }
+
+        /* Decorative Corners */
+        .cyber-box::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0;
+            width: 10px; height: 10px;
+            border-top: 2px solid var(--neon-cyan);
+            border-left: 2px solid var(--neon-cyan);
+        }
+        .cyber-box::after {
+            content: '';
+            position: absolute;
+            bottom: 0; right: 0;
+            width: 20px; height: 20px;
+            border-bottom: 2px solid var(--neon-cyan);
+            border-right: 2px solid var(--neon-cyan);
+        }
+
+        /* --- Left: Visualizer Core --- */
+        .panel-visual {
+            grid-column: 1 / 2;
+            grid-row: 1 / 3;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .hud-header {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 900;
+            text-shadow: 0 0 10px var(--neon-cyan);
+            letter-spacing: 2px;
+            width: 100%;
+            text-align: center;
+            border-bottom: 1px solid var(--grid-color);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        /* Radar Scope */
+        .radar-scope {
+            width: 220px;
+            height: 220px;
+            border-radius: 50%;
+            border: 2px solid var(--neon-cyan);
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: radial-gradient(circle, rgba(0,243,255,0.1) 0%, transparent 70%);
+            box-shadow: 0 0 20px rgba(0,243,255,0.2);
+        }
+
+        .radar-line {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            border-radius: 50%;
+            background: conic-gradient(from 0deg, transparent 0deg, transparent 270deg, var(--neon-cyan) 360deg);
+            opacity: 0.5;
+            animation: radarSpin 2s linear infinite;
+        }
+
+        .playing .radar-line { animation-duration: 1s; }
+
+        @keyframes radarSpin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .audio-wave {
+            width: 100%;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+        }
+
+        .wave-bar {
+            width: 4px;
+            height: 5px;
+            background: var(--neon-pink);
+            box-shadow: 0 0 5px var(--neon-pink);
+        }
+        
+        .playing .wave-bar {
+            animation: waveForm 0.5s infinite ease-in-out alternate;
+        }
+        
+        /* Staggered delays for bars */
+        .wave-bar:nth-child(1) { animation-delay: 0.1s; }
+        .wave-bar:nth-child(2) { animation-delay: 0.3s; }
+        .wave-bar:nth-child(3) { animation-delay: 0.0s; }
+        .wave-bar:nth-child(4) { animation-delay: 0.4s; }
+        .wave-bar:nth-child(5) { animation-delay: 0.2s; }
+        .wave-bar:nth-child(6) { animation-delay: 0.5s; }
+        .wave-bar:nth-child(7) { animation-delay: 0.1s; }
+        .wave-bar:nth-child(8) { animation-delay: 0.3s; }
+        .wave-bar:nth-child(9) { animation-delay: 0.0s; }
+
+        @keyframes waveForm {
+            0% { height: 5px; opacity: 0.5; }
+            100% { height: 40px; opacity: 1; }
+        }
+
+        /* --- Middle: Info & Controls --- */
+        .panel-info {
+            grid-column: 2 / 3;
+            grid-row: 1 / 2;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .data-display {
+            text-align: center;
+        }
+
+    .data-title {
+        font-family: 'Orbitron', sans-serif;
+        font-size: 2rem;
+        color: #fff;
+        text-transform: uppercase;
+        margin-bottom: 10px;
+        text-shadow: 2px 2px 0px var(--neon-pink);
+    }
+
+    .data-artist {
+        color: var(--neon-green);
+        font-size: 1.2rem;
+        letter-spacing: 1px;
+    }
+
+    .panel-controls {
+        grid-column: 2 / 3;
+        grid-row: 2 / 3;
+        padding: 30px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 20px;
+    }
+
+    /* Cyber Range Slider */
+    .range-wrap {
+        position: relative;
+    }
+
+    .range-data {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.8rem;
+        margin-bottom: 5px;
+        color: var(--neon-green);
+    }
+
+    input[type="range"] {
+        width: 100%;
+        -webkit-appearance: none;
+        background: transparent;
+    }
+
+    input[type="range"]::-webkit-slider-runnable-track {
+        width: 100%;
+        height: 6px;
+        background: #333;
+        border: 1px solid var(--neon-cyan);
+    }
+
+    input[type="range"]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        height: 20px;
+        width: 10px;
+        background: var(--neon-cyan);
+        margin-top: -8px;
+        box-shadow: 0 0 10px var(--neon-cyan);
+    }
+
+    /* Hex Buttons */
+    .btn-grid {
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+    }
+
+    .cyber-btn {
+        width: 60px;
+        height: 60px;
+        background: transparent;
+        border: 1px solid var(--neon-cyan);
+        color: var(--neon-cyan);
+        font-family: 'Orbitron', sans-serif;
+        font-size: 1.2rem;
+        cursor: pointer;
+        position: relative;
+        /* Hexagon shape via clip-path or transform? Let's do simple angled rect */
+        clip-path: polygon(10% 0, 100% 0, 100% 90%, 90% 100%, 0 100%, 0 10%);
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .cyber-btn:hover {
+        background: var(--neon-cyan);
+        color: #000;
+        box-shadow: 0 0 15px var(--neon-cyan);
+    }
+    
+    .cyber-btn:active {
+        transform: scale(0.95);
+    }
+
+    .btn-main {
+        width: 80px; height: 80px;
+        border-color: var(--neon-pink);
+        color: var(--neon-pink);
+    }
+
+    .btn-main:hover {
+        background: var(--neon-pink);
+        color: #000;
+        box-shadow: 0 0 20px var(--neon-pink);
+    }
+
+    /* --- Right: Playlist (Data Log) --- */
+    .panel-playlist {
+        grid-column: 3 / 4;
+        grid-row: 1 / 3;
+        padding: 20px;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .log-header {
+        font-size: 1rem;
+        border-bottom: 2px solid var(--neon-cyan);
+        padding-bottom: 5px;
+        margin-bottom: 10px;
+        text-transform: uppercase;
+    }
+
+    .log-list {
+        flex-grow: 1;
+        overflow-y: auto;
+    }
+
+    .log-item {
+        padding: 10px;
+        border-left: 2px solid transparent;
+        cursor: pointer;
+        margin-bottom: 8px;
+        font-size: 0.85rem;
+        transition: all 0.2s;
+        position: relative;
+    }
+
+    .log-item:hover {
+        background: rgba(0, 243, 255, 0.1);
+        border-left: 2px solid var(--neon-cyan);
+        padding-left: 15px;
+    }
+
+    .log-item.active {
+        background: rgba(0, 243, 255, 0.2);
+        border-left: 2px solid var(--neon-pink);
+        color: #fff;
+    }
+
+    .log-item.active::before {
+        content: '>';
+        position: absolute;
+        left: -5px;
+        color: var(--neon-pink);
+        animation: blink 1s infinite;
+    }
+
+    @keyframes blink {
+        50% { opacity: 0; }
+    }
+
+    .log-id { color: var(--neon-green); margin-right: 5px; }
+
+    /* Glitch Animation Class */
+    .glitch-text {
+        animation: glitch 1s infinite linear alternate-reverse;
+    }
+
+    @keyframes glitch {
+        0% { text-shadow: -2px 0 var(--neon-pink), 2px 0 var(--neon-cyan); }
+        2% { text-shadow: 2px 0 var(--neon-pink), -2px 0 var(--neon-cyan); }
+        4% { text-shadow: -2px 0 var(--neon-pink), 2px 0 var(--neon-cyan); }
+        100% { text-shadow: -2px 0 var(--neon-pink), 2px 0 var(--neon-cyan); }
+    }
+
+    /* Responsive */
+    @media (max-width: 900px) {
+        .hud-console {
+            grid-template-columns: 1fr;
+            grid-template-rows: auto auto auto;
+            height: 90vh;
+        }
+        .panel-visual { grid-column: 1; grid-row: 1; }
+        .panel-info { grid-column: 1; grid-row: 2; }
+        .panel-controls { grid-column: 1; grid-row: 3; }
+        .panel-playlist { display: none; } /* Hide playlist on mobile for space */
+    }
+
+    </style>
+</head>
+<body>
+
+    <div class="scanlines"></div>
+    <div class="bg-grid"></div>
+
+    <div class="hud-console">
+        
+        <!-- Left: Visualizer -->
+        <div class="cyber-box panel-visual" id="panelMain">
+            <div class="hud-header">SYS.AUDIO</div>
+            
+            <div class="radar-scope">
+                <div class="radar-line"></div>
+                <div style="position: absolute; font-size: 3rem; color: var(--neon-cyan); opacity: 0.5;" id="trackNum">01</div>
+            </div>
+
+            <div class="audio-wave">
+                <div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div>
+                <div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div>
+                <div class="wave-bar"></div><div class="wave-bar"></div><div class="wave-bar"></div>
+            </div>
+        </div>
+
+        <!-- Center: Info & Controls -->
+        <div class="cyber-box panel-info">
+            <div class="data-display">
+                <h2 class="data-title" id="trackTitle">STANDBY</h2>
+                <div class="data-artist" id="trackArtist">AWAITING INPUT</div>
+            </div>
+        </div>
+
+        <div class="cyber-box panel-controls">
+            <div class="range-wrap">
+                <div class="range-data">
+                    <span>BUFFER</span>
+                    <span id="timeDisplay">00:00</span>
+                </div>
+                <input type="range" id="progressBar" min="0" max="100" value="0">
+            </div>
+
+            <div class="btn-grid">
+                <button class="cyber-btn" id="prevBtn">&lt;&lt;</button>
+                <button class="cyber-btn" id="stopBtn">X</button>
+                <button class="cyber-btn btn-main" id="playBtn">
+                    <span id="iconPlay">PLAY</span>
+                    <span id="iconPause" style="display:none;">||</span>
+                </button>
+                <button class="cyber-btn" id="nextBtn">&gt;&gt;</button>
+            </div>
+        </div>
+
+        <!-- Right: Playlist -->
+        <div class="cyber-box panel-playlist">
+            <div class="log-header">DATA STREAM</div>
+            <div class="log-list" id="playlistLog">
+                <!-- JS Injected -->
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // --- Data ---
+        const tracks = [
+            {
+                title: "I Just Called To Say...",
+                artist: "Stevie Wonder",
+                url: "https://music.giau.info/mp3/1765329418087_I_Just_Called_To_Say_I_Love_You.mp3"
+            },
+            {
+                title: "Another Day In Paradise",
+                artist: "Phil Collins",
+                url: "https://music.giau.info/mp3/1765329417208_Another_Day_In_Paradise.mp3"
+            },
+            {
+                title: "If Life Is So Short",
+                artist: "The Moffatts",
+                url: "https://music.giau.info/mp3/1765329418894_If_Life_Is_So_Short.mp3"
+            }
+        ];
+
+        const audio = new Audio();
+
+        // DOM Elements
+        const playBtn = document.getElementById('playBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const prevBtn = document.getElementById('prevBtn');
+        
+        const iconPlay = document.getElementById('iconPlay');
+        const iconPause = document.getElementById('iconPause');
+        const trackNum = document.getElementById('trackNum');
+        const trackTitle = document.getElementById('trackTitle');
+        const trackArtist = document.getElementById('trackArtist');
+        const timeDisplay = document.getElementById('timeDisplay');
+        const progressBar = document.getElementById('progressBar');
+        const panelMain = document.getElementById('panelMain');
+        const playlistLog = document.getElementById('playlistLog');
+
+        // State
+        let currentIndex = 0;
+        let isPlaying = false;
+        let isStopped = true;
+
+        function init() {
+            renderPlaylist();
+            loadTrack(0);
+        }
+
+        function loadTrack(index) {
+            currentIndex = index;
+            const track = tracks[index];
+            
+            audio.src = track.url;
+            audio.load();
+            
+            // Update Text
+            trackTitle.innerText = track.title;
+            trackArtist.innerText = track.artist;
+            trackNum.innerText = (index + 1).toString().padStart(2, '0');
+            
+            updatePlaylistUI();
+            progressBar.value = 0;
+            timeDisplay.innerText = "00:00";
+
+            // Glitch Effect on load
+            trackTitle.classList.add('glitch-text');
+            setTimeout(() => trackTitle.classList.remove('glitch-text'), 1000);
+
+            if (!isStopped && isPlaying) {
+                playAudio();
+            } else {
+                pauseAudio();
+            }
+        }
+
+        function togglePlay() {
+            if (isPlaying) pauseAudio();
+            else playAudio();
+        }
+
+        function playAudio() {
+            audio.play().then(() => {
+                isPlaying = true;
+                isStopped = false;
+                updateIcons();
+                panelMain.classList.add('playing');
+                updatePlaylistPlaying(true);
+            }).catch(e => console.error(e));
+        }
+
+        function pauseAudio() {
+            audio.pause();
+            isPlaying = false;
+            updateIcons();
+            panelMain.classList.remove('playing');
+            updatePlaylistPlaying(false);
+        }
+
+        function stopAudio() {
+            audio.pause();
+            audio.currentTime = 0;
+            isPlaying = false;
+            isStopped = true;
+            updateIcons();
+            panelMain.classList.remove('playing');
+            progressBar.value = 0;
+            timeDisplay.innerText = "00:00";
+            trackTitle.innerText = "TERMINATED";
+            updatePlaylistPlaying(false);
+        }
+
+        function nextTrack() {
+            const nextIndex = (currentIndex + 1) % tracks.length;
+            loadTrack(nextIndex);
+            playAudio();
+        }
+
+        function prevTrack() {
+            const prevIndex = (currentIndex - 1 + tracks.length) % tracks.length;
+            loadTrack(prevIndex);
+            playAudio();
+        }
+
+        function updateTime() {
+            const current = audio.currentTime;
+            const mins = Math.floor(current / 60).toString().padStart(2, '0');
+            const secs = Math.floor(current % 60).toString().padStart(2, '0');
+            timeDisplay.innerText = `${mins}:${secs}`;
+        }
+
+        function updateIcons() {
+            if (isPlaying) {
+                iconPlay.style.display = 'none';
+                iconPause.style.display = 'block';
+            } else {
+                iconPlay.style.display = 'block';
+                iconPause.style.display = 'none';
+            }
+        }
+
+        function renderPlaylist() {
+            playlistLog.innerHTML = '';
+            tracks.forEach((track, index) => {
+                const item = document.createElement('div');
+                item.className = 'log-item';
+                item.innerHTML = `<span class="log-id">0${index+1}</span> ${track.title.toUpperCase()}`;
+                item.onclick = () => {
+                    loadTrack(index);
+                    playAudio();
+                };
+                playlistLog.appendChild(item);
+            });
+        }
+
+        function updatePlaylistUI() {
+            const items = document.querySelectorAll('.log-item');
+            items.forEach((item, idx) => {
+                if (idx === currentIndex) item.classList.add('active');
+                else item.classList.remove('active');
+            });
+        }
+
+        function updatePlaylistPlaying(playing) {
+            const activeItem = document.querySelector('.log-item.active');
+            if (activeItem) {
+                if(playing) activeItem.style.color = "#fff";
+                else activeItem.style.color = ""; // Reset
+            }
+        }
+
+        // Events
+        audio.addEventListener('timeupdate', () => {
+            if (!isNaN(audio.duration)) {
+                const pct = (audio.currentTime / audio.duration) * 100;
+                progressBar.value = pct;
+                updateTime();
+            }
+        });
+
+        audio.addEventListener('ended', nextTrack);
+
+        progressBar.addEventListener('input', (e) => {
+            if (!audio.duration) return;
+            const time = (e.target.value / 100) * audio.duration;
+            audio.currentTime = time;
+        });
+
+        playBtn.addEventListener('click', togglePlay);
+        stopBtn.addEventListener('click', stopAudio);
+        nextBtn.addEventListener('click', nextTrack);
+        prevBtn.addEventListener('click', prevTrack);
+
+        init();
+
+    </script>
+</body>
+</html>
