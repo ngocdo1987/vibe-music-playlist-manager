@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brutalist Audio</title>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Bebas+Neue&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --black: #0a0a0a;
+            --white: #fafafa;
+            --red: #ff2e00;
+            --yellow: #ffd000;
+            --blue: #0066ff;
+            --green: #00ff66;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Space Mono', monospace;
+            background: var(--white);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0, 0, 0, 0.03) 2px, rgba(0, 0, 0, 0.03) 4px),
+                repeating-linear-gradient(90deg, transparent, transparent 2px, rgba(0, 0, 0, 0.03) 2px, rgba(0, 0, 0, 0.03) 4px);
+            pointer-events: none;
+        }
+
+        .player {
+            background: var(--white);
+            max-width: 500px;
+            width: 100%;
+            border: 8px solid var(--black);
+            box-shadow: 
+                12px 12px 0 var(--black),
+                12px 12px 0 4px var(--red);
+            position: relative;
+            animation: slideIn 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+
+        @keyframes slideIn {
+            0% {
+                transform: translate(-50px, -50px) rotate(-5deg);
+                opacity: 0;
+            }
+            100% {
+                transform: translate(0, 0) rotate(0deg);
+                opacity: 1;
+            }
+        }
+
+        .header {
+            background: var(--black);
+            color: var(--white);
+            padding: 20px 25px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 4px solid var(--red);
+        }
+
+        .logo {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 32px;
+            letter-spacing: 2px;
+            animation: glitch 5s infinite;
+        }
+
+        @keyframes glitch {
+            0%, 90%, 100% {
+                transform: translate(0);
+            }
+            92% {
+                transform: translate(-2px, 2px);
+            }
+            94% {
+                transform: translate(2px, -2px);
+            }
+            96% {
+                transform: translate(-2px, -2px);
+            }
+        }
+
+        .status {
+            display: flex;
+            gap: 8px;
+        }
+
+        .dot {
+            width: 12px;
+            height: 12px;
+            border: 2px solid var(--white);
+            animation: blink 1.5s infinite;
+        }
+
+        .dot:nth-child(1) {
+            background: var(--red);
+            animation-delay: 0s;
+        }
+
+        .dot:nth-child(2) {
+            background: var(--yellow);
+            animation-delay: 0.3s;
+        }
+
+        .dot:nth-child(3) {
+            background: var(--green);
+            animation-delay: 0.6s;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        .main-section {
+            padding: 30px 25px;
+        }
+
+        .display-box {
+            border: 6px solid var(--black);
+            background: var(--yellow);
+            padding: 30px;
+            margin-bottom: 25px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .display-box::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent);
+            animation: scan 4s infinite;
+        }
+
+        @keyframes scan {
+            0% { left: -100%; }
+            100% { left: 200%; }
+        }
+
+        .track-display {
+            position: relative;
+            z-index: 1;
+        }
+
+        .track-label {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+        }
+
+        .track-title {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 36px;
+            line-height: 1;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .track-artist {
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .waveform-container {
+            height: 80px;
+            border: 6px solid var(--black);
+            background: var(--black);
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            padding: 10px;
+        }
+
+        .wave {
+            width: 6px;
+            background: var(--green);
+            height: 20%;
+            transition: height 0.1s ease;
+        }
+
+        .playing .wave {
+            animation: wave 0.6s ease-in-out infinite;
+        }
+
+        .wave:nth-child(2n) { animation-delay: 0.1s; background: var(--blue); }
+        .wave:nth-child(3n) { animation-delay: 0.2s; background: var(--red); }
+        .wave:nth-child(4n) { animation-delay: 0.3s; background: var(--yellow); }
+
+        @keyframes wave {
+            0%, 100% { height: 20%; }
+            50% { height: 90%; }
+        }
+
+        .progress-section {
+            margin-bottom: 25px;
+        }
+
+        .progress-track {
+            height: 12px;
+            background: var(--white);
+            border: 4px solid var(--black);
+            position: relative;
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--red);
+            width: 0%;
+            transition: width 0.1s linear;
+            position: relative;
+        }
+
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            right: -6px;
+            top: -4px;
+            width: 12px;
+            height: 20px;
+            background: var(--black);
+            border: 2px solid var(--black);
+        }
+
+        .time-info {
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .controls-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .control {
+            aspect-ratio: 1;
+            border: 6px solid var(--black);
+            background: var(--white);
+            font-size: 24px;
+            cursor: pointer;
+            font-weight: 700;
+            transition: all 0.1s ease;
+            position: relative;
+        }
+
+        .control:hover {
+            transform: translate(3px, 3px);
+            box-shadow: none;
+        }
+
+        .control:active {
+            transform: translate(6px, 6px);
+        }
+
+        .control.prev {
+            background: var(--blue);
+            box-shadow: 6px 6px 0 var(--black);
+        }
+
+        .control.play {
+            background: var(--red);
+            font-size: 32px;
+            box-shadow: 6px 6px 0 var(--black);
+        }
+
+        .control.next {
+            background: var(--yellow);
+            box-shadow: 6px 6px 0 var(--black);
+        }
+
+        .tracklist {
+            border: 6px solid var(--black);
+            background: var(--white);
+        }
+
+        .tracklist-header {
+            background: var(--black);
+            color: var(--white);
+            padding: 12px 20px;
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 20px;
+            letter-spacing: 2px;
+            border-bottom: 4px solid var(--blue);
+        }
+
+        .tracklist-items {
+            max-height: 240px;
+            overflow-y: auto;
+        }
+
+        .tracklist-items::-webkit-scrollbar {
+            width: 12px;
+        }
+
+        .tracklist-items::-webkit-scrollbar-track {
+            background: var(--white);
+        }
+
+        .tracklist-items::-webkit-scrollbar-thumb {
+            background: var(--black);
+            border: 2px solid var(--white);
+        }
+
+        .track-item {
+            display: grid;
+            grid-template-columns: 50px 1fr 60px;
+            align-items: center;
+            padding: 15px 20px;
+            border-bottom: 3px solid var(--black);
+            cursor: pointer;
+            transition: all 0.15s ease;
+            background: var(--white);
+        }
+
+        .track-item:hover {
+            background: var(--yellow);
+            transform: translateX(5px);
+        }
+
+        .track-item.active {
+            background: var(--red);
+            color: var(--white);
+        }
+
+        .track-num {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .track-info {
+            min-width: 0;
+        }
+
+        .track-name {
+            font-size: 13px;
+            font-weight: 700;
+            margin-bottom: 3px;
+            text-transform: uppercase;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .track-author {
+            font-size: 11px;
+            opacity: 0.7;
+        }
+
+        .track-time {
+            font-size: 12px;
+            font-weight: 700;
+            text-align: right;
+        }
+
+        .footer {
+            background: var(--black);
+            color: var(--white);
+            padding: 15px 25px;
+            text-align: center;
+            font-size: 11px;
+            letter-spacing: 1px;
+            border-top: 4px solid var(--green);
+        }
+    </style>
+</head>
+<body>
+    <div class="player">
+        <div class="header">
+            <div class="logo">AUDIO.EXE</div>
+            <div class="status">
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+            </div>
+        </div>
+
+        <div class="main-section">
+            <div class="display-box">
+                <div class="track-display">
+                    <div class="track-label">NOW PLAYING</div>
+                    <div class="track-title" id="trackTitle">BASS DROP</div>
+                    <div class="track-artist" id="trackArtist">THE SYSTEM</div>
+                </div>
+            </div>
+
+            <div class="waveform-container" id="waveform">
+                <div class="wave"></div>
+                <div class="wave"></div>
+                <div class="wave"></div>
+                <div class="wave"></div>
+                <div class="wave"></div>
+                <div class="wave"></div>
+                <div class="wave"></div>
+                <div class="wave"></div>
+                <div class="wave"></div>
+                <div class="wave"></div>
+                <div class="wave"></div>
+                <div class="wave"></div>
+                <div class="wave"></div>
+                <div class="wave"></div>
+                <div class="wave"></div>
+                <div class="wave"></div>
+                <div class="wave"></div>
+                <div class="wave"></div>
+                <div class="wave"></div>
+                <div class="wave"></div>
+            </div>
+
+            <div class="progress-section">
+                <div class="progress-track" id="progressTrack">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <div class="time-info">
+                    <span id="currentTime">00:00</span>
+                    <span id="totalTime">03:42</span>
+                </div>
+            </div>
+
+            <div class="controls-grid">
+                <button class="control prev" id="prevBtn">◄◄</button>
+                <button class="control play" id="playBtn">►</button>
+                <button class="control next" id="nextBtn">►►</button>
+            </div>
+
+            <div class="tracklist">
+                <div class="tracklist-header">QUEUE.TXT</div>
+                <div class="tracklist-items" id="tracklistItems"></div>
+            </div>
+        </div>
+
+        <div class="footer">
+            SYSTEM STATUS: OPERATIONAL // CODEC: MP3 // BITRATE: 320KBPS
+        </div>
+    </div>
+
+    <script>
+        const tracks = [
+            { title: 'BASS DROP', artist: 'THE SYSTEM', duration: '3:42' },
+            { title: 'DIGITAL PULSE', artist: 'BYTE FORCE', duration: '4:15' },
+            { title: 'CONCRETE WAVES', artist: 'THE SYSTEM', duration: '3:28' },
+            { title: 'GRID LOCK', artist: 'PROTOCOL X', duration: '4:50' },
+            { title: 'RAW DATA', artist: 'BYTE FORCE', duration: '3:33' }
+        ];
+
+        let current = 0;
+        let playing = false;
+        let time = 0;
+        let duration = 222;
+
+        const playBtn = document.getElementById('playBtn');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const progressFill = document.getElementById('progressFill');
+        const progressTrack = document.getElementById('progressTrack');
+        const currentTime = document.getElementById('currentTime');
+        const totalTime = document.getElementById('totalTime');
+        const trackTitle = document.getElementById('trackTitle');
+        const trackArtist = document.getElementById('trackArtist');
+        const tracklistItems = document.getElementById('tracklistItems');
+        const waveform = document.getElementById('waveform');
+
+        function render() {
+            tracklistItems.innerHTML = tracks.map((t, i) => `
+                <div class="track-item ${i === current ? 'active' : ''}" data-idx="${i}">
+                    <div class="track-num">${(i + 1).toString().padStart(2, '0')}</div>
+                    <div class="track-info">
+                        <div class="track-name">${t.title}</div>
+                        <div class="track-author">${t.artist}</div>
+                    </div>
+                    <div class="track-time">${t.duration}</div>
+                </div>
+            `).join('');
+        }
+
+        function update() {
+            const track = tracks[current];
+            trackTitle.textContent = track.title;
+            trackArtist.textContent = track.artist;
+            totalTime.textContent = track.duration;
+            render();
+        }
+
+        function formatTime(sec) {
+            const m = Math.floor(sec / 60);
+            const s = Math.floor(sec % 60);
+            return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+        }
+
+        function tick() {
+            if (playing) {
+                time += 0.1;
+                if (time >= duration) {
+                    goNext();
+                }
+                const pct = (time / duration) * 100;
+                progressFill.style.width = `${pct}%`;
+                currentTime.textContent = formatTime(time);
+            }
+        }
+
+        playBtn.addEventListener('click', () => {
+            playing = !playing;
+            playBtn.textContent = playing ? '■' : '►';
+            waveform.classList.toggle('playing', playing);
+        });
+
+        prevBtn.addEventListener('click', () => {
+            current = (current - 1 + tracks.length) % tracks.length;
+            time = 0;
+            update();
+        });
+
+        nextBtn.addEventListener('click', goNext);
+
+        function goNext() {
+            current = (current + 1) % tracks.length;
+            time = 0;
+            update();
+        }
+
+        tracklistItems.addEventListener('click', (e) => {
+            const item = e.target.closest('.track-item');
+            if (item) {
+                current = parseInt(item.dataset.idx);
+                time = 0;
+                playing = true;
+                playBtn.textContent = '■';
+                waveform.classList.add('playing');
+                update();
+            }
+        });
+
+        progressTrack.addEventListener('click', (e) => {
+            const rect = progressTrack.getBoundingClientRect();
+            const pct = (e.clientX - rect.left) / rect.width;
+            time = pct * duration;
+        });
+
+        setInterval(tick, 100);
+        update();
+    </script>
+</body>
+</html>

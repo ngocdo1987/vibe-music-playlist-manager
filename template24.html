@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Steampunk Phonograph</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Rye&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            /* Steampunk Palette */
+            --bg-dark: #1a1510;
+            --bronze: #cd7f32;
+            --brass: #b5a642;
+            --copper: #b87333;
+            --parchment: #f4e4bc;
+            --leather: #3e2723;
+            --steam-white: rgba(255,255,255,0.4);
+            
+            /* Typography */
+            --font-display: 'Rye', serif;
+            --font-mono: 'Courier Prime', monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            background-image: 
+                radial-gradient(circle, rgba(0,0,0,0.8), transparent),
+                repeating-linear-gradient(45deg, #2a2218 0, #2a2218 2px, #1f1810 2px, #1f1810 4px);
+            color: var(--parchment);
+            font-family: var(--font-mono);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        /* --- Steam Particles --- */
+        .steam-particle {
+            position: absolute;
+            background: var(--steam-white);
+            border-radius: 50%;
+            filter: blur(8px);
+            opacity: 0;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* --- Main Chassis --- */
+        .steampunk-machine {
+            width: 900px;
+            max-width: 95%;
+            background: repeating-linear-gradient(
+                90deg,
+                var(--bronze),
+                var(--bronze) 10px,
+                #8f561a 10px,
+                #8f561a 20px
+            );
+            border: 8px solid #5c3a21;
+            border-radius: 10px;
+            box-shadow: 
+                inset 0 0 50px #000,
+                0 20px 50px rgba(0,0,0,0.8);
+            display: grid;
+            grid-template-columns: 1.5fr 1fr;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* Rivets */
+        .rivet {
+            position: absolute;
+            width: 10px; height: 10px;
+            background: radial-gradient(circle at 30% 30%, var(--brass), #5c3a21);
+            border-radius: 50%;
+            box-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+            z-index: 20;
+        }
+
+        /* --- Left: The Engine & Gauge --- */
+        .engine-bay {
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-right: 4px solid #3e2723;
+            position: relative;
+        }
+
+        /* Rotating Gears Background */
+        .gear-assembly {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 0;
+            opacity: 0.3;
+        }
+
+        .gear {
+            position: absolute;
+            border-radius: 50%;
+            border: 4px dashed var(--copper);
+            box-shadow: 0 0 0 2px rgba(0,0,0,0.5);
+        }
+        
+        .g1 { width: 300px; height: 300px; border-width: 8px; }
+        .g2 { width: 200px; height: 200px; border: 4px solid var(--bronze); border-style: dotted; }
+        .g3 { width: 100px; height: 100px; border: 6px dashed var(--brass); }
+
+        .engine-bay.active .gear-assembly .g1 { animation: rotate 20s linear infinite; }
+        .engine-bay.active .gear-assembly .g2 { animation: rotate 15s linear infinite reverse; }
+        .engine-bay.active .gear-assembly .g3 { animation: rotate 10s linear infinite; }
+
+        @keyframes rotate { 100% { transform: rotate(360deg); } }
+
+        /* Pressure Gauge */
+        .pressure-gauge {
+            width: 250px;
+            height: 250px;
+            background: radial-gradient(circle, #2a1d12, #000);
+            border-radius: 50%;
+            border: 10px solid #555;
+            box-shadow: 
+                inset 0 0 20px #000,
+                0 0 0 4px #5c3a21;
+            position: relative;
+            z-index: 5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .gauge-face {
+            width: 90%; height: 90%;
+            border-radius: 50%;
+            border: 2px solid var(--bronze);
+            position: relative;
+            background: conic-gradient(from 180deg, var(--copper) 0deg, var(--copper) 180deg, #3e2723 180deg);
+        }
+
+        .gauge-marks {
+            position: absolute;
+            width: 100%; height: 100%;
+            top: 0; left: 0;
+        }
+        
+        .mark {
+            position: absolute;
+            top: 10%; left: 50%;
+            width: 2px; height: 10px;
+            background: #fff;
+            transform-origin: 0 105px; /* Radius - offset */
+        }
+
+        .gauge-needle {
+            position: absolute;
+            top: 50%; left: 50%;
+            width: 6px; height: 90px;
+            background: var(--brass);
+            transform-origin: bottom center;
+            transform: translate(-50%, -100%) rotate(-45deg);
+            border-radius: 4px;
+            box-shadow: 2px 2px 5px #000;
+            z-index: 6;
+            transition: transform 0.5s cubic-bezier(0.1, 1.5, 0.5, 1);
+        }
+        
+        .engine-bay.active .gauge-needle {
+            animation: needleWiggle 0.5s infinite ease-in-out;
+        }
+
+        @keyframes needleWiggle {
+            0% { transform: translate(-50%, -100%) rotate(10deg); }
+            20% { transform: translate(-50%, -100%) rotate(30deg); }
+            40% { transform: translate(-50%, -100%) rotate(15deg); }
+            60% { transform: translate(-50%, -100%) rotate(40deg); }
+            80% { transform: translate(-50%, -100%) rotate(20deg); }
+            100% { transform: translate(-50%, -100%) rotate(10deg); }
+        }
+
+        .gauge-center {
+            position: absolute;
+            top: 50%; left: 50%;
+            width: 20px; height: 20px;
+            background: radial-gradient(circle, var(--brass), #5c3a21);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 7;
+        }
+
+        /* Track Data */
+        .data-plate {
+            background: var(--parchment);
+            color: #2a1d12;
+            padding: 15px 30px;
+            margin-top: 30px;
+            border-radius: 4px;
+            box-shadow: 
+                0 2px 5px rgba(0,0,0,0.5),
+                inset 0 0 20px rgba(0,0,0,0.2);
+            transform: rotate(1deg);
+            text-align: center;
+            border: 1px solid #d4c5a5;
+            position: relative;
+            z-index: 6;
+        }
+
+        .data-plate::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; height: 5px;
+            background: linear-gradient(90deg, transparent, rgba(0,0,0,0.2), transparent);
+        }
+
+        .track-title-steam {
+            font-family: var(--font-display);
+            font-size: 1.5rem;
+            margin-bottom: 5px;
+            color: #5c3a21;
+        }
+
+        .track-artist-steam {
+            font-weight: bold;
+            font-size: 0.9rem;
+            color: #8f561a;
+            text-transform: uppercase;
+            border-top: 1px solid #8f561a;
+            display: inline-block;
+            padding-top: 2px;
+        }
+
+        /* --- Right: Controls & Playlist --- */
+        .control-panel {
+            padding: 40px;
+            background: #2a1d12;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+            position: relative;
+        }
+
+        /* Levers */
+        .lever-deck {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            padding: 20px;
+            background: #1a1510;
+            border-radius: 10px;
+            border: 2px solid var(--bronze);
+        }
+
+        .lever-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .lever-track {
+            width: 30px;
+            height: 80px;
+            background: #000;
+            border-radius: 15px;
+            position: relative;
+            border: 2px solid #555;
+            box-shadow: inset 0 0 10px #000;
+        }
+
+        .lever-handle {
+            width: 40px;
+            height: 15px;
+            background: linear-gradient(to bottom, var(--brass), #5c3a21);
+            border-radius: 4px;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            cursor: pointer;
+            box-shadow: 0 5px 5px rgba(0,0,0,0.5);
+            transition: top 0.3s cubic-bezier(0.5, 0.05, 0.1, 0.3);
+        }
+
+        /* Active State (Up) */
+        .lever-handle.active {
+            top: 20%;
+            background: linear-gradient(to bottom, #e74c3c, #8f561a); /* Hot metal */
+        }
+
+        .lever-label {
+            font-family: var(--font-display);
+            color: var(--bronze);
+            font-size: 0.9rem;
+        }
+
+        /* Parchment Playlist */
+        .scroll-container {
+            flex-grow: 1;
+            background: var(--parchment);
+            color: #2a1d12;
+            padding: 20px;
+            border-radius: 4px;
+            box-shadow: inset 0 0 30px rgba(0,0,0,0.3);
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .scroll-title {
+            text-align: center;
+            font-family: var(--font-display);
+            border-bottom: 2px double #8f561a;
+            margin-bottom: 15px;
+            padding-bottom: 5px;
+            color: #5c3a21;
+        }
+
+        .scroll-list {
+            list-style: none;
+        }
+
+        .scroll-item {
+            padding: 10px;
+            border-bottom: 1px dashed #d4c5a5;
+            cursor: pointer;
+            transition: background 0.2s;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .scroll-item:hover {
+            background: rgba(212, 197, 165, 0.3);
+        }
+
+        .scroll-item.active {
+            background: rgba(212, 197, 165, 0.5);
+            font-weight: bold;
+            border-left: 3px solid var(--copper);
+        }
+
+        .scroll-text {
+            font-size: 1rem;
+        }
+
+        .scroll-wax {
+            width: 12px; height: 12px;
+            background: #5c3a21;
+            border-radius: 50%;
+            opacity: 0.5;
+        }
+
+        .scroll-item.active .scroll-wax {
+            background: var(--copper);
+            box-shadow: 0 0 5px var(--copper);
+            opacity: 1;
+        }
+
+        /* Progress Bar - Pipe Style */
+        .steam-pipe {
+            width: 100%;
+            height: 20px;
+            background: #3e2723;
+            border-radius: 10px;
+            border: 2px solid #5c3a21;
+            margin-top: 20px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .pipe-fill {
+            height: 100%;
+            width: 0%;
+            background: repeating-linear-gradient(
+                45deg,
+                var(--copper),
+                var(--copper) 10px,
+                #a0522d 10px,
+                #a0522d 20px
+            );
+            transition: width 0.1s linear;
+        }
+
+        /* Scrollbar */
+        .scroll-container::-webkit-scrollbar { width: 10px; background: #2a1d12; }
+        .scroll-container::-webkit-scrollbar-thumb { background: #5c3a21; border-radius: 5px; border: 1px solid var(--parchment); }
+
+        /* Responsive */
+        @media (max-width: 800px) {
+            .steampunk-machine {
+                grid-template-columns: 1fr;
+                height: auto;
+            }
+            .engine-bay {
+                border-right: none;
+                border-bottom: 4px solid #3e2723;
+            }
+            .pressure-gauge {
+                width: 200px; height: 200px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Background Steam Effect -->
+    <div class="steam-particle" style="width: 50px; height: 50px; bottom: 10%; left: 20%;"></div>
+    <div class="steam-particle" style="width: 80px; height: 80px; bottom: 20%; right: 15%;"></div>
+
+    <script>
+        // Simple Steam animation loop
+        function animateSteam() {
+            const particles = document.querySelectorAll('.steam-particle');
+            particles.forEach(p => {
+                const duration = 3 + Math.random() * 4;
+                p.style.transition = `all ${duration}s ease-out`;
+                p.style.opacity = Math.random() * 0.4;
+                p.style.transform = `translateY(-${100 + Math.random() * 100}px) scale(${1 + Math.random()})`;
+                
+                setTimeout(() => {
+                    p.style.transition = 'none';
+                    p.style.transform = 'translateY(0) scale(1)';
+                    p.style.opacity = 0;
+                }, duration * 1000);
+            });
+        }
+        setInterval(animateSteam, 2000);
+    </script>
+
+    <main class="steampunk-machine">
+        
+        <!-- Rivets -->
+        <div class="rivet" style="top:10px; left:10px;"></div>
+        <div class="rivet" style="top:10px; right:10px;"></div>
+        <div class="rivet" style="bottom:10px; left:10px;"></div>
+        <div class="rivet" style="bottom:10px; right:10px;"></div>
+
+        <!-- Left: Engine Bay -->
+        <section class="engine-bay" id="engineBay">
+            
+            <!-- Rotating Gears -->
+            <div class="gear-assembly">
+                <div class="gear g1"></div>
+                <div class="gear g2"></div>
+                <div class="gear g3"></div>
+            </div>
+
+            <!-- Gauge -->
+            <div class="pressure-gauge">
+                <div class="gauge-face">
+                    <div class="gauge-marks" id="gaugeMarks">
+                        <!-- Marks generated via JS -->
+                    </div>
+                </div>
+                <div class="gauge-needle" id="gaugeNeedle"></div>
+                <div class="gauge-center"></div>
+            </div>
+
+            <!-- Data Plate -->
+            <div class="data-plate">
+                <h1 class="track-title-steam" id="steamTitle">System Idle</h1>
+                <div class="track-artist-steam" id="steamArtist">Waiting for Input</div>
+            </div>
+
+        </section>
+
+        <!-- Right: Controls -->
+        <aside class="control-panel">
+            
+            <!-- Levers -->
+            <div class="lever-deck">
+                <div class="lever-container">
+                    <div class="lever-label">PREV</div>
+                    <div class="lever-track">
+                        <div class="lever-handle" id="prevLever"></div>
+                    </div>
+                </div>
+                <div class="lever-container">
+                    <div class="lever-label">POWER</div>
+                    <div class="lever-track">
+                        <div class="lever-handle" id="playLever"></div>
+                    </div>
+                </div>
+                <div class="lever-container">
+                    <div class="lever-label">NEXT</div>
+                    <div class="lever-track">
+                        <div class="lever-handle" id="nextLever"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Steam Pipe Progress -->
+            <div class="steam-pipe" id="steamPipe">
+                <div class="pipe-fill" id="pipeFill"></div>
+            </div>
+            <div style="display:flex; justify-content:space-between; font-size:0.8rem; color:#888;">
+                <span id="currentTime">00:00</span>
+                <span>PSI (PRESSURE)</span>
+                <span id="duration">00:00</span>
+            </div>
+
+            <!-- Playlist Scroll -->
+            <div class="scroll-container">
+                <div class="scroll-title">Music Cylinders</div>
+                <ul class="scroll-list" id="steamList">
+                    <!-- JS Populated -->
+                </ul>
+            </div>
+
+        </aside>
+
+    </main>
+
+    <script>
+        const tracks = [
+            {
+                title: "I Just Called To Say I Love You",
+                artist: "Stevie Wonder",
+                url: "https://music.giau.info/mp3/1765329418087_I_Just_Called_To_Say_I_Love_You.mp3"
+            },
+            {
+                title: "Another Day In Paradise",
+                artist: "Phil Collins",
+                url: "https://music.giau.info/mp3/1765329417208_Another_Day_In_Paradise.mp3"
+            },
+            {
+                title: "If Life Is So Short",
+                artist: "The Moffatts",
+                url: "https://music.giau.info/mp3/1765329418894_If_Life_Is_So_Short.mp3"
+            }
+        ];
+
+        let currentIndex = 0;
+        let isPlaying = false;
+        const audio = new Audio();
+
+        // DOM
+        const engineBay = document.getElementById('engineBay');
+        const playLever = document.getElementById('playLever');
+        const prevLever = document.getElementById('prevLever');
+        const nextLever = document.getElementById('nextLever');
+        const steamTitle = document.getElementById('steamTitle');
+        const steamArtist = document.getElementById('steamArtist');
+        const gaugeMarks = document.getElementById('gaugeMarks');
+        const gaugeNeedle = document.getElementById('gaugeNeedle');
+        const pipeFill = document.getElementById('pipeFill');
+        const steamPipe = document.getElementById('steamPipe');
+        const currentTimeEl = document.getElementById('currentTime');
+        const durationEl = document.getElementById('duration');
+        const steamList = document.getElementById('steamList');
+
+        function init() {
+            // Generate Gauge Marks
+            for(let i=0; i<11; i++) {
+                const mark = document.createElement('div');
+                mark.className = 'mark';
+                // Rotate from -45deg to 45deg spanned across 90deg?
+                // Let's span 180 degrees range
+                mark.style.transform = `rotate(${i * 18 - 90}deg)`; 
+                gaugeMarks.appendChild(mark);
+            }
+
+            renderList();
+            loadTrack(0);
+
+            playLever.addEventListener('click', togglePlay);
+            prevLever.addEventListener('click', prevTrack);
+            nextLever.addEventListener('click', nextTrack);
+
+            audio.addEventListener('timeupdate', updateProgress);
+            audio.addEventListener('loadedmetadata', () => {
+                durationEl.innerText = formatTime(audio.duration);
+            });
+            audio.addEventListener('ended', nextTrack);
+
+            steamPipe.addEventListener('click', (e) => {
+                const rect = steamPipe.getBoundingClientRect();
+                const pos = (e.clientX - rect.left) / rect.width;
+                audio.currentTime = pos * audio.duration;
+            });
+        }
+
+        function renderList() {
+            steamList.innerHTML = '';
+            tracks.forEach((track, idx) => {
+                const li = document.createElement('li');
+                li.className = 'scroll-item';
+                li.innerHTML = `
+                    <span class="scroll-text">${track.title}</span>
+                    <div class="scroll-wax"></div>
+                `;
+                li.addEventListener('click', () => {
+                    if (currentIndex === idx && isPlaying) {
+                        togglePlay();
+                    } else {
+                        loadTrack(idx);
+                        playTrack();
+                    }
+                });
+                steamList.appendChild(li);
+            });
+        }
+
+        function loadTrack(index) {
+            currentIndex = index;
+            const track = tracks[index];
+            audio.src = track.url;
+            
+            steamTitle.innerText = track.title;
+            steamArtist.innerText = track.artist;
+            
+            pipeFill.style.width = "0%";
+            currentTimeEl.innerText = "00:00";
+            
+            // Reset Lever if stopped
+            if(!isPlaying) {
+                playLever.classList.remove('active');
+                engineBay.classList.remove('active');
+            }
+
+            updateListUI();
+        }
+
+        function togglePlay() {
+            if (isPlaying) {
+                stopTrack();
+            } else {
+                playTrack();
+            }
+        }
+
+        function playTrack() {
+            const p = audio.play();
+            if (p !== undefined) {
+                p.then(() => {
+                    isPlaying = true;
+                    playLever.classList.add('active');
+                    engineBay.classList.add('active');
+                }).catch(e => console.error(e));
+            }
+        }
+
+        function stopTrack() {
+            audio.pause();
+            isPlaying = false;
+            playLever.classList.remove('active');
+            engineBay.classList.remove('active');
+            
+            // Random lever animation for prev/next
+            setTimeout(() => { playLever.style.top = '50%'; }, 100);
+            setTimeout(() => { playLever.style.top = ''; }, 300);
+        }
+
+        function prevTrack() {
+            animateLever(prevLever);
+            let idx = currentIndex - 1;
+            if (idx < 0) idx = tracks.length - 1;
+            loadTrack(idx);
+            playTrack();
+        }
+
+        function nextTrack() {
+            animateLever(nextLever);
+            let idx = currentIndex + 1;
+            if (idx >= tracks.length) idx = 0;
+            loadTrack(idx);
+            playTrack();
+        }
+
+        function animateLever(lever) {
+            lever.style.top = '20%';
+            setTimeout(() => { lever.style.top = ''; }, 200);
+        }
+
+        function updateProgress() {
+            if (audio.duration) {
+                const pct = (audio.currentTime / audio.duration) * 100;
+                pipeFill.style.width = `${pct}%`;
+                currentTimeEl.innerText = formatTime(audio.currentTime);
+                
+                // Move needle based on percentage
+                // Map 0-100% to -45deg to 45deg
+                const deg = (pct / 100) * 90 - 45;
+                gaugeNeedle.style.transform = `translate(-50%, -100%) rotate(${deg}deg)`;
+            }
+        }
+
+        function formatTime(s) {
+            if (!s || isNaN(s)) return "00:00";
+            const m = Math.floor(s / 60);
+            const sec = Math.floor(s % 60);
+            return `${m}:${sec < 10 ? '0' : ''}${sec}`;
+        }
+
+        function updateListUI() {
+            const items = document.querySelectorAll('.scroll-item');
+            items.forEach((item, idx) => {
+                if (idx === currentIndex) item.classList.add('active');
+                else item.classList.remove('active');
+            });
+        }
+
+        init();
+    </script>
+</body>
+</html>

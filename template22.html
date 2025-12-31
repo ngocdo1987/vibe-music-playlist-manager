@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Synthwave Cruiser</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Monda:wght@400;700&family=Orbitron:wght@500;900&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            /* Synthwave Palette */
+            --bg-deep: #050011;
+            --grid-color: #ff00ff;
+            --sun-yellow: #ffcc00;
+            --sun-pink: #ff00ff;
+            --neon-cyan: #00f3ff;
+            --panel-bg: rgba(15, 5, 30, 0.85);
+            
+            /* Typography */
+            --font-tech: 'Monda', sans-serif;
+            --font-header: 'Orbitron', sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+        }
+
+        body {
+            background-color: var(--bg-deep);
+            color: #fff;
+            font-family: var(--font-tech);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* --- Retro Sun Background --- */
+        .retro-sun {
+            position: absolute;
+            bottom: -50px; left: 50%;
+            transform: translateX(-50%);
+            width: 600px; height: 600px;
+            background: linear-gradient(0deg, var(--sun-pink), var(--sun-yellow));
+            border-radius: 50%;
+            z-index: -2;
+        }
+
+        /* Sun stripes */
+        .retro-sun::before {
+            content: '';
+            position: absolute;
+            top: 20%; left: 0; width: 100%; height: 60%;
+            background: repeating-linear-gradient(
+                0deg,
+                var(--bg-deep) 0px,
+                var(--bg-deep) 10px,
+                transparent 10px,
+                transparent 30px
+            );
+            opacity: 0.8;
+        }
+
+        /* --- Moving Horizon Grid --- */
+        .horizon-plane {
+            position: absolute;
+            bottom: 0; left: -50%;
+            width: 200%; height: 100vh;
+            background: 
+                linear-gradient(var(--bg-deep) 2px, transparent 2px),
+                linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
+            background-size: 80px 80px, 100px 100px;
+            transform: perspective(500px) rotateX(60deg);
+            z-index: -1;
+            mask-image: linear-gradient(to top, rgba(0,0,0,1) 20%, transparent 80%);
+            animation: gridMove 3s linear infinite;
+        }
+
+        @keyframes gridMove {
+            0% { background-position: 0 0, 0 0; }
+            100% { background-position: 0 80px, 0 0; }
+        }
+
+        /* --- Main Dashboard --- */
+        .cruiser-deck {
+            width: 900px;
+            max-width: 95%;
+            background: var(--panel-bg);
+            border: 2px solid var(--neon-cyan);
+            box-shadow: 0 0 30px var(--neon-cyan), inset 0 0 20px rgba(0, 243, 255, 0.2);
+            border-radius: 4px;
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            padding: 30px;
+            position: relative;
+            z-index: 10;
+            transform: skewX(-5deg);
+        }
+
+        /* Decorative Corner Accents */
+        .cruiser-deck::before, .cruiser-deck::after {
+            content: '';
+            position: absolute;
+            width: 20px; height: 20px;
+            border: 2px solid var(--sun-pink);
+            transition: all 0.3s;
+        }
+        .cruiser-deck::before { top: -2px; left: -2px; border-right: none; border-bottom: none; }
+        .cruiser-deck::after { bottom: -2px; right: -2px; border-left: none; border-top: none; }
+
+        /* --- Left: The Stage --- */
+        .stage-cruiser {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            border-right: 2px dashed var(--grid-color);
+            padding-right: 30px;
+        }
+
+        .header-neon {
+            font-family: var(--font-header);
+            font-size: 1.5rem;
+            color: var(--sun-yellow);
+            text-shadow: 0 0 10px var(--sun-pink);
+            width: 100%;
+            text-align: center;
+            margin-bottom: 20px;
+            letter-spacing: 2px;
+        }
+
+        /* Visualizer: Circular Graphic */
+        .circle-viz {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            border: 4px solid var(--neon-cyan);
+            box-shadow: 0 0 20px var(--neon-cyan);
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 20px 0;
+            background: rgba(0,0,0,0.3);
+        }
+
+        .ring-anim {
+            position: absolute;
+            border-radius: 50%;
+            border: 2px solid var(--sun-pink);
+            border-top-color: transparent;
+            border-bottom-color: transparent;
+        }
+
+        .r1 { width: 100%; height: 100%; animation: spin 4s linear infinite; }
+        .r2 { width: 70%; height: 70%; animation: spin 3s linear infinite reverse; border-color: var(--neon-cyan); border-left-color: transparent; border-right-color: transparent;}
+
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+
+        .center-icon {
+            font-size: 3rem;
+            color: #fff;
+            text-shadow: 0 0 10px var(--sun-pink);
+            z-index: 2;
+        }
+        
+        .stage-cruiser.playing .center-icon {
+            animation: pulse-icon 1s infinite alternate;
+        }
+
+        @keyframes pulse-icon {
+            from { transform: scale(0.9); opacity: 0.8; }
+            to { transform: scale(1.1); opacity: 1; }
+        }
+
+        /* Song Info - Neon Text */
+        .neon-text-container {
+            text-align: center;
+            width: 100%;
+        }
+
+        .song-title-neon {
+            font-family: var(--font-header);
+            font-size: 2rem;
+            color: #fff;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+            text-shadow: 
+                0 0 5px #fff,
+                0 0 10px #fff,
+                0 0 20px var(--neon-cyan),
+                0 0 40px var(--neon-cyan);
+        }
+
+        .artist-neon {
+            color: var(--neon-cyan);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+
+        /* Progress - HUD Style */
+        .progress-hud {
+            width: 100%;
+            margin-top: 20px;
+            position: relative;
+        }
+
+        .bar-hud-bg {
+            height: 10px;
+            background: #222;
+            border: 1px solid var(--neon-cyan);
+            transform: skewX(-20deg);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .bar-hud-fill {
+            height: 100%;
+            width: 0%;
+            background: var(--sun-pink);
+            box-shadow: 0 0 15px var(--sun-pink);
+            transition: width 0.1s linear;
+        }
+
+        .time-hud {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+            font-family: var(--font-header);
+            font-size: 0.9rem;
+            color: var(--neon-cyan);
+            transform: skewX(10deg);
+        }
+
+        /* Controls - Angular Buttons */
+        .control-pad {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 100%;
+            margin-top: 30px;
+        }
+
+        .btn-retro {
+            background: transparent;
+            border: 2px solid var(--neon-cyan);
+            color: var(--neon-cyan);
+            font-family: var(--font-header);
+            padding: 10px 25px;
+            cursor: pointer;
+            text-transform: uppercase;
+            font-weight: bold;
+            font-size: 1rem;
+            transition: all 0.2s;
+            /* Angled shape */
+            transform: skewX(-20deg);
+            box-shadow: -4px 4px 0 var(--neon-cyan);
+        }
+
+        .btn-retro:hover {
+            background: var(--neon-cyan);
+            color: #000;
+            box-shadow: -4px 4px 0 #fff;
+        }
+        
+        .btn-retro:active {
+            transform: skewX(-20deg) translate(-4px, 4px);
+            box-shadow: 0 0 0 transparent;
+        }
+
+        .btn-main-action {
+            background: var(--sun-pink);
+            border-color: var(--sun-pink);
+            color: #fff;
+            box-shadow: -6px 6px 0 #a3005e;
+            padding: 15px 40px;
+            font-size: 1.2rem;
+        }
+
+        .btn-main-action:hover {
+            background: #ff66b2;
+            box-shadow: -6px 6px 0 #fff;
+        }
+
+        /* --- Right: Playlist --- */
+        .playlist-panel {
+            padding-left: 20px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .list-header {
+            color: var(--sun-yellow);
+            font-family: var(--font-header);
+            margin-bottom: 20px;
+            text-align: center;
+            text-shadow: 0 0 5px var(--sun-pink);
+            border-bottom: 1px solid var(--grid-color);
+            padding-bottom: 10px;
+        }
+
+        .track-list-retro {
+            list-style: none;
+            overflow-y: auto;
+            flex-grow: 1;
+        }
+
+        .track-item-retro {
+            padding: 15px;
+            margin-bottom: 10px;
+            border: 1px solid rgba(0, 243, 255, 0.3);
+            background: rgba(0, 0, 0, 0.3);
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .track-item-retro::before {
+            content: '';
+            position: absolute;
+            left: 0; top: 0; bottom: 0; width: 4px;
+            background: var(--neon-cyan);
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .track-item-retro:hover {
+            background: rgba(0, 243, 255, 0.1);
+            transform: translateX(-5px);
+            border-color: var(--neon-cyan);
+        }
+
+        .track-item-retro.active {
+            background: rgba(255, 0, 255, 0.2);
+            border-color: var(--sun-pink);
+            box-shadow: 0 0 15px rgba(255, 0, 255, 0.2);
+        }
+
+        .track-item-retro.active::before {
+            opacity: 1;
+            background: var(--sun-pink);
+        }
+
+        .track-title-retro {
+            font-weight: bold;
+            font-size: 1rem;
+            margin-bottom: 4px;
+        }
+
+        .track-artist-retro {
+            font-size: 0.8rem;
+            color: #aaa;
+        }
+
+        /* Scrollbar */
+        .track-list-retro::-webkit-scrollbar { width: 6px; }
+        .track-list-retro::-webkit-scrollbar-thumb { background: var(--grid-color); }
+
+        /* Responsive */
+        @media (max-width: 800px) {
+            .cruiser-deck {
+                grid-template-columns: 1fr;
+                transform: none;
+                height: auto;
+                margin: 20px 0;
+            }
+            .stage-cruiser {
+                border-right: none;
+                border-bottom: 2px dashed var(--grid-color);
+                padding-bottom: 30px;
+                padding-right: 0;
+            }
+            .retro-sun {
+                width: 300px; height: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Background Elements -->
+    <div class="retro-sun"></div>
+    <div class="horizon-plane"></div>
+
+    <main class="cruiser-deck">
+        
+        <!-- Left: Player Stage -->
+        <section class="stage-cruiser" id="stageCruiser">
+            
+            <div class="header-neon">SYSTEM // ONLINE</div>
+
+            <!-- Visualizer -->
+            <div class="circle-viz">
+                <div class="ring-anim r1"></div>
+                <div class="ring-anim r2"></div>
+                <div class="center-icon">♪</div>
+            </div>
+
+            <!-- Track Info -->
+            <div class="neon-text-container">
+                <h1 class="song-title-neon" id="songNeon">LOADING...</h1>
+                <div class="artist-neon" id="artistNeon">WAITING FOR SIGNAL</div>
+            </div>
+
+            <!-- Progress -->
+            <div class="progress-hud" id="progressHud">
+                <div class="bar-hud-bg">
+                    <div class="bar-hud-fill" id="barFill"></div>
+                </div>
+                <div class="time-hud">
+                    <span id="currentTime">00:00</span>
+                    <span id="duration">00:00</span>
+                </div>
+            </div>
+
+            <!-- Controls -->
+            <div class="control-pad">
+                <button class="btn-retro" id="prevBtn">◄ PREV</button>
+                <button class="btn-retro btn-main-action" id="playBtn">PLAY ►</button>
+                <button class="btn-retro" id="nextBtn">NEXT ►</button>
+                <button class="btn-retro" id="stopBtn" style="border-color:var(--sun-pink); color:var(--sun-pink);">STOP ■</button>
+            </div>
+
+        </section>
+
+        <!-- Right: Playlist -->
+        <aside class="playlist-panel">
+            <div class="list-header">DATA_STREAMS</div>
+            <ul class="track-list-retro" id="retroList">
+                <!-- JS Populated -->
+            </ul>
+        </aside>
+
+    </main>
+
+    <script>
+        const tracks = [
+            {
+                title: "I Just Called To Say I Love You",
+                artist: "Stevie Wonder",
+                url: "https://music.giau.info/mp3/1765329418087_I_Just_Called_To_Say_I_Love_You.mp3"
+            },
+            {
+                title: "Another Day In Paradise",
+                artist: "Phil Collins",
+                url: "https://music.giau.info/mp3/1765329417208_Another_Day_In_Paradise.mp3"
+            },
+            {
+                title: "If Life Is So Short",
+                artist: "The Moffatts",
+                url: "https://music.giau.info/mp3/1765329418894_If_Life_Is_So_Short.mp3"
+            }
+        ];
+
+        let currentIndex = 0;
+        let isPlaying = false;
+        const audio = new Audio();
+
+        // DOM
+        const stageCruiser = document.getElementById('stageCruiser');
+        const playBtn = document.getElementById('playBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const songNeon = document.getElementById('songNeon');
+        const artistNeon = document.getElementById('artistNeon');
+        const barFill = document.getElementById('barFill');
+        const progressHud = document.getElementById('progressHud');
+        const currentTimeEl = document.getElementById('currentTime');
+        const durationEl = document.getElementById('duration');
+        const retroList = document.getElementById('retroList');
+
+        function init() {
+            renderList();
+            loadTrack(0);
+
+            playBtn.addEventListener('click', togglePlay);
+            stopBtn.addEventListener('click', stopTrack);
+            prevBtn.addEventListener('click', prevTrack);
+            nextBtn.addEventListener('click', nextTrack);
+
+            audio.addEventListener('timeupdate', updateProgress);
+            audio.addEventListener('loadedmetadata', () => {
+                durationEl.innerText = formatTime(audio.duration);
+            });
+            audio.addEventListener('ended', nextTrack);
+
+            progressHud.addEventListener('click', (e) => {
+                const rect = progressHud.getBoundingClientRect();
+                const pos = (e.clientX - rect.left) / rect.width;
+                audio.currentTime = pos * audio.duration;
+            });
+        }
+
+        function renderList() {
+            retroList.innerHTML = '';
+            tracks.forEach((track, idx) => {
+                const li = document.createElement('li');
+                li.className = 'track-item-retro';
+                li.innerHTML = `
+                    <div class="track-title-retro">${track.title}</div>
+                    <div class="track-artist-retro">${track.artist}</div>
+                `;
+                li.addEventListener('click', () => {
+                    if (currentIndex === idx && isPlaying) {
+                        pauseTrack();
+                    } else {
+                        loadTrack(idx);
+                        playTrack();
+                    }
+                });
+                retroList.appendChild(li);
+            });
+        }
+
+        function loadTrack(index) {
+            currentIndex = index;
+            const track = tracks[index];
+            audio.src = track.url;
+            
+            songNeon.innerText = track.title;
+            artistNeon.innerText = track.artist;
+            
+            updateListUI();
+        }
+
+        function togglePlay() {
+            if (isPlaying) pauseTrack();
+            else playTrack();
+        }
+
+        function playTrack() {
+            const p = audio.play();
+            if (p !== undefined) {
+                p.then(() => {
+                    isPlaying = true;
+                    stageCruiser.classList.add('playing');
+                    playBtn.innerText = "PAUSE ||";
+                }).catch(e => console.error(e));
+            }
+        }
+
+        function pauseTrack() {
+            audio.pause();
+            isPlaying = false;
+            stageCruiser.classList.remove('playing');
+            playBtn.innerText = "PLAY ►";
+        }
+
+        function stopTrack() {
+            pauseTrack();
+            audio.currentTime = 0;
+            updateProgress();
+        }
+
+        function prevTrack() {
+            let idx = currentIndex - 1;
+            if (idx < 0) idx = tracks.length - 1;
+            loadTrack(idx);
+            playTrack();
+        }
+
+        function nextTrack() {
+            let idx = currentIndex + 1;
+            if (idx >= tracks.length) idx = 0;
+            loadTrack(idx);
+            playTrack();
+        }
+
+        function updateProgress() {
+            if (audio.duration) {
+                const pct = (audio.currentTime / audio.duration) * 100;
+                barFill.style.width = `${pct}%`;
+                currentTimeEl.innerText = formatTime(audio.currentTime);
+            }
+        }
+
+        function formatTime(s) {
+            if (!s || isNaN(s)) return "00:00";
+            const m = Math.floor(s / 60);
+            const sec = Math.floor(s % 60);
+            return `${m}:${sec < 10 ? '0' : ''}${sec}`;
+        }
+
+        function updateListUI() {
+            const items = document.querySelectorAll('.track-item-retro');
+            items.forEach((item, idx) => {
+                if (idx === currentIndex) item.classList.add('active');
+                else item.classList.remove('active');
+            });
+        }
+
+        init();
+    </script>
+</body>
+</html>

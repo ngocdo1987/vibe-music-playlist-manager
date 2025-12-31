@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solarpunk Eco Player</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Quicksand:wght@400;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            /* Solarpunk Palette */
+            --sky-blue: #88d8b0;
+            --sun-yellow: #ffcc5c;
+            --leaf-green: #06d6a0;
+            --glass-white: rgba(255, 255, 255, 0.6);
+            --text-dark: #1b4332;
+            
+            /* Typography */
+            --font-display: 'Cormorant Garamond', serif;
+            --font-ui: 'Quicksand', sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+        }
+
+        body {
+            /* Lush Green Gradient Background */
+            background: linear-gradient(120deg, #1a936f 0%, #88d8b0 100%);
+            color: var(--text-dark);
+            font-family: var(--font-ui);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* --- Background Atmosphere --- */
+        .sun-circle {
+            position: absolute;
+            top: -100px; right: -100px;
+            width: 500px; height: 500px;
+            background: var(--sun-yellow);
+            border-radius: 50%;
+            filter: blur(60px);
+            opacity: 0.6;
+            animation: breatheSun 10s infinite ease-in-out;
+            z-index: -2;
+        }
+
+        @keyframes breatheSun {
+            0%, 100% { transform: scale(1); opacity: 0.6; }
+            50% { transform: scale(1.1); opacity: 0.8; }
+        }
+
+        .floating-leaf {
+            position: absolute;
+            width: 20px; height: 20px;
+            background: #fff;
+            border-radius: 20px 0px;
+            opacity: 0.4;
+            animation: floatLeaf 15s linear infinite;
+            z-index: -1;
+        }
+
+        @keyframes floatLeaf {
+            0% { transform: translate(0, 100vh) rotate(0deg); opacity: 0; }
+            10% { opacity: 0.4; }
+            90% { opacity: 0.4; }
+            100% { transform: translate(100px, -100vh) rotate(360deg); opacity: 0; }
+        }
+
+        /* --- Main Eco Console --- */
+        .eco-dock {
+            width: 900px;
+            max-width: 95%;
+            height: 600px;
+            background: var(--glass-white);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 40px;
+            box-shadow: 
+                0 20px 50px rgba(0,0,0,0.1),
+                inset 0 0 0 1px rgba(255,255,255,0.5);
+            display: grid;
+            grid-template-columns: 1.2fr 1fr;
+            padding: 40px;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* Decor: Glass Reflection */
+        .eco-dock::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(135deg, rgba(255,255,255,0.4) 0%, transparent 60%);
+            border-radius: 40px;
+            pointer-events: none;
+            z-index: 20;
+        }
+
+        /* --- Left: Solar Visualizer --- */
+        .nature-stage {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-right: 1px solid rgba(255,255,255,0.3);
+            padding-right: 40px;
+            position: relative;
+        }
+
+        /* The Solar Flower */
+        .solar-flower {
+            width: 220px;
+            height: 220px;
+            position: relative;
+            margin-bottom: 30px;
+        }
+
+        .flower-center {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80px; height: 80px;
+            background: var(--sun-yellow);
+            border-radius: 50%;
+            box-shadow: 0 0 40px var(--sun-yellow);
+            z-index: 5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .flower-center svg {
+            width: 40px; height: 40px;
+            fill: var(--text-dark);
+            transition: all 0.3s;
+        }
+
+        .petal {
+            position: absolute;
+            top: 50%; left: 50%;
+            width: 100px; height: 100px;
+            background: rgba(255,255,255,0.6);
+            border-radius: 50%;
+            transform-origin: 0 0;
+            clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
+            opacity: 0.6;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        }
+
+        /* Petal Positioning */
+        .p1 { transform: rotate(0deg) translateY(-90px); background: #88d8b0; }
+        .p2 { transform: rotate(45deg) translateY(-90px); background: #56ab2f; }
+        .p3 { transform: rotate(90deg) translateY(-90px); background: #88d8b0; }
+        .p4 { transform: rotate(135deg) translateY(-90px); background: #56ab2f; }
+        .p5 { transform: rotate(180deg) translateY(-90px); background: #88d8b0; }
+        .p6 { transform: rotate(225deg) translateY(-90px); background: #56ab2f; }
+        .p7 { transform: rotate(270deg) translateY(-90px); background: #88d8b0; }
+        .p8 { transform: rotate(315deg) translateY(-90px); background: #56ab2f; }
+
+        /* Animation when playing */
+        .nature-stage.playing .petal {
+            animation: spinFlower 10s linear infinite;
+        }
+
+        .nature-stage.playing .flower-center {
+            animation: pulseCenter 2s infinite ease-in-out;
+        }
+
+        @keyframes spinFlower { 100% { transform: rotate(-360deg) translateY(-90px); } }
+        @keyframes pulseCenter { 0%, 100% { box-shadow: 0 0 40px var(--sun-yellow); transform: translate(-50%, -50%) scale(1); } 50% { box-shadow: 0 0 60px var(--sun-yellow); transform: translate(-50%, -50%) scale(1.05); } }
+
+        /* Track Info */
+        .song-info-eco {
+            text-align: center;
+            z-index: 2;
+        }
+
+        .song-title-eco {
+            font-family: var(--font-display);
+            font-size: 2.5rem;
+            color: var(--text-dark);
+            margin-bottom: 5px;
+            font-style: italic;
+        }
+
+        .song-artist-eco {
+            font-weight: 700;
+            color: var(--leaf-green);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+        }
+
+        /* Progress - Vine Style */
+        .vine-progress {
+            width: 100%;
+            margin-top: 20px;
+            position: relative;
+            height: 40px;
+        }
+
+        .vine-track {
+            height: 100%;
+            background: rgba(255,255,255,0.3);
+            border-radius: 20px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .vine-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--leaf-green), var(--sky-blue));
+            border-radius: 20px;
+            transition: width 0.2s ease-out;
+            position: relative;
+        }
+
+        /* Leaf decoration on progress */
+        .vine-fill::after {
+            content: '';
+            position: absolute;
+            right: -10px; top: 50%;
+            transform: translateY(-50%);
+            width: 20px; height: 20px;
+            background: #fff;
+            border-radius: 20px 0px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .time-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 5px;
+            font-family: var(--font-display);
+            font-size: 1.1rem;
+            color: var(--text-dark);
+        }
+
+        /* Controls - Pebble Style */
+        .eco-controls {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin-top: 30px;
+        }
+
+        .btn-pebble {
+            width: 60px; height: 60px;
+            background: #fff;
+            border-radius: 50%;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 
+                0 10px 20px rgba(0,0,0,0.1),
+                inset 0 2px 5px rgba(255,255,255,0.8);
+            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            color: var(--text-dark);
+        }
+
+        .btn-pebble:active {
+            transform: scale(0.9);
+            box-shadow: 0 5px 10px rgba(0,0,0,0.1);
+        }
+
+        .btn-main {
+            width: 80px; height: 80px;
+            background: var(--sun-yellow);
+            z-index: 5;
+        }
+
+        /* --- Right: Floating Playlist --- */
+        .playlist-forest {
+            padding-left: 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .forest-header {
+            font-family: var(--font-display);
+            font-size: 2rem;
+            color: var(--text-dark);
+            margin-bottom: 30px;
+            text-align: center;
+            font-style: italic;
+        }
+
+        .track-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            overflow-y: auto;
+            max-height: 400px;
+            padding: 10px;
+        }
+
+        .track-card {
+            background: rgba(255,255,255,0.4);
+            backdrop-filter: blur(10px);
+            padding: 20px;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border: 1px solid rgba(255,255,255,0.5);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+
+        .track-card:hover {
+            transform: translateY(-5px) rotate(1deg);
+            background: rgba(255,255,255,0.8);
+            box-shadow: 0 15px 25px rgba(0,0,0,0.1);
+        }
+
+        .track-card.active {
+            background: #fff;
+            border-color: var(--leaf-green);
+            transform: scale(1.05);
+            box-shadow: 0 10px 30px rgba(106, 214, 160, 0.4);
+        }
+
+        .card-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .card-title {
+            font-family: var(--font-display);
+            font-weight: 600;
+            font-size: 1.2rem;
+            color: var(--text-dark);
+        }
+
+        .card-artist {
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .card-icon {
+            width: 40px; height: 40px;
+            background: var(--leaf-green);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            opacity: 0.8;
+        }
+
+        /* Scrollbar */
+        .track-list::-webkit-scrollbar { width: 6px; }
+        .track-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.5); border-radius: 10px; }
+        .track-list::-webkit-scrollbar-track { background: transparent; }
+
+        /* Responsive */
+        @media (max-width: 800px) {
+            .eco-dock {
+                grid-template-columns: 1fr;
+                height: auto;
+                margin: 20px 0;
+                border-radius: 20px;
+            }
+            .nature-stage {
+                border-right: none;
+                border-bottom: 1px solid rgba(255,255,255,0.3);
+                padding-right: 0;
+                padding-bottom: 40px;
+            }
+            .solar-flower {
+                width: 150px; height: 150px;
+            }
+            .petal { width: 70px; height: 70px; transform: rotate(var(--r)) translateY(-60px); }
+            .playlist-forest {
+                padding-left: 0;
+                padding-top: 40px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Atmospheric Background -->
+    <div class="sun-circle"></div>
+    <div class="floating-leaf" style="left: 10%; animation-duration: 12s;"></div>
+    <div class="floating-leaf" style="left: 80%; animation-duration: 18s; animation-delay: -5s;"></div>
+    <div class="floating-leaf" style="left: 50%; animation-duration: 20s; animation-delay: -10s; background:var(--leaf-green);"></div>
+
+    <main class="eco-dock">
+        
+        <!-- Left: Stage -->
+        <section class="nature-stage" id="natureStage">
+            
+            <!-- Solar Flower Visualizer -->
+            <div class="solar-flower">
+                <div class="petal p1" style="--r: 0deg"></div>
+                <div class="petal p2" style="--r: 45deg"></div>
+                <div class="petal p3" style="--r: 90deg"></div>
+                <div class="petal p4" style="--r: 135deg"></div>
+                <div class="petal p5" style="--r: 180deg"></div>
+                <div class="petal p6" style="--r: 225deg"></div>
+                <div class="petal p7" style="--r: 270deg"></div>
+                <div class="petal p8" style="--r: 315deg"></div>
+                <div class="flower-center">
+                    <svg id="iconPlay" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                    <svg id="iconPause" viewBox="0 0 24 24" style="display:none;"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+                </div>
+            </div>
+
+            <!-- Track Info -->
+            <div class="song-info-eco">
+                <h1 class="song-title-eco" id="ecoTitle">Harmony</h1>
+                <div class="song-artist-eco" id="ecoArtist">Nature Sounds</div>
+            </div>
+
+            <!-- Vine Progress -->
+            <div class="vine-progress" id="vineProgress">
+                <div class="vine-track">
+                    <div class="vine-fill" id="vineFill"></div>
+                </div>
+            </div>
+            <div class="time-labels">
+                <span id="currentTime">0:00</span>
+                <span id="duration">0:00</span>
+            </div>
+
+            <!-- Controls -->
+            <div class="eco-controls">
+                <button class="btn-pebble" id="prevBtn">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
+                </button>
+                <button class="btn-pebble btn-main" id="playBtn">
+                    <!-- Handled in center -->
+                </button>
+                <button class="btn-pebble" id="nextBtn">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
+                </button>
+                <button class="btn-pebble" id="stopBtn" style="background:#ffe0b2;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h12v12H6z"/></svg>
+                </button>
+            </div>
+
+        </section>
+
+        <!-- Right: Playlist -->
+        <aside class="playlist-forest">
+            <div class="forest-header">Garden</div>
+            <ul class="track-list" id="ecoList">
+                <!-- JS Populated -->
+            </ul>
+        </aside>
+
+    </main>
+
+    <script>
+        const tracks = [
+            {
+                title: "I Just Called To Say I Love You",
+                artist: "Stevie Wonder",
+                url: "https://music.giau.info/mp3/1765329418087_I_Just_Called_To_Say_I_Love_You.mp3"
+            },
+            {
+                title: "Another Day In Paradise",
+                artist: "Phil Collins",
+                url: "https://music.giau.info/mp3/1765329417208_Another_Day_In_Paradise.mp3"
+            },
+            {
+                title: "If Life Is So Short",
+                artist: "The Moffatts",
+                url: "https://music.giau.info/mp3/1765329418894_If_Life_Is_So_Short.mp3"
+            }
+        ];
+
+        let currentIndex = 0;
+        let isPlaying = false;
+        const audio = new Audio();
+
+        // DOM
+        const natureStage = document.getElementById('natureStage');
+        const playBtn = document.getElementById('playBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const iconPlay = document.getElementById('iconPlay');
+        const iconPause = document.getElementById('iconPause');
+        const ecoTitle = document.getElementById('ecoTitle');
+        const ecoArtist = document.getElementById('ecoArtist');
+        const vineFill = document.getElementById('vineFill');
+        const vineProgress = document.getElementById('vineProgress');
+        const currentTimeEl = document.getElementById('currentTime');
+        const durationEl = document.getElementById('duration');
+        const ecoList = document.getElementById('ecoList');
+
+        function init() {
+            renderList();
+            loadTrack(0);
+
+            playBtn.addEventListener('click', togglePlay);
+            stopBtn.addEventListener('click', stopTrack);
+            prevBtn.addEventListener('click', prevTrack);
+            nextBtn.addEventListener('click', nextTrack);
+
+            audio.addEventListener('timeupdate', updateProgress);
+            audio.addEventListener('loadedmetadata', () => {
+                durationEl.innerText = formatTime(audio.duration);
+            });
+            audio.addEventListener('ended', nextTrack);
+
+            vineProgress.addEventListener('click', (e) => {
+                const rect = vineProgress.getBoundingClientRect();
+                const pos = (e.clientX - rect.left) / rect.width;
+                audio.currentTime = pos * audio.duration;
+            });
+        }
+
+        function renderList() {
+            ecoList.innerHTML = '';
+            tracks.forEach((track, idx) => {
+                const li = document.createElement('li');
+                li.className = 'track-card';
+                li.innerHTML = `
+                    <div class="card-info">
+                        <div class="card-title">${track.title}</div>
+                        <div class="card-artist">${track.artist}</div>
+                    </div>
+                    <div class="card-icon">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/></svg>
+                    </div>
+                `;
+                li.addEventListener('click', () => {
+                    if (currentIndex === idx && isPlaying) {
+                        pauseTrack();
+                    } else {
+                        loadTrack(idx);
+                        playTrack();
+                    }
+                });
+                ecoList.appendChild(li);
+            });
+        }
+
+        function loadTrack(index) {
+            currentIndex = index;
+            const track = tracks[index];
+            audio.src = track.url;
+            
+            ecoTitle.innerText = track.title;
+            ecoArtist.innerText = track.artist;
+            
+            updateListUI();
+        }
+
+        function togglePlay() {
+            if (isPlaying) pauseTrack();
+            else playTrack();
+        }
+
+        function playTrack() {
+            const p = audio.play();
+            if (p !== undefined) {
+                p.then(() => {
+                    isPlaying = true;
+                    natureStage.classList.add('playing');
+                    iconPlay.style.display = 'none';
+                    iconPause.style.display = 'block';
+                }).catch(e => console.error(e));
+            }
+        }
+
+        function pauseTrack() {
+            audio.pause();
+            isPlaying = false;
+            natureStage.classList.remove('playing');
+            iconPlay.style.display = 'block';
+            iconPause.style.display = 'none';
+        }
+
+        function stopTrack() {
+            pauseTrack();
+            audio.currentTime = 0;
+            updateProgress();
+        }
+
+        function prevTrack() {
+            let idx = currentIndex - 1;
+            if (idx < 0) idx = tracks.length - 1;
+            loadTrack(idx);
+            playTrack();
+        }
+
+        function nextTrack() {
+            let idx = currentIndex + 1;
+            if (idx >= tracks.length) idx = 0;
+            loadTrack(idx);
+            playTrack();
+        }
+
+        function updateProgress() {
+            if (audio.duration) {
+                const pct = (audio.currentTime / audio.duration) * 100;
+                vineFill.style.width = `${pct}%`;
+                currentTimeEl.innerText = formatTime(audio.currentTime);
+            }
+        }
+
+        function formatTime(s) {
+            if (!s || isNaN(s)) return "0:00";
+            const m = Math.floor(s / 60);
+            const sec = Math.floor(s % 60);
+            return `${m}:${sec < 10 ? '0' : ''}${sec}`;
+        }
+
+        function updateListUI() {
+            const items = document.querySelectorAll('.track-card');
+            items.forEach((item, idx) => {
+                if (idx === currentIndex) item.classList.add('active');
+                else item.classList.remove('active');
+            });
+        }
+
+        init();
+    </script>
+</body>
+</html>

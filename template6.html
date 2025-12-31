@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>THE DAILY MIX // Broadsheet</title>
+    
+    <!-- Typography: Playfair Display (Headlines), Merriweather (Body), Space Mono (Data) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Merriweather:ital,wght@0,300;0,400;0,700;1,300&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+
+    <style>
+        /* --- CSS Variables --- */
+        :root {
+            --ink: #121212;
+            --paper: #fdfdfd;
+            --paper-texture: #f4f4f4;
+            --accent-red: #cc0000; /* Breaking News Red */
+            --grey-line: #e0e0e0;
+            
+            /* Fonts */
+            --font-head: 'Playfair Display', serif;
+            --font-body: 'Merriweather', serif;
+            --font-data: 'Space Mono', monospace;
+        }
+
+        /* --- Global Reset --- */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--paper-texture);
+            color: var(--ink);
+            font-family: var(--font-body);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            /* Subtle paper grain */
+            background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.5' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.05'/%3E%3C/svg%3E");
+        }
+
+        /* --- Broadsheet Layout --- */
+        .broadsheet {
+            width: 1000px;
+            max-width: 95vw;
+            height: 85vh;
+            background: var(--paper);
+            border: 1px solid var(--ink);
+            display: grid;
+            grid-template-rows: auto 1fr auto;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        /* Header / Masthead */
+        .masthead {
+            border-bottom: 4px double var(--ink);
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            background: var(--ink);
+            color: var(--paper);
+        }
+
+        .masthead-brand {
+            font-family: var(--font-head);
+            font-size: 2.5rem;
+            font-weight: 700;
+            letter-spacing: -1px;
+            text-transform: uppercase;
+            line-height: 1;
+        }
+
+        .masthead-meta {
+            font-family: var(--font-data);
+            font-size: 0.7rem;
+            text-align: right;
+            line-height: 1.4;
+            opacity: 0.8;
+        }
+
+        /* Main Content Grid */
+        .content-grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr; /* Article vs Sidebar */
+            overflow: hidden;
+        }
+
+        /* --- Left: Main Article (Now Playing) --- */
+        .main-article {
+            padding: 30px;
+            border-right: 1px solid var(--grey-line);
+            overflow-y: auto;
+        }
+
+        .article-header {
+            border-bottom: 2px solid var(--ink);
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .section-tag {
+            font-family: var(--font-data);
+            font-weight: 700;
+            color: var(--accent-red);
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            border: 1px solid var(--accent-red);
+            padding: 2px 8px;
+        }
+
+        .headline {
+            font-family: var(--font-head);
+            font-size: 3.5rem;
+            line-height: 1;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: var(--ink);
+        }
+
+        .subhead {
+            font-family: var(--font-body);
+            font-style: italic;
+            font-size: 1.2rem;
+            color: #555;
+            margin-bottom: 20px;
+            border-left: 3px solid var(--accent-red);
+            padding-left: 15px;
+        }
+
+        .article-body {
+            font-size: 1rem;
+            line-height: 1.8;
+            color: #333;
+            columns: 2;
+            column-gap: 40px;
+            column-rule: 1px solid var(--grey-line);
+        }
+
+        .lead-cap::first-letter {
+            font-family: var(--font-head);
+            font-size: 3.5rem;
+            float: left;
+            line-height: 0.8;
+            padding-right: 10px;
+            color: var(--ink);
+            font-weight: 700;
+        }
+
+        .photo-frame {
+            width: 100%;
+            margin: 20px 0;
+            border: 1px solid var(--ink);
+            padding: 5px; /* White border */
+            background: #fff;
+            break-inside: avoid;
+        }
+
+        .news-photo {
+            width: 100%;
+            height: auto;
+            display: block;
+            /* B&W Filter */
+            filter: grayscale(100%) contrast(1.1);
+            transition: filter 1s ease;
+        }
+
+        .playing .news-photo {
+            filter: grayscale(0%) contrast(1); /* Color on play */
+        }
+
+        .caption {
+            font-family: var(--font-data);
+            font-size: 0.7rem;
+            color: #666;
+            margin-top: 5px;
+            text-align: right;
+        }
+
+        /* --- Right: Sidebar (Controls & Index) --- */
+        .sidebar {
+            padding: 30px;
+            background: #fafafa;
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        /* Controls Box */
+        .controls-box {
+            border: 2px solid var(--ink);
+            padding: 15px;
+            background: var(--paper);
+            text-align: center;
+        }
+
+        .sound-wave-viz {
+            height: 40px;
+            margin-bottom: 15px;
+            position: relative;
+            border-bottom: 1px solid #ccc;
+        }
+
+        /* Printed SVG Waveform */
+        .wave-path {
+            fill: none;
+            stroke: var(--ink);
+            stroke-width: 1.5;
+            stroke-dasharray: 1000;
+            stroke-dashoffset: 1000;
+            transition: stroke-dashoffset 1s ease;
+        }
+
+        .playing .wave-path {
+            animation: drawWave 2s linear infinite;
+        }
+
+        @keyframes drawWave {
+            0% { stroke-dashoffset: 1000; }
+            100% { stroke-dashoffset: 0; }
+        }
+
+        .btn-print {
+            background: transparent;
+            border: 2px solid var(--ink);
+            font-family: var(--font-data);
+            text-transform: uppercase;
+            font-weight: 700;
+            padding: 10px 20px;
+            cursor: pointer;
+            transition: all 0.1s;
+            font-size: 0.8rem;
+            letter-spacing: 1px;
+        }
+
+        .btn-print:hover {
+            background: var(--ink);
+            color: var(--paper);
+        }
+
+        .btn-print:active {
+            transform: translateY(2px);
+        }
+
+        .btn-primary {
+            background: var(--ink);
+            color: var(--paper);
+            margin-top: 10px;
+            width: 100%;
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-red);
+            border-color: var(--accent-red);
+        }
+
+        /* Progress Bar as a "Reading Progress" line */
+        .reading-progress {
+            margin-top: 15px;
+            height: 10px;
+            background: repeating-linear-gradient(90deg, #ccc 0, #ccc 1px, transparent 1px, transparent 5px);
+            position: relative;
+            cursor: pointer;
+        }
+
+        .reading-fill {
+            position: absolute;
+            left: 0; top: 0; bottom: 0;
+            background: var(--accent-red);
+            width: 0%;
+        }
+
+        /* Playlist / Index */
+        .index-section {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .index-header {
+            font-family: var(--font-head);
+            font-size: 1.2rem;
+            border-bottom: 2px solid var(--ink);
+            margin-bottom: 15px;
+            padding-bottom: 5px;
+        }
+
+        .index-list {
+            list-style: none;
+            overflow-y: auto;
+            flex: 1;
+            padding-right: 5px;
+        }
+
+        .index-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px dashed #ccc;
+            cursor: pointer;
+            font-family: var(--font-data);
+            font-size: 0.8rem;
+        }
+
+        .index-item:hover {
+            background: #eee;
+            padding-left: 5px;
+            padding-right: 5px;
+        }
+
+        .index-item.active {
+            background: var(--ink);
+            color: var(--paper);
+            font-weight: 700;
+            border-bottom: none;
+        }
+
+        /* --- Footer: Ticker --- */
+        .ticker-tape {
+            border-top: 4px double var(--ink);
+            background: var(--ink);
+            color: var(--paper);
+            overflow: hidden;
+            white-space: nowrap;
+            height: 30px;
+            display: flex;
+            align-items: center;
+        }
+
+        .ticker-content {
+            display: inline-block;
+            padding-left: 100%;
+            animation: ticker 20s linear infinite;
+            font-family: var(--font-data);
+            font-size: 0.8rem;
+        }
+
+        @keyframes ticker {
+            0% { transform: translate3d(0, 0, 0); }
+            100% { transform: translate3d(-100%, 0, 0); }
+        }
+
+        /* Responsive */
+        @media (max-width: 800px) {
+            .broadsheet { height: auto; overflow-y: auto; }
+            .content-grid { grid-template-columns: 1fr; }
+            .main-article { border-right: none; border-bottom: 1px solid var(--grey-line); }
+            .headline { font-size: 2.5rem; }
+            .article-body { columns: 1; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="broadsheet" id="player">
+        
+        <!-- Masthead -->
+        <header class="masthead">
+            <div class="masthead-brand">The Daily Mix</div>
+            <div class="masthead-meta">
+                Vol. 88 &bull; No. 42<br>
+                EST. 2023 &bull; AUDIO EDITION
+            </div>
+        </header>
+
+        <!-- Content -->
+        <div class="content-grid">
+            
+            <!-- Left: Article -->
+            <main class="main-article">
+                <div class="article-header">
+                    <span class="section-tag">Featured Track</span>
+                    <span class="section-tag" style="border-color:#000; color:#000;" id="date-display">MON, OCT 24</span>
+                </div>
+
+                <h1 class="headline" id="track-title">Loading...</h1>
+                <div class="subhead" id="track-artist">Artist Name</div>
+
+                <div class="photo-frame">
+                    <img src="" alt="Article Photo" class="news-photo" id="track-img">
+                    <div class="caption">Fig 1. Visual representation of the audio spectrum.</div>
+                </div>
+
+                <div class="article-body">
+                    <p class="lead-cap">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+                    <p>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+                    <p>Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo.</p>
+                </div>
+            </main>
+
+            <!-- Right: Sidebar -->
+            <aside class="sidebar">
+                
+                <div class="controls-box">
+                    <div class="sound-wave-viz">
+                        <svg width="100%" height="100%" viewBox="0 0 300 50" preserveAspectRatio="none">
+                            <path class="wave-path" d="M0,25 L10,10 L20,40 L30,20 L40,30 L50,25 L60,5 L70,45 L80,25 L90,25 L100,15 L110,35 L120,25 L130,25 L140,10 L150,40 L160,20 L170,30 L180,25 L190,5 L200,45 L210,25 L220,25 L230,15 L240,35 L250,25 L260,25 L270,10 L280,40 L290,20 L300,25" fill="none" />
+                        </svg>
+                    </div>
+                    <button class="btn-print btn-primary" id="btn-play">Play Article</button>
+                    <div style="display:flex; gap:10px; margin-top:10px;">
+                        <button class="btn-print" id="btn-prev" style="flex:1;">&larr; PREV</button>
+                        <button class="btn-print" id="btn-next" style="flex:1;">NEXT &rarr;</button>
+                    </div>
+                    <div class="reading-progress" id="prog-area">
+                        <div class="reading-fill" id="prog-fill"></div>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; font-family:var(--font-data); font-size:0.7rem; margin-top:5px;">
+                        <span id="time-curr">0:00</span>
+                        <span id="time-dur">0:00</span>
+                    </div>
+                </div>
+
+                <div class="index-section">
+                    <div class="index-header">In This Issue</div>
+                    <ul class="index-list" id="playlist-ul">
+                        <!-- JS Injected -->
+                    </ul>
+                </div>
+
+            </aside>
+        </div>
+
+        <!-- Footer Ticker -->
+        <footer class="ticker-tape">
+            <div class="ticker-content" id="ticker-text">
+                BREAKING: NEW MUSIC RELEASED DAILY &bull; THE DAILY MIX IS YOUR SOURCE FOR AUDITORIAL NEWS &bull; STAY TUNED FOR MORE UPDATES &bull; 
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        // --- Data: Editorial / Storytelling Tracks ---
+        const newsTracks = [
+            { id: 1, title: "Midnight in Paris", artist: "Jazz Quartet", duration: "4:12", img: "https://picsum.photos/seed/jazz1/600/400" },
+            { id: 2, title: "The Old Library", artist: "Silent Study", duration: "3:30", img: "https://picsum.photos/seed/read2/600/400" },
+            { id: 3, title: "Rainy Tuesday", artist: "LoFi Beats", duration: "2:45", img: "https://picsum.photos/seed/rain3/600/400" },
+            { id: 4, title: "Coffee Shop", artist: "Acoustic Soul", duration: "3:15", img: "https://picsum.photos/seed/coffee4/600/400" },
+            { id: 5, title: "City Lights", artist: "Night Drive", duration: "4:00", img: "https://picsum.photos/seed/city5/600/400" }
+        ];
+
+        // --- State ---
+        let idx = 0;
+        let playing = false;
+        let progress = 0;
+        let duration = 0;
+        let timer = null;
+
+        // --- DOM ---
+        const ui = {
+            player: document.getElementById('player'),
+            title: document.getElementById('track-title'),
+            artist: document.getElementById('track-artist'),
+            img: document.getElementById('track-img'),
+            list: document.getElementById('playlist-ul'),
+            btnPlay: document.getElementById('btn-play'),
+            btnPrev: document.getElementById('btn-prev'),
+            btnNext: document.getElementById('btn-next'),
+            progArea: document.getElementById('prog-area'),
+            progFill: document.getElementById('prog-fill'),
+            curr: document.getElementById('time-curr'),
+            dur: document.getElementById('time-dur'),
+            date: document.getElementById('date-display')
+        };
+
+        // --- Helpers ---
+        const toSec = (s) => { const [m,x]=s.split(':').map(Number); return m*60+x; };
+        const fmt = (s) => { const m=Math.floor(s/60); const sec=Math.floor(s%60); return `${m}:${sec<10?'0':''}${sec}`; };
+
+        // --- Functions ---
+        function init() {
+            const d = new Date();
+            const days = ['SUN','MON','TUE','WED','THU','FRI','SAT'];
+            ui.date.innerText = `${days[d.getDay()]}, OCT ${d.getDate()}`;
+            
+            renderList();
+            loadTrack(0);
+        }
+
+        function renderList() {
+            ui.list.innerHTML = newsTracks.map((t, i) => `
+                <li class="index-item ${i === idx ? 'active' : ''}" onclick="sel(${i})">
+                    <span>${(i+1).toString().padStart(2,'0')} // ${t.title}</span>
+                    <span>Pg. ${t.duration}</span>
+                </li>
+            `).join('');
+        }
+
+        function loadTrack(i) {
+            idx = i;
+            const t = newsTracks[i];
+            
+            ui.title.innerText = t.title;
+            ui.artist.innerText = `By ${t.artist}`;
+            ui.img.src = t.img;
+            
+            // Reset Image filter if loading new
+            ui.img.style.filter = "grayscale(100%) contrast(1.1)";
+            
+            duration = toSec(t.duration);
+            progress = 0;
+            ui.dur.innerText = t.duration;
+            ui.curr.innerText = "0:00";
+            ui.progFill.style.width = "0%";
+            
+            renderList();
+            if(playing) ui.player.classList.add('playing');
+            else ui.player.classList.remove('playing');
+        }
+
+        function togglePlay() {
+            playing = !playing;
+            
+            if(playing) {
+                ui.btnPlay.innerText = "Pause Article";
+                ui.btnPlay.style.background = "#333";
+                ui.player.classList.add('playing');
+                
+                timer = setInterval(() => {
+                    progress++;
+                    if(progress >= duration) nextTrack();
+                    else updateProg();
+                }, 1000);
+            } else {
+                ui.btnPlay.innerText = "Play Article";
+                ui.btnPlay.style.background = "#121212";
+                ui.player.classList.remove('playing');
+                clearInterval(timer);
+            }
+        }
+
+        function updateProg() {
+            const pct = (progress / duration) * 100;
+            ui.progFill.style.width = `${pct}%`;
+            ui.curr.innerText = fmt(progress);
+        }
+
+        function nextTrack() {
+            let n = idx + 1;
+            if(n >= newsTracks.length) n = 0;
+            loadTrack(n);
+            if(playing) setTimeout(() => togglePlay(), 50);
+        }
+
+        function prevTrack() {
+            let p = idx - 1;
+            if(p < 0) p = newsTracks.length - 1;
+            loadTrack(p);
+            if(playing) setTimeout(() => togglePlay(), 50);
+        }
+
+        window.sel = (i) => {
+            if(i === idx) togglePlay();
+            else {
+                loadTrack(i);
+                if(!playing) togglePlay();
+            }
+        };
+
+        // --- Events ---
+        ui.btnPlay.addEventListener('click', togglePlay);
+        ui.btnNext.addEventListener('click', nextTrack);
+        ui.btnPrev.addEventListener('click', prevTrack);
+        ui.progArea.addEventListener('click', (e) => {
+            const rect = ui.progArea.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const w = rect.width;
+            progress = Math.floor(Math.max(0, Math.min(1, x/w)) * duration);
+            updateProg();
+        });
+
+        init();
+
+    </script>
+</body>
+</html>

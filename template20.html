@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pop Art Memphis Player</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;900&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            /* Pop Art Palette */
+            --pop-yellow: #ffd93d;
+            --pop-pink: #ff6b6b;
+            --pop-blue: #4d96ff;
+            --pop-purple: #9b5de5;
+            --pop-bg: #fbfbfb;
+            --pop-black: #2d2d2d;
+            
+            /* Typography */
+            --font-header: 'Fredoka One', cursive;
+            --font-body: 'Nunito', sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+        }
+
+        body {
+            background-color: var(--pop-bg);
+            background-image: radial-gradient(var(--pop-black) 1px, transparent 1px);
+            background-size: 30px 30px;
+            color: var(--pop-black);
+            font-family: var(--font-body);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* --- Background Decorations --- */
+        .shape-blob {
+            position: absolute;
+            z-index: -1;
+            opacity: 0.8;
+        }
+
+        .blob-1 {
+            top: -50px; left: -50px;
+            width: 300px; height: 300px;
+            background: var(--pop-blue);
+            border-radius: 50%;
+            animation: floatBlob 10s infinite ease-in-out;
+        }
+
+        .blob-2 {
+            bottom: -80px; right: -80px;
+            width: 400px; height: 400px;
+            background: var(--pop-pink);
+            border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%;
+            animation: morphBlob 15s infinite linear;
+        }
+
+        .squiggle {
+            position: absolute;
+            top: 20%; right: 10%;
+            width: 100px; height: 20px;
+            background: url("data:image/svg+xml,%3Csvg viewBox='0 0 100 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 10 Q 25 20 50 10 T 100 10' stroke='%23ffd93d' stroke-width='5' fill='none'/%3E%3C/svg%3E");
+            background-repeat: repeat;
+            animation: moveSquiggle 5s linear infinite;
+        }
+
+        @keyframes floatBlob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
+        @keyframes morphBlob { 0% { border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%; } 50% { border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; } 100% { border-radius: 40% 60% 70% 30% / 40% 50% 60% 50%; } }
+        @keyframes moveSquiggle { 0% { background-position: 0 0; } 100% { background-position: 100px 0; } }
+
+        /* --- Main Card --- */
+        .memphis-card {
+            background: #fff;
+            width: 900px;
+            max-width: 95%;
+            height: 650px;
+            border: 4px solid var(--pop-black);
+            border-radius: 40px;
+            box-shadow: 12px 12px 0px var(--pop-black);
+            display: grid;
+            grid-template-columns: 1.5fr 1fr;
+            padding: 30px;
+            position: relative;
+            overflow: hidden;
+            z-index: 10;
+        }
+
+        /* --- Left: Player Stage --- */
+        .stage-pop {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px;
+            border-right: 4px dashed #eee;
+        }
+
+        /* Sun/Flower Visualizer */
+        .sun-visual {
+            width: 220px;
+            height: 220px;
+            background: var(--pop-yellow);
+            border: 4px solid var(--pop-black);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 8px 8px 0px var(--pop-black);
+            position: relative;
+            margin-top: 40px;
+        }
+
+        /* Sun rays */
+        .sun-ray {
+            position: absolute;
+            width: 100%; height: 100%;
+            border: 4px dashed var(--pop-black);
+            border-radius: 50%;
+            opacity: 0.5;
+            animation: spinRay 10s linear infinite;
+        }
+        
+        .sun-ray:nth-child(2) { width: 120%; height: 120%; animation-direction: reverse; border-color: var(--pop-pink); }
+
+        @keyframes spinRay { 100% { transform: rotate(360deg); } }
+
+        .sun-face {
+            font-size: 4rem;
+            font-family: var(--font-header);
+            z-index: 2;
+        }
+
+        .stage-pop.playing .sun-face {
+            animation: bounceFace 0.6s infinite alternate;
+        }
+
+        @keyframes bounceFace { from { transform: translateY(0); } to { transform: translateY(5px); } }
+
+        /* Text Info */
+        .track-info-pop {
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .title-pop {
+            font-family: var(--font-header);
+            font-size: 2.5rem;
+            color: var(--pop-purple);
+            line-height: 1;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 0px rgba(0,0,0,0.1);
+        }
+
+        .artist-pop {
+            font-size: 1.2rem;
+            font-weight: 900;
+            color: var(--pop-blue);
+            background: #eee;
+            padding: 5px 15px;
+            border-radius: 20px;
+            display: inline-block;
+            transform: rotate(-2deg);
+        }
+
+        /* Controls - Geometric Shapes */
+        .controls-pop {
+            display: flex;
+            gap: 20px;
+            width: 100%;
+            justify-content: center;
+        }
+
+        .btn-geo {
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.1s;
+            box-shadow: 4px 4px 0px var(--pop-black);
+            color: var(--pop-black);
+        }
+
+        .btn-geo:active {
+            transform: translate(4px, 4px);
+            box-shadow: 0px 0px 0px transparent;
+        }
+
+        .btn-play {
+            width: 80px; height: 80px;
+            background: var(--pop-pink);
+            border-radius: 50%;
+            font-size: 1.5rem;
+        }
+
+        .btn-stop {
+            width: 50px; height: 50px;
+            background: var(--pop-blue);
+            border-radius: 8px;
+            font-size: 1.2rem;
+        }
+
+        .btn-nav {
+            width: 50px; height: 50px;
+            background: var(--pop-yellow);
+            border-radius: 12px;
+            font-size: 1.2rem;
+        }
+
+        /* Progress Bar - Thick Blocky */
+        .progress-pop-wrapper {
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        .progress-track {
+            height: 16px;
+            background: #eee;
+            border-radius: 10px;
+            border: 2px solid var(--pop-black);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-fill {
+            height: 100%;
+            width: 0%;
+            background: repeating-linear-gradient(
+                45deg,
+                var(--pop-purple),
+                var(--pop-purple) 10px,
+                #fff 10px,
+                #fff 20px
+            );
+            transition: width 0.1s linear;
+        }
+
+        .time-pop {
+            display: flex;
+            justify-content: space-between;
+            font-family: var(--font-header);
+            color: #888;
+            margin-top: 5px;
+        }
+
+        /* --- Right: Playlist --- */
+        .playlist-pop {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            overflow-y: auto;
+        }
+
+        .pop-header {
+            font-family: var(--font-header);
+            font-size: 1.5rem;
+            color: var(--pop-black);
+            text-align: center;
+            margin-bottom: 10px;
+            position: relative;
+            display: inline-block;
+        }
+        
+        /* Decorative triangle on header */
+        .pop-header::after {
+            content: '▲';
+            position: absolute;
+            bottom: -15px; left: 50%;
+            transform: translateX(-50%);
+            color: var(--pop-yellow);
+            font-size: 1.2rem;
+        }
+
+        .song-block {
+            background: #fff;
+            border: 2px solid var(--pop-black);
+            border-radius: 15px;
+            padding: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            transition: transform 0.2s;
+            box-shadow: 4px 4px 0px var(--pop-black);
+        }
+
+        .song-block:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 6px 6px 0px var(--pop-black);
+        }
+
+        .song-block.active {
+            background: var(--pop-yellow);
+            transform: scale(1.02) rotate(1deg);
+        }
+
+        .block-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .block-title {
+            font-weight: 900;
+            font-size: 1.1rem;
+        }
+
+        .block-artist {
+            font-size: 0.9rem;
+            opacity: 0.7;
+        }
+
+        .block-icon {
+            width: 30px; height: 30px;
+            background: var(--pop-pink);
+            border-radius: 50%;
+            border: 2px solid var(--pop-black);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: bold;
+        }
+
+        /* Scrollbar */
+        .playlist-pop::-webkit-scrollbar { width: 8px; }
+        .playlist-pop::-webkit-scrollbar-thumb { background: var(--pop-black); border-radius: 10px; border: 2px solid #fff; }
+
+        /* Responsive */
+        @media (max-width: 800px) {
+            .memphis-card {
+                grid-template-columns: 1fr;
+                height: auto;
+                border-radius: 20px;
+            }
+            .stage-pop {
+                border-right: none;
+                border-bottom: 4px dashed #eee;
+                padding-bottom: 40px;
+            }
+            .sun-visual {
+                width: 150px; height: 150px;
+            }
+            .sun-face { font-size: 3rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Background Shapes -->
+    <div class="shape-blob blob-1"></div>
+    <div class="shape-blob blob-2"></div>
+    <div class="squiggle"></div>
+
+    <main class="memphis-card">
+        
+        <!-- Left: Player -->
+        <section class="stage-pop" id="stagePop">
+            
+            <div class="sun-visual">
+                <div class="sun-ray"></div>
+                <div class="sun-ray"></div>
+                <div class="sun-face">:)</div>
+            </div>
+
+            <div class="track-info-pop">
+                <h1 class="title-pop" id="titlePop">Hello!</h1>
+                <div class="artist-pop" id="artistPop">Select a song</div>
+            </div>
+
+            <div class="progress-pop-wrapper" id="progressPop">
+                <div class="progress-track">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <div class="time-pop">
+                    <span id="currentTime">0:00</span>
+                    <span id="duration">0:00</span>
+                </div>
+            </div>
+
+            <div class="controls-pop">
+                <button class="btn-geo btn-nav" id="prevBtn">◀</button>
+                <button class="btn-geo btn-play" id="playBtn">▶</button>
+                <button class="btn-geo btn-stop" id="stopBtn">■</button>
+                <button class="btn-geo btn-nav" id="nextBtn">▶</button>
+            </div>
+
+        </section>
+
+        <!-- Right: Playlist -->
+        <aside class="playlist-pop">
+            <div class="pop-header" style="align-self:center;">My Mix</div>
+            
+            <div class="song-block" id="block-0">
+                <div class="block-info">
+                    <div class="block-title">I Just Called...</div>
+                    <div class="block-artist">Stevie Wonder</div>
+                </div>
+                <div class="block-icon">1</div>
+            </div>
+
+            <div class="song-block" id="block-1">
+                <div class="block-info">
+                    <div class="block-title">Another Day...</div>
+                    <div class="block-artist">Phil Collins</div>
+                </div>
+                <div class="block-icon">2</div>
+            </div>
+
+            <div class="song-block" id="block-2">
+                <div class="block-info">
+                    <div class="block-title">If Life Is Short</div>
+                    <div class="block-artist">The Moffatts</div>
+                </div>
+                <div class="block-icon">3</div>
+            </div>
+
+        </aside>
+
+    </main>
+
+    <script>
+        const tracks = [
+            {
+                title: "I Just Called To Say I Love You",
+                artist: "Stevie Wonder",
+                url: "https://music.giau.info/mp3/1765329418087_I_Just_Called_To_Say_I_Love_You.mp3"
+            },
+            {
+                title: "Another Day In Paradise",
+                artist: "Phil Collins",
+                url: "https://music.giau.info/mp3/1765329417208_Another_Day_In_Paradise.mp3"
+            },
+            {
+                title: "If Life Is So Short",
+                artist: "The Moffatts",
+                url: "https://music.giau.info/mp3/1765329418894_If_Life_Is_So_Short.mp3"
+            }
+        ];
+
+        let currentIndex = 0;
+        let isPlaying = false;
+        const audio = new Audio();
+
+        // DOM
+        const stagePop = document.getElementById('stagePop');
+        const playBtn = document.getElementById('playBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const titlePop = document.getElementById('titlePop');
+        const artistPop = document.getElementById('artistPop');
+        const progressFill = document.getElementById('progressFill');
+        const progressPop = document.getElementById('progressPop');
+        const currentTimeEl = document.getElementById('currentTime');
+        const durationEl = document.getElementById('duration');
+
+        function init() {
+            loadTrack(0);
+
+            playBtn.addEventListener('click', togglePlay);
+            stopBtn.addEventListener('click', stopTrack);
+            prevBtn.addEventListener('click', prevTrack);
+            nextBtn.addEventListener('click', nextTrack);
+
+            // Bind Blocks
+            for(let i=0; i<3; i++) {
+                document.getElementById(`block-${i}`).addEventListener('click', () => {
+                    if (currentIndex === i && isPlaying) {
+                        pauseTrack();
+                    } else {
+                        loadTrack(i);
+                        playTrack();
+                    }
+                });
+            }
+
+            audio.addEventListener('timeupdate', updateProgress);
+            audio.addEventListener('loadedmetadata', () => {
+                durationEl.innerText = formatTime(audio.duration);
+            });
+            audio.addEventListener('ended', nextTrack);
+
+            progressPop.addEventListener('click', (e) => {
+                const rect = progressPop.getBoundingClientRect();
+                const pos = (e.clientX - rect.left) / rect.width;
+                audio.currentTime = pos * audio.duration;
+            });
+        }
+
+        function loadTrack(index) {
+            currentIndex = index;
+            const track = tracks[index];
+            audio.src = track.url;
+            
+            titlePop.innerText = track.title;
+            artistPop.innerText = track.artist;
+            
+            updateBlockUI();
+        }
+
+        function togglePlay() {
+            if (isPlaying) pauseTrack();
+            else playTrack();
+        }
+
+        function playTrack() {
+            const p = audio.play();
+            if (p !== undefined) {
+                p.then(() => {
+                    isPlaying = true;
+                    stagePop.classList.add('playing');
+                    playBtn.innerText = "||";
+                }).catch(e => console.error(e));
+            }
+        }
+
+        function pauseTrack() {
+            audio.pause();
+            isPlaying = false;
+            stagePop.classList.remove('playing');
+            playBtn.innerText = "▶";
+        }
+
+        function stopTrack() {
+            pauseTrack();
+            audio.currentTime = 0;
+            updateProgress();
+        }
+
+        function prevTrack() {
+            let idx = currentIndex - 1;
+            if (idx < 0) idx = tracks.length - 1;
+            loadTrack(idx);
+            playTrack();
+        }
+
+        function nextTrack() {
+            let idx = currentIndex + 1;
+            if (idx >= tracks.length) idx = 0;
+            loadTrack(idx);
+            playTrack();
+        }
+
+        function updateProgress() {
+            if (audio.duration) {
+                const pct = (audio.currentTime / audio.duration) * 100;
+                progressFill.style.width = `${pct}%`;
+                currentTimeEl.innerText = formatTime(audio.currentTime);
+            }
+        }
+
+        function formatTime(s) {
+            if (!s || isNaN(s)) return "0:00";
+            const m = Math.floor(s / 60);
+            const sec = Math.floor(s % 60);
+            return `${m}:${sec < 10 ? '0' : ''}${sec}`;
+        }
+
+        function updateBlockUI() {
+            // Remove active class from all
+            for(let i=0; i<3; i++) {
+                document.getElementById(`block-${i}`).classList.remove('active');
+            }
+            // Add to current
+            document.getElementById(`block-${currentIndex}`).classList.add('active');
+        }
+
+        init();
+    </script>
+</body>
+</html>

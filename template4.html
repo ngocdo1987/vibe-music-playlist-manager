@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SYS.AUDIO // HUD Interface</title>
+    
+    <!-- Typography: Rajdhani (Tech) & Share Tech Mono (Data) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+
+    <style>
+        /* --- CSS Variables --- */
+        :root {
+            /* Palette: Deep Space Blue, HUD Cyan, Warning Yellow */
+            --bg-deep: #050b14;
+            --bg-panel: rgba(10, 25, 40, 0.85);
+            --color-primary: #00f0ff; /* Cyan */
+            --color-secondary: #005f73;
+            --color-alert: #f0e600;
+            --color-dim: #4a6b7a;
+            
+            /* Fonts */
+            --font-hud: 'Rajdhani', sans-serif;
+            --font-data: 'Share Tech Mono', monospace;
+        }
+
+        /* --- Global Reset --- */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-deep);
+            /* Grid Background */
+            background-image: 
+                linear-gradient(rgba(0, 240, 255, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 240, 255, 0.05) 1px, transparent 1px);
+            background-size: 40px 40px;
+            color: var(--color-primary);
+            font-family: var(--font-hud);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Ambient Scan Line */
+        body::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 10px;
+            background: rgba(0, 240, 255, 0.1);
+            opacity: 0.6;
+            animation: scanline 6s linear infinite;
+            pointer-events: none;
+            z-index: 999;
+        }
+
+        @keyframes scanline {
+            0% { top: -10%; }
+            100% { top: 110%; }
+        }
+
+        /* --- Main HUD Container --- */
+        .hud-interface {
+            width: 1000px;
+            max-width: 95vw;
+            height: 650px;
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 20px;
+            position: relative;
+            /* Clipped corners for tech look */
+            clip-path: polygon(
+                20px 0, 100% 0, 
+                100% calc(100% - 20px), calc(100% - 20px) 100%, 
+                0 100%, 0 20px
+            );
+            background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(0, 240, 255, 0.2);
+            padding: 20px;
+            backdrop-filter: blur(5px);
+            box-shadow: 0 0 50px rgba(0, 240, 255, 0.05);
+        }
+
+        /* --- Left Panel: Data Log (Playlist) --- */
+        .panel-left {
+            border: 1px solid rgba(0, 240, 255, 0.3);
+            background: var(--bg-panel);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            clip-path: polygon(0 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%);
+        }
+
+        .panel-header {
+            font-family: var(--font-data);
+            font-size: 0.8rem;
+            color: var(--color-alert);
+            border-bottom: 1px dashed var(--color-dim);
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            text-transform: uppercase;
+        }
+
+        .data-log-list {
+            flex: 1;
+            overflow-y: auto;
+            font-family: var(--font-data);
+            font-size: 0.9rem;
+        }
+
+        /* Custom Scrollbar */
+        .data-log-list::-webkit-scrollbar { width: 4px; }
+        .data-log-list::-webkit-scrollbar-thumb { background: var(--color-dim); }
+
+        .log-entry {
+            padding: 12px 5px;
+            border-bottom: 1px solid rgba(74, 107, 122, 0.3);
+            cursor: pointer;
+            display: grid;
+            grid-template-columns: 30px 1fr 40px;
+            align-items: center;
+            transition: all 0.2s;
+            color: var(--color-dim);
+        }
+
+        .log-entry:hover {
+            background: rgba(0, 240, 255, 0.1);
+            color: var(--color-primary);
+            padding-left: 10px;
+        }
+
+        .log-entry.active {
+            color: #fff;
+            background: linear-gradient(90deg, rgba(0, 240, 255, 0.2), transparent);
+            border-left: 3px solid var(--color-alert);
+        }
+
+        .log-entry.active .status-icon {
+            color: var(--color-alert);
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink { 50% { opacity: 0; } }
+
+        /* --- Right Panel: Core Visualizer --- */
+        .panel-right {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* The "Radar" / Visualizer */
+        .core-visualizer {
+            flex: 1;
+            border: 1px solid rgba(0, 240, 255, 0.3);
+            background: var(--bg-panel);
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            clip-path: polygon(15px 0, 100% 0, 100% 100%, 0 100%, 0 15px);
+        }
+
+        /* Grid inside visualizer */
+        .core-grid {
+            position: absolute;
+            width: 200%;
+            height: 200%;
+            background-image: radial-gradient(var(--color-primary) 1px, transparent 1px);
+            background-size: 20px 20px;
+            opacity: 0.2;
+            transform: perspective(500px) rotateX(60deg);
+        }
+
+        /* The Rings */
+        .ring-outer {
+            width: 250px;
+            height: 250px;
+            border: 2px dashed rgba(0, 240, 255, 0.3);
+            border-radius: 50%;
+            position: absolute;
+            animation: spin 20s linear infinite;
+        }
+
+        .ring-inner {
+            width: 180px;
+            height: 180px;
+            border: 4px solid var(--color-secondary);
+            border-top-color: var(--color-primary);
+            border-radius: 50%;
+            position: absolute;
+            animation: spin-rev 10s linear infinite;
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.2);
+        }
+
+        .ring-center {
+            width: 100px;
+            height: 100px;
+            border: 1px solid var(--color-primary);
+            background: rgba(0, 240, 255, 0.1);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            z-index: 10;
+            font-family: var(--font-data);
+            font-size: 0.7rem;
+            text-align: center;
+        }
+
+        .playing .ring-center {
+            animation: pulse-core 0.5s infinite alternate;
+            background: rgba(240, 230, 0, 0.1);
+            border-color: var(--color-alert);
+            color: var(--color-alert);
+        }
+
+        @keyframes pulse-core {
+            from { transform: scale(1); opacity: 0.8; }
+            to { transform: scale(1.1); opacity: 1; }
+        }
+
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        @keyframes spin-rev { from { transform: rotate(360deg); } to { transform: rotate(0deg); } }
+
+        /* Simulated Audio Bars (Center) */
+        .hud-bars {
+            position: absolute;
+            display: flex;
+            gap: 4px;
+            height: 40px;
+            align-items: flex-end;
+            opacity: 0;
+            transition: opacity 0.3s;
+            bottom: 80px;
+        }
+        
+        .playing .hud-bars { opacity: 1; }
+
+        .h-bar {
+            width: 6px;
+            background: var(--color-primary);
+            animation: h-bounce 0.5s infinite ease-in-out alternate;
+        }
+        
+        .h-bar:nth-child(odd) { background: var(--color-alert); }
+
+        @keyframes h-bounce {
+            0% { height: 10%; }
+            100% { height: 100%; }
+        }
+
+        /* --- Controls Section --- */
+        .controls-deck {
+            height: 120px;
+            border: 1px solid rgba(0, 240, 255, 0.3);
+            background: var(--bg-panel);
+            display: flex;
+            align-items: center;
+            padding: 0 30px;
+            gap: 30px;
+            clip-path: polygon(0 0, calc(100% - 15px) 0, 100% 15px, 100% 100%, 15px 100%, 0 calc(100% - 15px));
+            position: relative;
+        }
+
+        .progress-module {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .track-readout {
+            font-family: var(--font-data);
+            font-size: 1.2rem;
+            color: #fff;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 5px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .progress-bar-hud {
+            width: 100%;
+            height: 8px;
+            background: rgba(255,255,255,0.1);
+            position: relative;
+            cursor: pointer;
+        }
+
+        .progress-fill-hud {
+            height: 100%;
+            background: var(--color-primary);
+            width: 0%;
+            position: relative;
+        }
+        
+        /* Ticks on progress bar */
+        .progress-bar-hud::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(90deg, transparent 50%, rgba(0,0,0,0.5) 50%);
+            background-size: 20px 100%;
+            pointer-events: none;
+        }
+
+        .time-data {
+            font-family: var(--font-data);
+            font-size: 0.7rem;
+            color: var(--color-dim);
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .btn-group-hud {
+            display: flex;
+            gap: 15px;
+        }
+
+        .btn-hex {
+            width: 50px;
+            height: 50px;
+            background: transparent;
+            border: 1px solid var(--color-dim);
+            color: var(--color-primary);
+            cursor: pointer;
+            position: relative;
+            transition: all 0.2s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            clip-path: polygon(15px 0, 100% 0, 100% calc(100% - 15px), calc(100% - 15px) 100%, 0 100%, 0 15px);
+        }
+
+        .btn-hex:hover {
+            background: rgba(0, 240, 255, 0.2);
+            border-color: var(--color-primary);
+            box-shadow: 0 0 10px rgba(0, 240, 255, 0.3);
+            text-shadow: 0 0 5px var(--color-primary);
+        }
+
+        .btn-hex:active {
+            transform: scale(0.95);
+        }
+
+        .btn-play-main {
+            width: 70px;
+            height: 70px;
+            border-color: var(--color-alert);
+            color: var(--color-alert);
+            font-size: 1.5rem;
+        }
+
+        .btn-play-main:hover {
+            background: rgba(240, 230, 0, 0.2);
+            box-shadow: 0 0 15px rgba(240, 230, 0, 0.3);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hud-interface {
+                grid-template-columns: 1fr;
+                height: auto;
+                width: 100%;
+                overflow-y: auto;
+            }
+            .core-visualizer {
+                height: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <main class="hud-interface">
+        
+        <!-- Left: Data Log -->
+        <aside class="panel-left">
+            <div class="panel-header">
+                <span>System.Audio_Log</span>
+                <span>VER 2.4</span>
+            </div>
+            <div class="data-log-list" id="playlist">
+                <!-- Populated by JS -->
+            </div>
+        </aside>
+
+        <!-- Right: Core & Controls -->
+        <section class="panel-right">
+            
+            <!-- The Visualizer -->
+            <div class="core-visualizer" id="visualizer-core">
+                <div class="core-grid"></div>
+                <div class="ring-outer"></div>
+                <div class="ring-inner"></div>
+                <div class="ring-center" id="freq-display">
+                    <span>STANDBY<br>MODE</span>
+                </div>
+                <!-- Simulated Bars -->
+                <div class="hud-bars">
+                    <div class="h-bar" style="animation-duration: 0.4s"></div>
+                    <div class="h-bar" style="animation-duration: 0.6s"></div>
+                    <div class="h-bar" style="animation-duration: 0.3s"></div>
+                    <div class="h-bar" style="animation-duration: 0.5s"></div>
+                    <div class="h-bar" style="animation-duration: 0.4s"></div>
+                </div>
+            </div>
+
+            <!-- Controls -->
+            <div class="controls-deck">
+                <div class="progress-module">
+                    <div class="track-readout" id="track-readout">NO SIGNAL</div>
+                    <div class="progress-bar-hud" id="prog-area">
+                        <div class="progress-fill-hud" id="prog-fill"></div>
+                    </div>
+                    <div class="time-data">
+                        <span id="time-curr">00:00:00</span>
+                        <span id="time-tot">00:00:00</span>
+                    </div>
+                </div>
+
+                <div class="btn-group-hud">
+                    <button class="btn-hex" id="btn-prev">&lt;&lt;</button>
+                    <button class="btn-hex btn-play-main" id="btn-play">PLAY</button>
+                    <button class="btn-hex" id="btn-next">&gt;&gt;</button>
+                </div>
+            </div>
+
+        </section>
+    </main>
+
+    <script>
+        // --- Mock Data: Tech/Sci-Fi Tracks ---
+        const sysTracks = [
+            { id: 1, title: "Neural_Link_v1", artist: "Mainframe", duration: "03:45" },
+            { id: 2, title: "Sector_7_Glitch", artist: "Anomaly", duration: "02:30" },
+            { id: 3, title: "Cybernetic_Heart", artist: "Android", duration: "04:15" },
+            { id: 4, title: "Data_Stream", artist: "Network", duration: "02:55" },
+            { id: 5, title: "Void_Walkers", artist: "Unknown", duration: "05:00" },
+            { id: 6, title: "Protocol_Omega", artist: "System", duration: "03:10" }
+        ];
+
+        // --- State ---
+        let index = 0;
+        let playing = false;
+        let progress = 0;
+        let durationSec = 0;
+        let timer = null;
+        let freqTimer = null;
+
+        // --- DOM ---
+        const ui = {
+            playlist: document.getElementById('playlist'),
+            readout: document.getElementById('track-readout'),
+            freq: document.getElementById('freq-display'),
+            progArea: document.getElementById('prog-area'),
+            progFill: document.getElementById('prog-fill'),
+            curr: document.getElementById('time-curr'),
+            tot: document.getElementById('time-tot'),
+            core: document.getElementById('visualizer-core'),
+            btnPlay: document.getElementById('btn-play'),
+            btnNext: document.getElementById('btn-next'),
+            btnPrev: document.getElementById('btn-prev')
+        };
+
+        // --- Helpers ---
+        const toSec = (str) => {
+            const [m, s] = str.split(':').map(Number);
+            return (m*60) + s;
+        };
+
+        const fmt = (sec) => {
+            const m = Math.floor(sec/60).toString().padStart(2,'0');
+            const s = Math.floor(sec%60).toString().padStart(2,'0');
+            const ms = Math.floor((sec%1)*10).toString(); // Fake milliseconds
+            return `00:${m}:${s}`; // HH:MM:SS style
+        };
+
+        // --- Core Functions ---
+        function init() {
+            renderList();
+            loadTrack(0);
+        }
+
+        function renderList() {
+            ui.playlist.innerHTML = sysTracks.map((t, i) => `
+                <div class="log-entry ${i === index ? 'active' : ''}" onclick="selTrack(${i})">
+                    <span class="status-icon">${i === index ? '►' : (i+1).toString().padStart(2,'0')}</span>
+                    <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${t.title}</span>
+                    <span style="text-align:right; font-size:0.8em;">${t.duration}</span>
+                </div>
+            `).join('');
+        }
+
+        function loadTrack(idx) {
+            index = idx;
+            const t = sysTracks[idx];
+            durationSec = toSec(t.duration);
+            progress = 0;
+            
+            // Update Readouts
+            ui.readout.innerText = `> ${t.title} // ${t.artist}`;
+            ui.tot.innerText = fmt(durationSec);
+            ui.curr.innerText = fmt(0);
+            ui.progFill.style.width = '0%';
+            
+            // Reset Core State
+            ui.core.classList.remove('playing');
+            ui.freq.innerHTML = `<span>IDLE<br>${Math.floor(Math.random()*900)+100}Hz</span>`;
+            
+            renderList();
+        }
+
+        function togglePlay() {
+            playing = !playing;
+            
+            if(playing) {
+                ui.btnPlay.innerText = "PAUSE";
+                ui.core.classList.add('playing');
+                ui.freq.innerHTML = `<span>ACTIVE<br>RUNNING</span>`;
+                
+                // Simulate Frequency jumping
+                clearInterval(freqTimer);
+                freqTimer = setInterval(() => {
+                    if(!playing) return;
+                    const hz = Math.floor(Math.random() * 20000) + 50;
+                    ui.freq.innerHTML = `<span>${hz}<br>Hz</span>`;
+                }, 200);
+
+                // Progress Timer
+                clearInterval(timer);
+                timer = setInterval(() => {
+                    progress++;
+                    if(progress >= durationSec) nextTrack();
+                    else updateProg();
+                }, 1000);
+
+            } else {
+                ui.btnPlay.innerText = "PLAY";
+                ui.core.classList.remove('playing');
+                ui.freq.innerHTML = `<span>PAUSED<br>HOLD</span>`;
+                clearInterval(timer);
+                clearInterval(freqTimer);
+            }
+        }
+
+        function updateProg() {
+            const pct = (progress / durationSec) * 100;
+            ui.progFill.style.width = `${pct}%`;
+            ui.curr.innerText = fmt(progress);
+        }
+
+        function nextTrack() {
+            let n = index + 1;
+            if(n >= sysTracks.length) n = 0;
+            loadTrack(n);
+            if(playing) togglePlay(); // reset to stop then play? just restart logic
+            setTimeout(() => { if(playing) togglePlay(); }, 50); 
+        }
+
+        function prevTrack() {
+            let p = index - 1;
+            if(p < 0) p = sysTracks.length - 1;
+            loadTrack(p);
+            if(playing) setTimeout(() => togglePlay(), 50);
+        }
+
+        window.selTrack = (i) => {
+            if(i === index) togglePlay();
+            else {
+                loadTrack(i);
+                if(!playing) togglePlay();
+                else {
+                    // quick restart if already playing
+                    clearInterval(timer);
+                    togglePlay(); 
+                }
+            }
+        };
+
+        // --- Events ---
+        ui.btnPlay.addEventListener('click', togglePlay);
+        ui.btnNext.addEventListener('click', nextTrack);
+        ui.btnPrev.addEventListener('click', prevTrack);
+        ui.progArea.addEventListener('click', (e) => {
+            const rect = ui.progArea.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const pct = Math.max(0, Math.min(1, x/rect.width));
+            progress = Math.floor(pct * durationSec);
+            updateProg();
+        });
+
+        // Boot
+        init();
+
+    </script>
+</body>
+</html>

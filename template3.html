@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audiophile // Editorial Edition</title>
+    
+    <!-- Typography: Cinzel (Serif) & Manrope (Sans) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;800&family=Manrope:wght@300;400;600&display=swap" rel="stylesheet">
+
+    <style>
+        /* --- CSS Variables --- */
+        :root {
+            /* Palette: Monochrome with Champagne Gold */
+            --bg-paper: #fcfcfc;
+            --bg-card: #ffffff;
+            --text-ink: #121212;
+            --text-grey: #888888;
+            --accent-gold: #c5a059;
+            --accent-gold-light: #e6ccb3;
+            
+            /* Spacing */
+            --gap-std: 2rem;
+            
+            /* Fonts */
+            --font-serif: 'Cinzel', serif;
+            --font-sans: 'Manrope', sans-serif;
+        }
+
+        /* --- Global Reset --- */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-paper);
+            /* Subtle paper grain texture */
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E");
+            color: var(--text-ink);
+            font-family: var(--font-sans);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        /* --- Main Magazine Layout --- */
+        .magazine-container {
+            width: 1100px;
+            height: 750px;
+            background: var(--bg-card);
+            box-shadow: 0 30px 80px -20px rgba(0,0,0,0.15);
+            display: grid;
+            grid-template-columns: 450px 1fr;
+            position: relative;
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+
+        /* --- Left: The Cover Art --- */
+        .cover-section {
+            position: relative;
+            overflow: hidden;
+            background: #000;
+        }
+
+        .cover-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0.9;
+            transition: transform 10s ease, opacity 0.5s ease;
+        }
+
+        .playing .cover-image {
+            transform: scale(1.05);
+            opacity: 1;
+        }
+
+        /* Overlay Info on Cover */
+        .cover-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            padding: 3rem;
+            background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+            color: #fff;
+        }
+
+        .overlay-label {
+            font-family: var(--font-serif);
+            font-size: 0.75rem;
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            margin-bottom: 1rem;
+            display: block;
+            color: var(--accent-gold);
+        }
+
+        .overlay-title {
+            font-family: var(--font-serif);
+            font-size: 2.5rem;
+            line-height: 1.1;
+            margin-bottom: 0.5rem;
+        }
+
+        /* --- Right: The Editor's Desk --- */
+        .editor-section {
+            padding: 4rem;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        /* Top Header */
+        .editor-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-bottom: 3rem;
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+            padding-bottom: 1.5rem;
+        }
+
+        .brand {
+            font-family: var(--font-serif);
+            font-weight: 800;
+            font-size: 1.2rem;
+            letter-spacing: 0.05em;
+        }
+
+        .volume-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        input[type="range"].slider-minimal {
+            -webkit-appearance: none;
+            width: 80px;
+            height: 1px;
+            background: #ccc;
+            outline: none;
+        }
+
+        input[type="range"].slider-minimal::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 10px;
+            height: 10px;
+            background: var(--text-ink);
+            border-radius: 50%;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        input[type="range"].slider-minimal:hover::-webkit-slider-thumb {
+            transform: scale(1.5);
+            background: var(--accent-gold);
+        }
+
+        /* Main Content Area */
+        .player-interface {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        /* Minimalist Visualizer Pulse */
+        .visualizer-pulse {
+            width: 8px;
+            height: 8px;
+            background: var(--accent-gold);
+            border-radius: 50%;
+            margin: 0 auto 2rem auto;
+            position: relative;
+        }
+
+        .playing .visualizer-pulse::before,
+        .playing .visualizer-pulse::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            border-radius: 50%;
+            background: transparent;
+            border: 1px solid var(--accent-gold);
+        }
+
+        .playing .visualizer-pulse::before {
+            width: 30px;
+            height: 30px;
+            animation: ripple 2s infinite ease-out;
+        }
+
+        .playing .visualizer-pulse::after {
+            width: 50px;
+            height: 50px;
+            animation: ripple 2s infinite ease-out 0.6s;
+        }
+
+        @keyframes ripple {
+            0% { transform: translate(-50%, -50%) scale(0.8); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(2); opacity: 0; }
+        }
+
+        /* Controls - Minimalist Lines */
+        .controls-row {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 3rem;
+            margin-bottom: 3rem;
+        }
+
+        .btn-minimal {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--text-ink);
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .btn-minimal:hover {
+            color: var(--accent-gold);
+            transform: scale(1.1);
+        }
+
+        .btn-play-lg {
+            width: 60px;
+            height: 60px;
+            border: 1px solid var(--text-ink);
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .btn-play-lg:hover {
+            background: var(--text-ink);
+            color: #fff;
+        }
+
+        /* Progress Bar */
+        .progress-container {
+            margin-bottom: 3rem;
+        }
+
+        .progress-track {
+            width: 100%;
+            height: 1px;
+            background: #e0e0e0;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .progress-line {
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 100%;
+            background: var(--text-ink);
+            width: 0%;
+            transition: width 0.1s linear;
+        }
+        
+        .progress-track:hover .progress-line {
+            background: var(--accent-gold);
+        }
+
+        .time-labels {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+            font-size: 0.75rem;
+            color: var(--text-grey);
+            font-weight: 300;
+            letter-spacing: 0.05em;
+        }
+
+        /* Playlist */
+        .playlist-editorial {
+            flex: 1;
+            overflow-y: hidden; /* Hidden scrollbar for clean look */
+            position: relative;
+        }
+
+        .playlist-editorial:hover {
+            overflow-y: auto;
+        }
+
+        /* Hide Scrollbar but keep function */
+        .playlist-editorial::-webkit-scrollbar {
+            width: 4px;
+        }
+        .playlist-editorial::-webkit-scrollbar-thumb {
+            background: #ccc;
+        }
+
+        .track-row {
+            display: flex;
+            align-items: center;
+            padding: 1rem 0;
+            border-bottom: 1px solid rgba(0,0,0,0.03);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .track-row:hover {
+            padding-left: 10px;
+        }
+
+        .track-row.active {
+            color: var(--accent-gold);
+        }
+
+        .track-row.active::after {
+            content: 'NOW PLAYING';
+            font-size: 0.6rem;
+            position: absolute;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            letter-spacing: 0.1em;
+        }
+
+        .track-index {
+            font-family: var(--font-serif);
+            font-size: 0.8rem;
+            width: 30px;
+            opacity: 0.4;
+        }
+
+        .track-meta {
+            flex: 1;
+        }
+
+        .track-name {
+            display: block;
+            font-weight: 600;
+            font-size: 0.9rem;
+            margin-bottom: 2px;
+        }
+        
+        .track-artist {
+            display: block;
+            font-size: 0.8rem;
+            opacity: 0.6;
+            font-weight: 300;
+        }
+
+        .track-time {
+            font-size: 0.8rem;
+            font-family: var(--font-serif);
+        }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            body {
+                height: auto;
+                padding: 20px;
+                overflow-y: auto;
+            }
+            .magazine-container {
+                grid-template-columns: 1fr;
+                width: 100%;
+                height: auto;
+                overflow: visible;
+            }
+            .cover-section {
+                height: 300px;
+            }
+            .editor-section {
+                padding: 2rem;
+                min-height: 500px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <main class="magazine-container">
+        
+        <!-- Left: High-Impact Cover -->
+        <section class="cover-section">
+            <img src="" alt="Album Cover" class="cover-image" id="cover-art">
+            <div class="cover-overlay">
+                <span class="overlay-label">Featured Track</span>
+                <h1 class="overlay-title" id="main-title">Loading...</h1>
+            </div>
+        </section>
+
+        <!-- Right: Clean Interface -->
+        <section class="editor-section">
+            
+            <header class="editor-header">
+                <div class="brand">AUDIOPHILE.</div>
+                <div class="volume-control">
+                    <span style="font-size: 0.7rem; color: #888;">VOL</span>
+                    <input type="range" class="slider-minimal" min="0" max="100" value="60">
+                </div>
+            </header>
+
+            <div class="player-interface">
+                <!-- Visual Feedback -->
+                <div class="visualizer-pulse" id="pulse"></div>
+
+                <!-- Minimalist Controls -->
+                <div class="controls-row">
+                    <button class="btn-minimal" id="btn-prev" title="Previous">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M15 18l-6-6 6-6"/></svg>
+                    </button>
+                    <button class="btn-minimal btn-play-lg" id="btn-play" title="Play/Pause">
+                        <!-- Play Icon -->
+                        <svg class="icon-play" width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                        <!-- Pause Icon -->
+                        <svg class="icon-pause" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" style="display:none;"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+                    </button>
+                    <button class="btn-minimal" id="btn-next" title="Next">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 18l6-6-6-6"/></svg>
+                    </button>
+                </div>
+
+                <!-- Progress -->
+                <div class="progress-container">
+                    <div class="progress-track" id="progress-area">
+                        <div class="progress-line" id="progress-line"></div>
+                    </div>
+                    <div class="time-labels">
+                        <span id="curr-time">0:00</span>
+                        <span id="total-time">0:00</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- List -->
+            <div class="playlist-editorial" id="playlist-container">
+                <!-- JS generated -->
+            </div>
+
+        </section>
+    </main>
+
+    <script>
+        // --- Data: Editorial / Classical Vibe ---
+        const tracks = [
+            { id: 1, title: "Nocturne in C Minor", artist: "Frederic Style", duration: "4:20", cover: "https://picsum.photos/seed/classic1/600/800" },
+            { id: 2, title: "Architecture of Sound", artist: "Minimalist Lab", duration: "3:15", cover: "https://picsum.photos/seed/arch2/600/800" },
+            { id: 3, title: "Golden Hour", artist: "Sunset Collective", duration: "2:50", cover: "https://picsum.photos/seed/gold3/600/800" },
+            { id: 4, title: "Silent Spaces", artist: "Ambient Works", duration: "5:00", cover: "https://picsum.photos/seed/space4/600/800" },
+            { id: 5, title: "Elegy for a City", artist: "Urban Echo", duration: "3:45", cover: "https://picsum.photos/seed/urban5/600/800" }
+        ];
+
+        // --- State ---
+        let idx = 0;
+        let isPlaying = false;
+        let time = 0;
+        let dur = 0;
+        let timer = null;
+
+        // --- Elements ---
+        const els = {
+            cover: document.getElementById('cover-art'),
+            mainTitle: document.getElementById('main-title'),
+            playlist: document.getElementById('playlist-container'),
+            playBtn: document.getElementById('btn-play'),
+            prevBtn: document.getElementById('btn-prev'),
+            nextBtn: document.getElementById('btn-next'),
+            playIcon: document.querySelector('.icon-play'),
+            pauseIcon: document.querySelector('.icon-pause'),
+            pulse: document.getElementById('pulse'),
+            progArea: document.getElementById('progress-area'),
+            progLine: document.getElementById('progress-line'),
+            currTime: document.getElementById('curr-time'),
+            totTime: document.getElementById('total-time'),
+            body: document.querySelector('.magazine-container') // Class toggling
+        };
+
+        // --- Logic ---
+        function parse(str) {
+            const [m, s] = str.split(':').map(Number);
+            return m * 60 + s;
+        }
+
+        function fmt(sec) {
+            const m = Math.floor(sec / 60);
+            const s = Math.floor(sec % 60);
+            return `${m}:${s < 10 ? '0' : ''}${s}`;
+        }
+
+        function init() {
+            render();
+            load(0);
+        }
+
+        function render() {
+            els.playlist.innerHTML = tracks.map((t, i) => `
+                <div class="track-row ${i === idx ? 'active' : ''}" onclick="clickTrack(${i})">
+                    <div class="track-index">0${i+1}</div>
+                    <div class="track-meta">
+                        <span class="track-name">${t.title}</span>
+                        <span class="track-artist">${t.artist}</span>
+                    </div>
+                    <div class="track-time">${t.duration}</div>
+                </div>
+            `).join('');
+        }
+
+        function load(i) {
+            idx = i;
+            const t = tracks[i];
+            els.cover.src = t.cover;
+            els.mainTitle.innerText = t.title;
+            dur = parse(t.duration);
+            els.totTime.innerText = t.duration;
+            time = 0;
+            updateProg();
+            
+            // UI State
+            render(); // refreshes active class
+            if(isPlaying) {
+                els.body.classList.add('playing');
+            } else {
+                els.body.classList.remove('playing');
+            }
+        }
+
+        function toggle() {
+            isPlaying = !isPlaying;
+            if(isPlaying) {
+                els.playIcon.style.display = 'none';
+                els.pauseIcon.style.display = 'block';
+                els.body.classList.add('playing');
+                timer = setInterval(() => {
+                    time++;
+                    if(time >= dur) next();
+                    else updateProg();
+                }, 1000);
+            } else {
+                els.playIcon.style.display = 'block';
+                els.pauseIcon.style.display = 'none';
+                els.body.classList.remove('playing');
+                clearInterval(timer);
+            }
+        }
+
+        function next() {
+            let n = idx + 1;
+            if(n >= tracks.length) n = 0;
+            load(n);
+            if(isPlaying) timer = setInterval(tick, 1000);
+        }
+
+        function prev() {
+            let p = idx - 1;
+            if(p < 0) p = tracks.length - 1;
+            load(p);
+            if(isPlaying) timer = setInterval(tick, 1000);
+        }
+
+        function tick() {
+            time++;
+            if(time >= dur) next();
+            else updateProg();
+        }
+
+        function updateProg() {
+            const pct = (time / dur) * 100;
+            els.progLine.style.width = `${pct}%`;
+            els.currTime.innerText = fmt(time);
+        }
+
+        function scrub(e) {
+            const rect = els.progArea.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const w = rect.width;
+            time = Math.floor(Math.max(0, Math.min(1, x/w)) * dur);
+            updateProg();
+        }
+
+        // --- Events ---
+        window.clickTrack = (i) => {
+            if(i === idx) toggle();
+            else {
+                load(i);
+                if(!isPlaying) toggle();
+            }
+        };
+
+        els.playBtn.addEventListener('click', toggle);
+        els.nextBtn.addEventListener('click', next);
+        els.prevBtn.addEventListener('click', prev);
+        els.progArea.addEventListener('click', scrub);
+
+        init();
+    </script>
+</body>
+</html>

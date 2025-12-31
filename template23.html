@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bio-Lab Audio Interface</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cantarell:wght@400;700&family=Exo+2:wght@400;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            /* Bio-Lab Palette */
+            --bg-deep: #111214;
+            --lab-panel: rgba(20, 25, 35, 0.7);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            
+            --bio-cyan: #00f2ea;
+            --bio-purple: #7a5fff;
+            --bio-green: #0aff64;
+            
+            /* Typography */
+            --font-tech: 'Exo 2', sans-serif;
+            --font-ui: 'Cantarell', sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+        }
+
+        body {
+            background-color: var(--bg-deep);
+            color: #fff;
+            font-family: var(--font-ui);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* --- Organic Background --- */
+        .bio-blobs {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: -1;
+            filter: blur(80px);
+        }
+
+        .blob {
+            position: absolute;
+            border-radius: 50%;
+            opacity: 0.4;
+            animation: float 20s infinite ease-in-out;
+        }
+
+        .b1 { width: 500px; height: 500px; background: var(--bio-purple); top: -10%; left: -10%; }
+        .b2 { width: 400px; height: 400px; background: var(--bio-cyan); bottom: 10%; right: -5%; animation-delay: -5s; }
+        .b3 { width: 300px; height: 300px; background: var(--bio-green); top: 40%; left: 40%; animation-duration: 25s; }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0); }
+            50% { transform: translate(30px, -50px); }
+        }
+
+        /* --- Main Interface --- */
+        .lab-interface {
+            width: 900px;
+            max-width: 95%;
+            height: 650px;
+            background: var(--lab-panel);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 30px;
+            box-shadow: 0 0 50px rgba(0, 242, 234, 0.1);
+            display: grid;
+            grid-template-columns: 1.5fr 1fr;
+            padding: 40px;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* --- Left: The Specimen Chamber --- */
+        .chamber-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-right: 1px solid var(--glass-border);
+            padding-right: 40px;
+            position: relative;
+        }
+
+        /* The Organic Sphere Visualizer */
+        .specimen-jar {
+            width: 250px;
+            height: 250px;
+            position: relative;
+            margin-bottom: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .glass-beaker {
+            position: absolute;
+            width: 100%; height: 100%;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.1), transparent 70%);
+            border: 1px solid rgba(255,255,255,0.2);
+            box-shadow: 0 0 30px rgba(0, 242, 234, 0.1);
+        }
+
+        .organic-core {
+            width: 120px; height: 120px;
+            background: radial-gradient(circle, var(--bio-cyan), var(--bio-purple));
+            border-radius: 50%;
+            box-shadow: 0 0 40px var(--bio-cyan);
+            z-index: 2;
+            transition: all 0.5s ease;
+        }
+
+        /* Breathing Animation */
+        .chamber-section.playing .organic-core {
+            animation: breathe 3s infinite ease-in-out;
+        }
+
+        @keyframes breathe {
+            0%, 100% { transform: scale(1); box-shadow: 0 0 40px var(--bio-cyan); }
+            50% { transform: scale(1.1); box-shadow: 0 0 60px var(--bio-purple); }
+        }
+
+        /* Track Data Overlay */
+        .data-overlay {
+            position: absolute;
+            bottom: -10px; right: 20px;
+            font-family: var(--font-tech);
+            font-size: 0.8rem;
+            color: var(--bio-cyan);
+            text-align: right;
+        }
+
+        .sample-id {
+            font-size: 1.5rem;
+            font-weight: 700;
+            line-height: 1;
+        }
+
+        .track-title-bio {
+            font-family: var(--font-tech);
+            font-size: 1.8rem;
+            color: #fff;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 10px;
+            text-shadow: 0 0 10px rgba(0, 242, 234, 0.5);
+        }
+
+        .track-artist-bio {
+            color: #aaa;
+            font-size: 1rem;
+            margin-bottom: 30px;
+        }
+
+        /* Liquid Progress Bar */
+        .liquid-progress {
+            width: 100%;
+            height: 8px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+            margin-bottom: 10px;
+        }
+
+        .liquid-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--bio-purple), var(--bio-cyan));
+            border-radius: 10px;
+            box-shadow: 0 0 10px var(--bio-cyan);
+            transition: width 0.1s linear;
+            position: relative;
+        }
+
+        /* Gloss on liquid */
+        .liquid-fill::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(to bottom, rgba(255,255,255,0.4), transparent);
+        }
+
+        .time-data {
+            display: flex;
+            justify-content: space-between;
+            font-family: var(--font-tech);
+            font-size: 0.9rem;
+            color: var(--bio-cyan);
+        }
+
+        /* Floating Controls */
+        .bio-controls {
+            display: flex;
+            gap: 20px;
+            margin-top: 40px;
+        }
+
+        .btn-micro {
+            width: 50px; height: 50px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--glass-border);
+            color: #fff;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .btn-micro:hover {
+            background: var(--bio-green);
+            border-color: var(--bio-green);
+            color: #000;
+            box-shadow: 0 0 20px var(--bio-green);
+            transform: scale(1.1);
+        }
+
+        .btn-micro.active-play {
+            background: var(--bio-cyan);
+            border-color: var(--bio-cyan);
+            color: #000;
+            box-shadow: 0 0 20px var(--bio-cyan);
+            width: 60px; height: 60px;
+            font-size: 1.2rem;
+        }
+
+        /* --- Right: Sample Database --- */
+        .database-section {
+            padding-left: 40px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .db-header {
+            font-family: var(--font-tech);
+            color: var(--bio-purple);
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid var(--glass-border);
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .status-dot {
+            width: 10px; height: 10px;
+            border-radius: 50%;
+            background: var(--bio-green);
+            box-shadow: 0 0 10px var(--bio-green);
+            animation: pulseDot 2s infinite;
+        }
+
+        @keyframes pulseDot {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        .sample-list {
+            list-style: none;
+            overflow-y: auto;
+            flex-grow: 1;
+            padding-right: 10px;
+        }
+
+        .sample-item {
+            padding: 15px;
+            margin-bottom: 15px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid transparent;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .sample-item:hover {
+            background: rgba(255,255,255,0.08);
+            border-color: rgba(255,255,255,0.2);
+        }
+
+        .sample-item.active {
+            background: rgba(0, 242, 234, 0.1);
+            border: 1px solid var(--bio-cyan);
+            box-shadow: 0 0 15px rgba(0, 242, 234, 0.1);
+        }
+
+        .sample-item::before {
+            content: '';
+            position: absolute;
+            left: 0; top: 0; bottom: 0; width: 4px;
+            background: var(--bio-purple);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .sample-item.active::before {
+            opacity: 1;
+        }
+
+        .sample-name {
+            font-weight: bold;
+            font-size: 1rem;
+            margin-bottom: 4px;
+        }
+
+        .sample-type {
+            font-size: 0.8rem;
+            color: #888;
+            font-family: var(--font-tech);
+        }
+
+        /* Scrollbar */
+        .sample-list::-webkit-scrollbar { width: 6px; }
+        .sample-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 3px; }
+
+        /* Responsive */
+        @media (max-width: 800px) {
+            .lab-interface {
+                grid-template-columns: 1fr;
+                height: auto;
+                padding: 30px;
+                border-radius: 20px;
+            }
+            .chamber-section {
+                border-right: none;
+                border-bottom: 1px solid var(--glass-border);
+                padding-right: 0;
+                padding-bottom: 40px;
+            }
+            .specimen-jar {
+                width: 180px; height: 180px;
+            }
+            .organic-core {
+                width: 90px; height: 90px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Background Blobs -->
+    <div class="bio-blobs">
+        <div class="blob b1"></div>
+        <div class="blob b2"></div>
+        <div class="blob b3"></div>
+    </div>
+
+    <main class="lab-interface">
+        
+        <!-- Left: Specimen Chamber -->
+        <section class="chamber-section" id="chamberSection">
+            
+            <div class="specimen-jar">
+                <div class="glass-beaker"></div>
+                <div class="organic-core"></div>
+                <div class="data-overlay">
+                    <div class="sample-id" id="sampleId">ID: 00</div>
+                    <div>STABLE</div>
+                </div>
+            </div>
+
+            <h1 class="track-title-bio" id="bioTitle">Initializing</h1>
+            <div class="track-artist-bio" id="bioArtist">Loading Sequence</div>
+
+            <div class="liquid-progress" id="liquidProgress">
+                <div class="liquid-fill" id="liquidFill"></div>
+            </div>
+            <div class="time-data">
+                <span id="currentTime">00:00</span>
+                <span>DURATION</span>
+                <span id="duration">00:00</span>
+            </div>
+
+            <div class="bio-controls">
+                <button class="btn-micro" id="prevBtn">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg>
+                </button>
+                <button class="btn-micro" id="stopBtn">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12"/></svg>
+                </button>
+                <button class="btn-micro active-play" id="playBtn">
+                    <svg id="iconPlay" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                    <svg id="iconPause" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" style="display:none;"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>
+                </button>
+                <button class="btn-micro" id="nextBtn">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
+                </button>
+            </div>
+
+        </section>
+
+        <!-- Right: Database -->
+        <aside class="database-section">
+            <div class="db-header">
+                <span>Sample DB</span>
+                <div class="status-dot"></div>
+            </div>
+            <ul class="sample-list" id="sampleList">
+                <!-- JS Populated -->
+            </ul>
+        </aside>
+
+    </main>
+
+    <script>
+        const tracks = [
+            {
+                title: "I Just Called To Say I Love You",
+                artist: "Stevie Wonder",
+                url: "https://music.giau.info/mp3/1765329418087_I_Just_Called_To_Say_I_Love_You.mp3"
+            },
+            {
+                title: "Another Day In Paradise",
+                artist: "Phil Collins",
+                url: "https://music.giau.info/mp3/1765329417208_Another_Day_In_Paradise.mp3"
+            },
+            {
+                title: "If Life Is So Short",
+                artist: "The Moffatts",
+                url: "https://music.giau.info/mp3/1765329418894_If_Life_Is_So_Short.mp3"
+            }
+        ];
+
+        let currentIndex = 0;
+        let isPlaying = false;
+        const audio = new Audio();
+
+        // DOM
+        const chamberSection = document.getElementById('chamberSection');
+        const playBtn = document.getElementById('playBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const iconPlay = document.getElementById('iconPlay');
+        const iconPause = document.getElementById('iconPause');
+        const bioTitle = document.getElementById('bioTitle');
+        const bioArtist = document.getElementById('bioArtist');
+        const sampleId = document.getElementById('sampleId');
+        const liquidFill = document.getElementById('liquidFill');
+        const liquidProgress = document.getElementById('liquidProgress');
+        const currentTimeEl = document.getElementById('currentTime');
+        const durationEl = document.getElementById('duration');
+        const sampleList = document.getElementById('sampleList');
+
+        function init() {
+            renderList();
+            loadTrack(0);
+
+            playBtn.addEventListener('click', togglePlay);
+            stopBtn.addEventListener('click', stopTrack);
+            prevBtn.addEventListener('click', prevTrack);
+            nextBtn.addEventListener('click', nextTrack);
+
+            audio.addEventListener('timeupdate', updateProgress);
+            audio.addEventListener('loadedmetadata', () => {
+                durationEl.innerText = formatTime(audio.duration);
+            });
+            audio.addEventListener('ended', nextTrack);
+
+            liquidProgress.addEventListener('click', (e) => {
+                const rect = liquidProgress.getBoundingClientRect();
+                const pos = (e.clientX - rect.left) / rect.width;
+                audio.currentTime = pos * audio.duration;
+            });
+        }
+
+        function renderList() {
+            sampleList.innerHTML = '';
+            tracks.forEach((track, idx) => {
+                const li = document.createElement('li');
+                li.className = 'sample-item';
+                li.innerHTML = `
+                    <div class="sample-name">${track.title}</div>
+                    <div class="sample-type">TYPE: AUDIO // MP3</div>
+                `;
+                li.addEventListener('click', () => {
+                    if (currentIndex === idx && isPlaying) {
+                        pauseTrack();
+                    } else {
+                        loadTrack(idx);
+                        playTrack();
+                    }
+                });
+                sampleList.appendChild(li);
+            });
+        }
+
+        function loadTrack(index) {
+            currentIndex = index;
+            const track = tracks[index];
+            audio.src = track.url;
+            
+            bioTitle.innerText = track.title;
+            bioArtist.innerText = track.artist;
+            sampleId.innerText = "ID: 0" + (index + 1);
+            
+            liquidFill.style.width = "0%";
+            currentTimeEl.innerText = "00:00";
+            
+            updateListUI();
+        }
+
+        function togglePlay() {
+            if (isPlaying) pauseTrack();
+            else playTrack();
+        }
+
+        function playTrack() {
+            const p = audio.play();
+            if (p !== undefined) {
+                p.then(() => {
+                    isPlaying = true;
+                    chamberSection.classList.add('playing');
+                    iconPlay.style.display = 'none';
+                    iconPause.style.display = 'block';
+                }).catch(e => console.error(e));
+            }
+        }
+
+        function pauseTrack() {
+            audio.pause();
+            isPlaying = false;
+            chamberSection.classList.remove('playing');
+            iconPlay.style.display = 'block';
+            iconPause.style.display = 'none';
+        }
+
+        function stopTrack() {
+            pauseTrack();
+            audio.currentTime = 0;
+            updateProgress();
+        }
+
+        function prevTrack() {
+            let idx = currentIndex - 1;
+            if (idx < 0) idx = tracks.length - 1;
+            loadTrack(idx);
+            playTrack();
+        }
+
+        function nextTrack() {
+            let idx = currentIndex + 1;
+            if (idx >= tracks.length) idx = 0;
+            loadTrack(idx);
+            playTrack();
+        }
+
+        function updateProgress() {
+            if (audio.duration) {
+                const pct = (audio.currentTime / audio.duration) * 100;
+                liquidFill.style.width = `${pct}%`;
+                currentTimeEl.innerText = formatTime(audio.currentTime);
+            }
+        }
+
+        function formatTime(s) {
+            if (!s || isNaN(s)) return "00:00";
+            const m = Math.floor(s / 60);
+            const sec = Math.floor(s % 60);
+            return `${m}:${sec < 10 ? '0' : ''}${sec}`;
+        }
+
+        function updateListUI() {
+            const items = document.querySelectorAll('.sample-item');
+            items.forEach((item, idx) => {
+                if (idx === currentIndex) item.classList.add('active');
+                else item.classList.remove('active');
+            });
+        }
+
+        init();
+    </script>
+</body>
+</html>

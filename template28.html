@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Retro Lo-Fi | Cassette Deck</title>
+    
+    <!-- Typography: Rye (Vintage Western), VT323 (Pixel LCD), Space Mono (Technical) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Rye&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=VT323&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            /* Lo-Fi Palette */
+            --bg-wall: #e6ccb2;
+            --plastic-dark: #264653;
+            --plastic-orange: #e76f51;
+            --plastic-sand: #f4a261;
+            --screen-bg: #2a9d8f;
+            --screen-text: #bde0fe;
+            
+            /* Dimensions */
+            --cassette-width: 400px;
+            --cassette-height: 260px;
+        }
+
+        * {
+            box-sizing: border-box;
+            user-select: none;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-wall);
+            background-image: 
+                linear-gradient(45deg, #d4a373 25%, transparent 25%, transparent 75%, #d4a373 75%, #d4a373), 
+                linear-gradient(45deg, #d4a373 25%, transparent 25%, transparent 75%, #d4a373 75%, #d4a373);
+            background-size: 40px 40px;
+            background-position: 0 0, 20px 20px;
+            font-family: 'Space Mono', monospace;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            color: #333;
+        }
+
+        /* --- Main Deck Container --- */
+        .deck-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 40px;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* --- The Cassette Tape (CSS Art) --- */
+        .cassette-body {
+            width: var(--cassette-width);
+            height: var(--cassette-height);
+            background: var(--plastic-orange);
+            border-radius: 15px;
+            position: relative;
+            box-shadow: 
+                inset 5px 5px 10px rgba(255,255,255,0.3),
+                inset -5px -5px 10px rgba(0,0,0,0.2),
+                10px 10px 20px rgba(0,0,0,0.3);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 2px solid #c95c3e;
+        }
+
+        /* Label Sticker */
+        .cassette-label {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            right: 20px;
+            height: 160px;
+            background: var(--plastic-sand);
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border: 1px dashed #dba676;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .label-lines {
+            width: 80%;
+            height: 6px;
+            background: rgba(0,0,0,0.1);
+            margin: 6px 0;
+            border-radius: 3px;
+        }
+
+        /* Tape Window */
+        .tape-window {
+            width: 300px;
+            height: 140px;
+            background: #222;
+            border-radius: 60px 60px 30px 30px;
+            position: relative;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            overflow: hidden;
+            box-shadow: inset 0 0 10px #000;
+            border: 4px solid #b0b0b0;
+        }
+
+        /* The Reels */
+        .reel {
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            background: 
+                radial-gradient(circle at center, #fff 5%, transparent 5%),
+                conic-gradient(from 0deg, #ddd 0%, #999 10%, #ddd 20%, #999 30%, #ddd 40%, #999 50%, #ddd 60%, #999 70%, #ddd 80%, #999 90%, #ddd 100%);
+            background-size: 100% 100%, 100% 100%;
+            position: relative;
+            border: 8px solid #eee;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.5);
+        }
+
+        .reel::after {
+            content: '';
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 20px; height: 20px;
+            background: #fff; /* The star/hub */
+            clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+        }
+
+        .reel.spinning {
+            animation: spin 2s linear infinite;
+        }
+
+        /* Tape strips across the window */
+        .tape-strip {
+            position: absolute;
+            top: 30%;
+            left: 0;
+            width: 100%;
+            height: 10px;
+            background: #111;
+            z-index: 2;
+            opacity: 0.8;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* Bottom Details of Cassette */
+        .cassette-details {
+            position: absolute;
+            bottom: 10px;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .rec-tab {
+            width: 40px; height: 15px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 4px;
+        }
+        
+        .rec-hole {
+            width: 20px; height: 20px;
+            background: #222;
+            border-radius: 4px;
+        }
+
+        /* --- Controls & Display Panel --- */
+        .controls-panel {
+            background: var(--plastic-dark);
+            padding: 20px 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            width: var(--cassette-width);
+            border: 4px solid #1a313a;
+        }
+
+        /* LCD Screen */
+        .lcd-screen {
+            background: var(--screen-bg);
+            padding: 15px;
+            border-radius: 8px;
+            border: 4px solid #1e7a6f;
+            box-shadow: inset 2px 2px 5px rgba(0,0,0,0.2);
+            position: relative;
+            overflow: hidden;
+            text-align: center;
+        }
+
+        /* Scanline effect */
+        .lcd-screen::after {
+            content: " ";
+            display: block;
+            position: absolute;
+            top: 0; left: 0; bottom: 0; right: 0;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            z-index: 2;
+            background-size: 100% 2px, 3px 100%;
+            pointer-events: none;
+        }
+
+        .lcd-title {
+            font-family: 'Rye', serif;
+            font-size: 1.2rem;
+            color: #fff;
+            text-shadow: 0 0 5px var(--screen-text);
+            margin-bottom: 5px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .lcd-artist {
+            font-family: 'VT323', monospace;
+            font-size: 1.4rem;
+            color: var(--screen-text);
+            letter-spacing: 1px;
+        }
+
+        .lcd-time {
+            font-family: 'VT323', monospace;
+            font-size: 1.5rem;
+            color: #fff;
+            margin-top: 5px;
+            float: right;
+        }
+
+        /* Button Grid */
+        .button-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .btn-retro {
+            background: #d4a373;
+            border: none;
+            border-bottom: 5px solid #a97c50;
+            color: #4a3423;
+            padding: 10px 20px;
+            font-family: 'Rye', serif;
+            font-size: 0.9rem;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: transform 0.1s, border-bottom 0.1s;
+        }
+
+        .btn-retro:active {
+            transform: translateY(4px);
+            border-bottom: 1px solid #a97c50;
+        }
+
+        .btn-play {
+            width: 60px; height: 60px;
+            border-radius: 50%;
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #e76f51;
+            border-bottom-color: #b8563c;
+            color: #fff;
+        }
+
+        /* --- Playlist Drawer --- */
+        .playlist-drawer {
+            margin-top: 20px;
+            width: var(--cassette-width);
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-out;
+            background: rgba(255,255,255,0.8);
+            border-radius: 10px;
+            border: 2px dashed #8d6e63;
+        }
+
+        .playlist-drawer.open {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .drawer-toggle {
+            background: transparent;
+            border: 2px solid #8d6e63;
+            color: #5d4037;
+            padding: 5px 15px;
+            font-family: 'Space Mono', monospace;
+            cursor: pointer;
+            margin-top: 10px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+
+        .track-list-item {
+            padding: 10px 15px;
+            border-bottom: 1px solid rgba(0,0,0,0.1);
+            cursor: pointer;
+            font-family: 'Space Mono', monospace;
+            font-size: 0.8rem;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .track-list-item:hover {
+            background: #f4a261;
+            color: #fff;
+        }
+
+        .track-list-item.active {
+            background: var(--plastic-dark);
+            color: #f4a261;
+        }
+
+        /* Responsive */
+        @media (max-width: 500px) {
+            :root { --cassette-width: 300px; --cassette-height: 200px; }
+            .tape-window { width: 220px; height: 100px; }
+            .reel { width: 70px; height: 70px; }
+            .cassette-label { top: 10px; left: 10px; right: 10px; height: 120px; }
+            .btn-retro { padding: 8px 12px; font-size: 0.7rem; }
+            .btn-play { width: 50px; height: 50px; }
+            .lcd-title { font-size: 1rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="deck-wrapper">
+        
+        <!-- Cassette Visualization -->
+        <div class="cassette-body">
+            <div class="cassette-label">
+                <div class="label-lines" style="width: 60%"></div>
+                <div class="label-lines" style="width: 40%"></div>
+            </div>
+            
+            <div class="tape-window">
+                <div class="tape-strip"></div>
+                <div class="reel" id="reelLeft"></div>
+                <div class="reel" id="reelRight"></div>
+                <div class="tape-strip" style="top: 70%"></div>
+            </div>
+
+            <div class="cassette-details">
+                <div class="rec-tab"></div>
+                <div class="rec-hole"></div>
+                <div class="rec-tab"></div>
+            </div>
+        </div>
+
+        <!-- Controls -->
+        <div class="controls-panel">
+            <div class="lcd-screen">
+                <div class="lcd-title" id="lcdTitle">NO TAPE</div>
+                <div class="lcd-artist" id="lcdArtist">--</div>
+                <div class="lcd-time" id="lcdTime">00:00</div>
+            </div>
+            
+            <div class="button-row">
+                <button class="btn-retro" id="prevBtn">|&lt;</button>
+                <button class="btn-retro btn-play" id="playBtn">▶</button>
+                <button class="btn-retro" id="stopBtn">■</button>
+                <button class="btn-retro" id="nextBtn">&gt;|</button>
+            </div>
+        </div>
+
+        <button class="drawer-toggle" id="drawerToggle">LOAD TAPE ▼</button>
+
+        <!-- Playlist Drawer -->
+        <div class="playlist-drawer" id="playlistDrawer">
+            <!-- Populated by JS -->
+        </div>
+
+    </div>
+
+    <script>
+        const playlist = [
+            {
+                title: "I Just Called To Say...",
+                artist: "Stevie Wonder",
+                url: "https://music.giau.info/mp3/1765329418087_I_Just_Called_To_Say_I_Love_You.mp3"
+            },
+            {
+                title: "Another Day In Paradise",
+                artist: "Phil Collins",
+                url: "https://music.giau.info/mp3/1765329417208_Another_Day_In_Paradise.mp3"
+            },
+            {
+                title: "If Life Is So Short",
+                artist: "The Moffatts",
+                url: "https://music.giau.info/mp3/1765329418894_If_Life_Is_So_Short.mp3"
+            }
+        ];
+
+        const audio = new Audio();
+        const playBtn = document.getElementById('playBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        
+        const lcdTitle = document.getElementById('lcdTitle');
+        const lcdArtist = document.getElementById('lcdArtist');
+        const lcdTime = document.getElementById('lcdTime');
+        
+        const reelLeft = document.getElementById('reelLeft');
+        const reelRight = document.getElementById('reelRight');
+        
+        const playlistDrawer = document.getElementById('playlistDrawer');
+        const drawerToggle = document.getElementById('drawerToggle');
+
+        let currentIndex = 0;
+        let isPlaying = false;
+        let isStopped = true;
+
+        function init() {
+            renderPlaylist();
+            loadTrack(0);
+        }
+
+        function loadTrack(index) {
+            currentIndex = index;
+            const track = playlist[index];
+            audio.src = track.url;
+            audio.load();
+            
+            // Update LCD
+            lcdTitle.innerText = track.title.toUpperCase();
+            lcdArtist.innerText = track.artist.toUpperCase();
+            
+            updatePlaylistUI();
+            
+            // If stopped, reels stop. If playing, spin.
+            if(isPlaying) playAudio();
+        }
+
+        function togglePlay() {
+            if (isPlaying) pauseAudio();
+            else playAudio();
+        }
+
+        function playAudio() {
+            audio.play().then(() => {
+                isPlaying = true;
+                isStopped = false;
+                playBtn.innerText = "||"; // Pause symbol
+                spinReels(true);
+                updatePlaylistPlaying(true);
+            }).catch(e => console.error(e));
+        }
+
+        function pauseAudio() {
+            audio.pause();
+            isPlaying = false;
+            playBtn.innerText = "▶";
+            spinReels(false);
+            updatePlaylistPlaying(false);
+        }
+
+        function stopAudio() {
+            audio.pause();
+            audio.currentTime = 0;
+            isPlaying = false;
+            isStopped = true;
+            playBtn.innerText = "▶";
+            spinReels(false);
+            updatePlaylistPlaying(false);
+            lcdTime.innerText = "00:00";
+        }
+
+        function nextTrack() {
+            const nextIndex = (currentIndex + 1) % playlist.length;
+            loadTrack(nextIndex);
+            if(!isStopped) playAudio();
+        }
+
+        function prevTrack() {
+            const prevIndex = (currentIndex - 1 + playlist.length) % playlist.length;
+            loadTrack(prevIndex);
+            if(!isStopped) playAudio();
+        }
+
+        function spinReels(spin) {
+            if (spin) {
+                reelLeft.classList.add('spinning');
+                reelRight.classList.add('spinning');
+            } else {
+                reelLeft.classList.remove('spinning');
+                reelRight.classList.remove('spinning');
+            }
+        }
+
+        function updateTime() {
+            const current = audio.currentTime;
+            const mins = Math.floor(current / 60).toString().padStart(2, '0');
+            const secs = Math.floor(current % 60).toString().padStart(2, '0');
+            lcdTime.innerText = `${mins}:${secs}`;
+        }
+
+        // --- Playlist UI ---
+        function renderPlaylist() {
+            playlistDrawer.innerHTML = '';
+            playlist.forEach((track, index) => {
+                const item = document.createElement('div');
+                item.className = 'track-list-item';
+                item.innerHTML = `<span>${index + 1}. ${track.title}</span> <span>PLAY ></span>`;
+                item.onclick = () => {
+                    loadTrack(index);
+                    playAudio();
+                    playlistDrawer.classList.remove('open'); // Close drawer on selection
+                    drawerToggle.innerText = "LOAD TAPE ▼";
+                };
+                playlistDrawer.appendChild(item);
+            });
+        }
+
+        function updatePlaylistUI() {
+            const items = document.querySelectorAll('.track-list-item');
+            items.forEach((item, idx) => {
+                if (idx === currentIndex) item.classList.add('active');
+                else item.classList.remove('active');
+            });
+            updatePlaylistPlaying(isPlaying);
+        }
+
+        function updatePlaylistPlaying(playing) {
+            const activeItem = document.querySelector('.track-list-item.active');
+            if(activeItem) {
+                const indicator = activeItem.querySelector('span:last-child');
+                indicator.innerText = playing ? "PLAYING..." : "PLAY >";
+            }
+        }
+
+        // Drawer Toggle
+        drawerToggle.addEventListener('click', () => {
+            playlistDrawer.classList.toggle('open');
+            if (playlistDrawer.classList.contains('open')) {
+                drawerToggle.innerText = "CLOSE ▲";
+            } else {
+                drawerToggle.innerText = "LOAD TAPE ▼";
+            }
+        });
+
+        // Events
+        playBtn.addEventListener('click', togglePlay);
+        stopBtn.addEventListener('click', stopAudio);
+        nextBtn.addEventListener('click', nextTrack);
+        prevBtn.addEventListener('click', prevTrack);
+        audio.addEventListener('timeupdate', updateTime);
+        audio.addEventListener('ended', nextTrack);
+
+        init();
+
+    </script>
+</body>
+</html>

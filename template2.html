@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mixtape // Retro-Fi Player</title>
+    
+    <!-- Typography: Syne & Space Grotesk -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;500;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+
+    <style>
+        /* --- CSS Variables --- */
+        :root {
+            /* Palette: Cream, Black, Electric Orange */
+            --bg-color: #fffbf0;
+            --card-bg: #ffffff;
+            --primary: #ff5e00; /* Safety Orange */
+            --secondary: #2a2a2a; /* Dark Charcoal */
+            --text-main: #000000;
+            --text-light: #ffffff;
+            
+            /* Dimensions */
+            --border-thick: 3px solid var(--secondary);
+            --shadow-hard: 6px 6px 0px var(--secondary);
+            --shadow-hover: 2px 2px 0px var(--secondary);
+            
+            /* Fonts */
+            --font-display: 'Syne', sans-serif;
+            --font-body: 'Space Grotesk', monospace;
+        }
+
+        /* --- Global Reset --- */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            /* Dot Pattern Background */
+            background-image: radial-gradient(var(--secondary) 1px, transparent 1px);
+            background-size: 20px 20px;
+            color: var(--text-main);
+            font-family: var(--font-body);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        /* --- Main Container --- */
+        .player-deck {
+            width: 900px;
+            max-width: 95vw;
+            height: 650px;
+            max-height: 90vh;
+            background: var(--card-bg);
+            border: var(--border-thick);
+            box-shadow: 10px 10px 0px var(--secondary);
+            display: grid;
+            grid-template-columns: 1fr 350px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* --- Left Section: The Cassette & Controls --- */
+        .deck-side {
+            padding: 40px;
+            background: #f4f4f0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            border-right: var(--border-thick);
+            position: relative;
+        }
+
+        /* Cassette Tape CSS Art */
+        .cassette-body {
+            width: 300px;
+            height: 190px;
+            background: var(--secondary);
+            border-radius: 10px;
+            border: 2px solid #000;
+            position: relative;
+            margin-bottom: 30px;
+            box-shadow: 5px 5px 0px rgba(0,0,0,0.2);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Sticker area of the cassette */
+        .cassette-label {
+            width: 260px;
+            height: 150px;
+            background: var(--primary);
+            border-radius: 4px;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+        }
+
+        /* The Tape Window */
+        .tape-window {
+            width: 180px;
+            height: 70px;
+            background: #111;
+            border-radius: 30px;
+            position: relative;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 15px;
+            box-shadow: inset 2px 2px 5px rgba(0,0,0,0.5);
+            border: 1px solid #333;
+            overflow: hidden;
+        }
+
+        /* Actual tape texture in window */
+        .tape-guts {
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            right: 5px;
+            bottom: 5px;
+            background: #222;
+            border-radius: 20px;
+            z-index: 1;
+        }
+
+        /* The Reels */
+        .reel {
+            width: 34px;
+            height: 34px;
+            background: #fff;
+            border-radius: 50%;
+            border: 4px solid #444;
+            position: relative;
+            z-index: 2;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .reel::after {
+            content: '';
+            width: 10px;
+            height: 10px;
+            background: var(--primary); /* Spoke center color */
+            border-radius: 50%;
+        }
+
+        .reel::before {
+            content: '';
+            position: absolute;
+            width: 100%;
+            height: 2px;
+            background: #444; /* Crossbar */
+        }
+
+        /* Spinning Animation */
+        .spinning .reel {
+            animation: reelSpin 2s linear infinite;
+        }
+
+        @keyframes reelSpin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* Song Info Sticker */
+        .track-sticker {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 90%;
+            background: #fff;
+            padding: 4px 8px;
+            border-radius: 2px;
+            font-family: var(--font-display);
+            font-weight: 800;
+            font-size: 0.8rem;
+            text-align: center;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            border: 1px dashed #000;
+        }
+
+        /* Controls Area */
+        .controls-wrapper {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .progress-area {
+            width: 100%;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 12px;
+            background: #ddd;
+            border: 2px solid var(--secondary);
+            border-radius: 6px;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress-level {
+            height: 100%;
+            width: 0%;
+            background: var(--secondary);
+            transition: width 0.2s linear;
+        }
+
+        .progress-level::after {
+            content: '';
+            position: absolute;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: var(--primary);
+        }
+
+        .time-display {
+            display: flex;
+            justify-content: space-between;
+            font-weight: 700;
+            font-size: 0.9rem;
+            margin-top: 8px;
+        }
+
+        .btn-group {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .btn-brutal {
+            background: var(--secondary);
+            color: #fff;
+            border: none;
+            font-family: var(--font-body);
+            font-weight: 700;
+            text-transform: uppercase;
+            cursor: pointer;
+            box-shadow: var(--shadow-hard);
+            transition: all 0.1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .btn-brutal:active {
+            transform: translate(4px, 4px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .btn-main {
+            width: 80px;
+            height: 80px;
+            font-size: 1.5rem;
+            border-radius: 50%; /* Circle play button */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .btn-sub {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            font-size: 1.2rem;
+            background: var(--primary);
+            color: #fff;
+        }
+
+        /* --- Right Section: The Playlist --- */
+        .list-side {
+            background: #fff;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .list-header {
+            padding: 20px;
+            border-bottom: var(--border-thick);
+            background: var(--primary);
+            color: #fff;
+        }
+
+        .list-header h1 {
+            font-family: var(--font-display);
+            font-size: 1.8rem;
+            line-height: 1;
+            text-transform: uppercase;
+        }
+
+        .list-header span {
+            font-size: 0.8rem;
+            font-weight: 700;
+            opacity: 0.8;
+        }
+
+        .track-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+        }
+
+        .track-row {
+            display: flex;
+            align-items: center;
+            padding: 15px;
+            margin-bottom: 8px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            background: #fff;
+        }
+
+        .track-row:hover {
+            border-color: var(--secondary);
+            transform: translateX(-3px);
+            box-shadow: 4px 0 0 var(--secondary);
+        }
+
+        .track-row.active {
+            border-color: var(--primary);
+            background: rgba(255, 94, 0, 0.05);
+            box-shadow: 4px 4px 0 var(--primary);
+            transform: translate(-2px, -2px);
+        }
+
+        .track-num {
+            font-weight: 800;
+            color: #ccc;
+            margin-right: 15px;
+            font-size: 1.1rem;
+        }
+
+        .track-row.active .track-num {
+            color: var(--primary);
+        }
+
+        .track-info-main {
+            flex: 1;
+        }
+
+        .t-title {
+            display: block;
+            font-weight: 700;
+            font-size: 1rem;
+            margin-bottom: 2px;
+        }
+
+        .t-artist {
+            display: block;
+            font-size: 0.8rem;
+            color: #666;
+            font-family: var(--font-body);
+        }
+
+        .play-icon-small {
+            opacity: 0;
+            color: var(--primary);
+            font-weight: bold;
+            transition: opacity 0.2s;
+        }
+
+        .track-row.active .play-icon-small {
+            opacity: 1;
+        }
+
+        /* Animations */
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+
+        .playing-indicator-text {
+            animation: bounce 1s infinite;
+            font-weight: 800;
+            color: var(--primary);
+            font-size: 0.7rem;
+            margin-left: auto;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            body {
+                align-items: flex-start;
+                padding: 20px;
+                height: auto;
+                overflow-y: auto;
+            }
+            .player-deck {
+                grid-template-columns: 1fr;
+                height: auto;
+                overflow: visible;
+            }
+            .deck-side {
+                border-right: none;
+                border-bottom: var(--border-thick);
+            }
+            .cassette-body {
+                width: 100%;
+                max-width: 280px;
+            }
+            .list-side {
+                max-height: 400px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <main class="player-deck">
+        
+        <!-- Left: Cassette Visualization & Controls -->
+        <section class="deck-side">
+            
+            <!-- The Cassette Tape Visual -->
+            <div class="cassette-body" id="cassette">
+                <div class="cassette-label">
+                    <div class="tape-window">
+                        <div class="tape-guts"></div>
+                        <div class="reel"></div>
+                        <div class="reel"></div>
+                    </div>
+                    <div class="track-sticker" id="current-sticker">SELECT A TRACK</div>
+                </div>
+            </div>
+
+            <!-- Controls -->
+            <div class="controls-wrapper">
+                <div class="progress-area">
+                    <div class="progress-bar" id="progress-click-area">
+                        <div class="progress-level" id="progress-fill"></div>
+                    </div>
+                    <div class="time-display">
+                        <span id="time-curr">0:00</span>
+                        <span id="time-total">0:00</span>
+                    </div>
+                </div>
+
+                <div class="btn-group">
+                    <button class="btn-brutal btn-sub" id="btn-prev" title="Previous">
+                        &lt;&lt;
+                    </button>
+                    <button class="btn-brutal btn-main" id="btn-play" title="Play/Pause">
+                        <svg id="icon-play" width="28" height="28" viewBox="0 0 24 24" fill="white"><path d="M8 5v14l11-7z"/></svg>
+                        <svg id="icon-pause" width="28" height="28" viewBox="0 0 24 24" fill="white" style="display:none;"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+                    </button>
+                    <button class="btn-brutal btn-sub" id="btn-next" title="Next">
+                        &gt;&gt;
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Right: Playlist -->
+        <section class="list-side">
+            <div class="list-header">
+                <h1>Playlist</h1>
+                <span id="track-count">0 TRACKS</span>
+            </div>
+            <div class="track-list" id="playlist-container">
+                <!-- JS Generated Tracks -->
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        // --- Mock Data ---
+        // Theme: Lo-fi / Chillhop
+        const playlist = [
+            { id: 1, title: "Sunny Afternoon", artist: "Chill Hopper", duration: "2:45" },
+            { id: 2, title: "Neon Breeze", artist: "Retro Wave", duration: "3:20" },
+            { id: 3, title: "Paper Planes", artist: "LoFi Study", duration: "2:15" },
+            { id: 4, title: "Coffee Shop", artist: "Jazz Vibes", duration: "4:00" },
+            { id: 5, title: "Night Drive", artist: "Synth Hero", duration: "3:50" },
+            { id: 6, title: "Pixel Heart", artist: "8-Bit Dreams", duration: "2:30" },
+        ];
+
+        // --- State ---
+        let currentIdx = 0;
+        let isPlaying = false;
+        let timeElapsed = 0;
+        let totalTime = 0;
+        let timerInterval = null;
+
+        // --- DOM ---
+        const els = {
+            cassette: document.getElementById('cassette'),
+            sticker: document.getElementById('current-sticker'),
+            playlist: document.getElementById('playlist-container'),
+            btnPlay: document.getElementById('btn-play'),
+            btnPrev: document.getElementById('btn-prev'),
+            btnNext: document.getElementById('btn-next'),
+            iconPlay: document.getElementById('icon-play'),
+            iconPause: document.getElementById('icon-pause'),
+            progressArea: document.getElementById('progress-click-area'),
+            progressFill: document.getElementById('progress-fill'),
+            timeCurr: document.getElementById('time-curr'),
+            timeTotal: document.getElementById('time-total'),
+            trackCount: document.getElementById('track-count')
+        };
+
+        // --- Helpers ---
+        function parseTime(str) {
+            const [m, s] = str.split(':').map(Number);
+            return (m * 60) + s;
+        }
+
+        function formatTime(sec) {
+            const m = Math.floor(sec / 60);
+            const s = Math.floor(sec % 60);
+            return `${m}:${s < 10 ? '0' : ''}${s}`;
+        }
+
+        // --- Core Logic ---
+        function init() {
+            renderList();
+            loadTrack(0);
+        }
+
+        function renderList() {
+            els.trackCount.innerText = `${playlist.length} TRACKS`;
+            els.playlist.innerHTML = '';
+            
+            playlist.forEach((track, idx) => {
+                const row = document.createElement('div');
+                row.className = `track-row ${idx === currentIdx ? 'active' : ''}`;
+                row.innerHTML = `
+                    <div class="track-num">${(idx + 1).toString().padStart(2, '0')}</div>
+                    <div class="track-info-main">
+                        <span class="t-title">${track.title}</span>
+                        <span class="t-artist">${track.artist}</span>
+                    </div>
+                    <div class="play-icon-small">▶</div>
+                `;
+                row.addEventListener('click', () => {
+                    if (idx !== currentIdx) {
+                        loadTrack(idx);
+                        playTrack();
+                    } else {
+                        togglePlay();
+                    }
+                });
+                els.playlist.appendChild(row);
+            });
+        }
+
+        function loadTrack(idx) {
+            currentIdx = idx;
+            const track = playlist[idx];
+            
+            // Update UI
+            els.sticker.innerText = `${track.artist.toUpperCase()} - ${track.title.toUpperCase()}`;
+            els.timeTotal.innerText = track.duration;
+            totalTime = parseTime(track.duration);
+            timeElapsed = 0;
+            updateProgress();
+            
+            // Update List styling
+            const rows = document.querySelectorAll('.track-row');
+            rows.forEach((row, i) => {
+                if (i === idx) row.classList.add('active');
+                else row.classList.remove('active');
+            });
+
+            // Reset Cassette Animation state
+            els.cassette.classList.remove('spinning');
+        }
+
+        function togglePlay() {
+            if (isPlaying) pauseTrack();
+            else playTrack();
+        }
+
+        function playTrack() {
+            isPlaying = true;
+            els.iconPlay.style.display = 'none';
+            els.iconPause.style.display = 'block';
+            els.cassette.classList.add('spinning'); // Start Reels
+            
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                timeElapsed++;
+                if (timeElapsed >= totalTime) {
+                    nextTrack();
+                } else {
+                    updateProgress();
+                }
+            }, 1000);
+        }
+
+        function pauseTrack() {
+            isPlaying = false;
+            els.iconPlay.style.display = 'block';
+            els.iconPause.style.display = 'none';
+            els.cassette.classList.remove('spinning'); // Stop Reels
+            clearInterval(timerInterval);
+        }
+
+        function nextTrack() {
+            let next = currentIdx + 1;
+            if (next >= playlist.length) next = 0;
+            loadTrack(next);
+            if (isPlaying) playTrack(); // Auto play next
+        }
+
+        function prevTrack() {
+            let prev = currentIdx - 1;
+            if (prev < 0) prev = playlist.length - 1;
+            loadTrack(prev);
+            if (isPlaying) playTrack();
+        }
+
+        function updateProgress() {
+            const pct = (timeElapsed / totalTime) * 100;
+            els.progressFill.style.width = `${pct}%`;
+            els.timeCurr.innerText = formatTime(timeElapsed);
+        }
+
+        function scrub(e) {
+            const rect = els.progressArea.getBoundingClientRect();
+            const clickX = e.clientX - rect.left;
+            const width = rect.width;
+            const pct = Math.max(0, Math.min(1, clickX / width));
+            
+            timeElapsed = Math.floor(pct * totalTime);
+            updateProgress();
+        }
+
+        // --- Event Listeners ---
+        els.btnPlay.addEventListener('click', togglePlay);
+        els.btnNext.addEventListener('click', nextTrack);
+        els.btnPrev.addEventListener('click', prevTrack);
+        
+        // Dragging/Clicking on progress bar
+        els.progressArea.addEventListener('mousedown', (e) => {
+            scrub(e);
+            // Simple drag logic could go here, but click is sufficient for template
+        });
+
+        // Keyboard Support
+        document.addEventListener('keydown', (e) => {
+            if(e.code === 'Space') {
+                e.preventDefault();
+                togglePlay();
+            }
+        });
+
+        // Start
+        init();
+
+    </script>
+</body>
+</html>

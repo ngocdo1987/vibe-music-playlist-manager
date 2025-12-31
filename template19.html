@@ -1,0 +1,579 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Underground Glitch Player</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            /* Palette */
+            --bg-dark: #0a0a0a;
+            --neon-pink: #ff0055;
+            --neon-lime: #ccff00;
+            --off-white: #e0e0e0;
+            
+            /* Typography */
+            --font-poster: 'Anton', sans-serif;
+            --font-tech: 'Share Tech Mono', monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--off-white);
+            font-family: var(--font-tech);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* --- CRT & Scanline Effects --- */
+        .scanlines {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0) 50%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.2));
+            background-size: 100% 4px;
+            z-index: 100;
+            pointer-events: none;
+            opacity: 0.6;
+        }
+
+        .noise-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            opacity: 0.05;
+            z-index: 99;
+            pointer-events: none;
+            background: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+        }
+
+        /* --- Main Layout --- */
+        .glitch-container {
+            width: 900px;
+            max-width: 95%;
+            height: 650px;
+            border: 2px solid var(--off-white);
+            display: grid;
+            grid-template-columns: 1.8fr 1fr;
+            position: relative;
+            background: #111;
+            box-shadow: 20px 20px 0 rgba(255, 0, 85, 0.2);
+            z-index: 10;
+        }
+
+        /* Decorative Borders */
+        .glitch-container::before {
+            content: '';
+            position: absolute;
+            top: -5px; left: -5px;
+            width: 20px; height: 20px;
+            border-top: 4px solid var(--neon-lime);
+            border-left: 4px solid var(--neon-lime);
+        }
+        .glitch-container::after {
+            content: '';
+            position: absolute;
+            bottom: -5px; right: -5px;
+            width: 20px; height: 20px;
+            border-bottom: 4px solid var(--neon-lime);
+            border-right: 4px solid var(--neon-lime);
+        }
+
+        /* --- Left Section: The "Poster" --- */
+        .poster-section {
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            border-right: 1px solid #333;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Background Text (Watermark) */
+        .bg-watermark {
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%) rotate(-10deg);
+            font-family: var(--font-poster);
+            font-size: 8rem;
+            color: rgba(255, 255, 255, 0.03);
+            white-space: nowrap;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .glitch-header {
+            font-family: var(--font-poster);
+            font-size: 5rem;
+            line-height: 0.9;
+            text-transform: uppercase;
+            position: relative;
+            z-index: 2;
+            color: var(--off-white);
+            text-shadow: 4px 4px 0 var(--neon-pink);
+            margin-bottom: 20px;
+            transition: transform 0.1s;
+        }
+
+        /* Glitch Animation Class */
+        .poster-section.glitch-active .glitch-header {
+            animation: glitch-anim 0.3s infinite;
+        }
+
+        @keyframes glitch-anim {
+            0% { transform: translate(0); }
+            20% { transform: translate(-2px, 2px); }
+            40% { transform: translate(-2px, -2px); }
+            60% { transform: translate(2px, 2px); }
+            80% { transform: translate(2px, -2px); }
+            100% { transform: translate(0); }
+        }
+
+        .artist-label {
+            background: var(--neon-lime);
+            color: #000;
+            padding: 5px 15px;
+            font-weight: bold;
+            display: inline-block;
+            font-family: var(--font-poster);
+            font-size: 1.5rem;
+            transform: rotate(-2deg);
+            box-shadow: 5px 5px 0 #fff;
+            z-index: 2;
+        }
+
+        /* Visualizer Block */
+        .visual-block {
+            height: 60px;
+            background: #222;
+            border: 2px solid var(--neon-pink);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            margin: 30px 0;
+            position: relative;
+        }
+
+        .visual-bar {
+            width: 10px;
+            height: 10px;
+            background: var(--neon-lime);
+        }
+
+        .poster-section.playing .visual-bar {
+            animation: bounce-bar 0.5s infinite ease-in-out alternate;
+        }
+
+        /* Staggered animations */
+        .visual-bar:nth-child(odd) { animation-duration: 0.4s; background: var(--neon-pink); }
+        .visual-bar:nth-child(2n) { animation-duration: 0.6s; }
+
+        @keyframes bounce-bar {
+            0% { height: 10%; }
+            100% { height: 100%; }
+        }
+
+        /* Progress - Brutalist */
+        .progress-wrapper {
+            width: 100%;
+            height: 20px;
+            background: #000;
+            border: 2px solid var(--off-white);
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        .progress-fill {
+            height: 100%;
+            width: 0%;
+            background: repeating-linear-gradient(
+                45deg,
+                var(--neon-lime),
+                var(--neon-lime) 10px,
+                #000 10px,
+                #000 20px
+            );
+            transition: width 0.1s linear;
+        }
+
+        /* Controls - Big Blocky Buttons */
+        .control-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            z-index: 2;
+        }
+
+        .btn-block {
+            background: transparent;
+            border: 2px solid var(--off-white);
+            color: var(--off-white);
+            font-family: var(--font-poster);
+            font-size: 1.5rem;
+            padding: 15px;
+            cursor: pointer;
+            transition: all 0.1s;
+            text-transform: uppercase;
+            position: relative;
+        }
+
+        .btn-block:hover {
+            background: var(--off-white);
+            color: #000;
+        }
+
+        .btn-block:active {
+            transform: translate(2px, 2px);
+            box-shadow: none;
+        }
+
+        .btn-main {
+            grid-column: 2;
+            background: var(--neon-pink);
+            border-color: var(--neon-pink);
+        }
+
+        .btn-main:hover {
+            background: #fff;
+            color: var(--neon-pink);
+        }
+
+        /* --- Right Section: Playlist --- */
+        .playlist-sidebar {
+            background: #050505;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            border-left: 2px solid #333;
+            overflow: hidden;
+        }
+
+        .sidebar-title {
+            font-family: var(--font-poster);
+            font-size: 2rem;
+            margin-bottom: 30px;
+            border-bottom: 2px solid var(--neon-lime);
+            padding-bottom: 10px;
+            color: var(--neon-lime);
+        }
+
+        .track-list {
+            list-style: none;
+            overflow-y: auto;
+            flex-grow: 1;
+        }
+
+        .track-item-g {
+            padding: 15px 0;
+            border-bottom: 1px dashed #333;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            transition: all 0.2s;
+        }
+
+        .track-item-g:hover {
+            padding-left: 10px;
+            border-color: var(--off-white);
+        }
+
+        .track-item-g.active {
+            color: var(--neon-lime);
+            border-color: var(--neon-lime);
+        }
+
+        .track-num-g {
+            font-family: var(--font-poster);
+            font-size: 1.2rem;
+            opacity: 0.5;
+        }
+
+        .track-info-g {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .track-title-g {
+            font-size: 1.1rem;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+
+        .track-artist-g {
+            font-size: 0.8rem;
+            opacity: 0.7;
+        }
+
+        /* Scrollbar */
+        .track-list::-webkit-scrollbar { width: 4px; }
+        .track-list::-webkit-scrollbar-thumb { background: var(--neon-pink); }
+
+        /* Responsive */
+        @media (max-width: 800px) {
+            .glitch-container {
+                grid-template-columns: 1fr;
+                height: auto;
+                margin: 20px 0;
+                border: none;
+                box-shadow: none;
+            }
+            .poster-section {
+                border-right: none;
+                border-bottom: 2px solid #333;
+                padding: 30px;
+            }
+            .glitch-header {
+                font-size: 3.5rem;
+            }
+            .bg-watermark {
+                font-size: 5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="scanlines"></div>
+    <div class="noise-overlay"></div>
+
+    <main class="glitch-container">
+        
+        <!-- Left Section: The Visuals -->
+        <section class="poster-section" id="posterSection">
+            <div class="bg-watermark" id="bgWatermark">MUSIC</div>
+            
+            <div>
+                <div class="glitch-header" id="glitchTitle">LOADING...</div>
+                <div class="artist-label" id="artistLabel">SYSTEM</div>
+            </div>
+
+            <!-- Visualizer -->
+            <div class="visual-block">
+                <div class="visual-bar"></div><div class="visual-bar"></div>
+                <div class="visual-bar"></div><div class="visual-bar"></div>
+                <div class="visual-bar"></div><div class="visual-bar"></div>
+                <div class="visual-bar"></div><div class="visual-bar"></div>
+                <div class="visual-bar"></div><div class="visual-bar"></div>
+                <div class="visual-bar"></div><div class="visual-bar"></div>
+                <div class="visual-bar"></div><div class="visual-bar"></div>
+                <div class="visual-bar"></div>
+            </div>
+
+            <!-- Progress -->
+            <div class="progress-wrapper" id="progressBar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <div style="display:flex; justify-content:space-between; font-size:0.8rem; color:#888; margin-bottom:20px;">
+                <span id="currentTime">00:00</span>
+                <span id="duration">00:00</span>
+            </div>
+
+            <!-- Controls -->
+            <div class="control-grid">
+                <button class="btn-block" id="prevBtn">◄ PREV</button>
+                <button class="btn-block btn-main" id="playBtn">PLAY ►</button>
+                <button class="btn-block" id="stopBtn">STOP ■</button>
+                <button class="btn-block" style="grid-column: 1 / -1; border-color:var(--neon-lime); color:var(--neon-lime);" id="nextBtn">NEXT ►</button>
+            </div>
+
+        </section>
+
+        <!-- Right Section: Playlist -->
+        <aside class="playlist-sidebar">
+            <div class="sidebar-title">TRACKS</div>
+            <ul class="track-list" id="trackList">
+                <!-- JS Populated -->
+            </ul>
+        </aside>
+
+    </main>
+
+    <script>
+        const tracks = [
+            {
+                title: "I Just Called To Say I Love You",
+                artist: "Stevie Wonder",
+                url: "https://music.giau.info/mp3/1765329418087_I_Just_Called_To_Say_I_Love_You.mp3"
+            },
+            {
+                title: "Another Day In Paradise",
+                artist: "Phil Collins",
+                url: "https://music.giau.info/mp3/1765329417208_Another_Day_In_Paradise.mp3"
+            },
+            {
+                title: "If Life Is So Short",
+                artist: "The Moffatts",
+                url: "https://music.giau.info/mp3/1765329418894_If_Life_Is_So_Short.mp3"
+            }
+        ];
+
+        let currentIndex = 0;
+        let isPlaying = false;
+        const audio = new Audio();
+
+        // DOM
+        const posterSection = document.getElementById('posterSection');
+        const playBtn = document.getElementById('playBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const glitchTitle = document.getElementById('glitchTitle');
+        const artistLabel = document.getElementById('artistLabel');
+        const bgWatermark = document.getElementById('bgWatermark');
+        const progressFill = document.getElementById('progressFill');
+        const progressBar = document.getElementById('progressBar');
+        const currentTimeEl = document.getElementById('currentTime');
+        const durationEl = document.getElementById('duration');
+        const trackList = document.getElementById('trackList');
+
+        function init() {
+            renderList();
+            loadTrack(0);
+
+            playBtn.addEventListener('click', togglePlay);
+            stopBtn.addEventListener('click', stopTrack);
+            prevBtn.addEventListener('click', prevTrack);
+            nextBtn.addEventListener('click', nextTrack);
+
+            audio.addEventListener('timeupdate', updateProgress);
+            audio.addEventListener('loadedmetadata', () => {
+                durationEl.innerText = formatTime(audio.duration);
+            });
+            audio.addEventListener('ended', nextTrack);
+
+            progressBar.addEventListener('click', (e) => {
+                const rect = progressBar.getBoundingClientRect();
+                const pos = (e.clientX - rect.left) / rect.width;
+                audio.currentTime = pos * audio.duration;
+            });
+        }
+
+        function renderList() {
+            trackList.innerHTML = '';
+            tracks.forEach((track, idx) => {
+                const li = document.createElement('li');
+                li.className = 'track-item-g';
+                li.innerHTML = `
+                    <div class="track-num-g">0${idx + 1}</div>
+                    <div class="track-info-g">
+                        <div class="track-title-g">${track.title}</div>
+                        <div class="track-artist-g">${track.artist}</div>
+                    </div>
+                `;
+                li.addEventListener('click', () => {
+                    if (currentIndex === idx && isPlaying) {
+                        pauseTrack();
+                    } else {
+                        loadTrack(idx);
+                        playTrack();
+                    }
+                });
+                trackList.appendChild(li);
+            });
+        }
+
+        function loadTrack(index) {
+            currentIndex = index;
+            const track = tracks[index];
+            audio.src = track.url;
+            
+            glitchTitle.innerText = track.title;
+            artistLabel.innerText = track.artist;
+            bgWatermark.innerText = "MUSIC // " + (index + 1);
+            
+            progressFill.style.width = "0%";
+            currentTimeEl.innerText = "00:00";
+            
+            updateListUI();
+        }
+
+        function togglePlay() {
+            if (isPlaying) pauseTrack();
+            else playTrack();
+        }
+
+        function playTrack() {
+            const p = audio.play();
+            if (p !== undefined) {
+                p.then(() => {
+                    isPlaying = true;
+                    posterSection.classList.add('playing');
+                    posterSection.classList.add('glitch-active');
+                    playBtn.innerText = "PAUSE ||";
+                }).catch(e => console.error(e));
+            }
+        }
+
+        function pauseTrack() {
+            audio.pause();
+            isPlaying = false;
+            posterSection.classList.remove('playing');
+            posterSection.classList.remove('glitch-active');
+            playBtn.innerText = "PLAY ►";
+        }
+
+        function stopTrack() {
+            pauseTrack();
+            audio.currentTime = 0;
+            updateProgress();
+        }
+
+        function prevTrack() {
+            let idx = currentIndex - 1;
+            if (idx < 0) idx = tracks.length - 1;
+            loadTrack(idx);
+            playTrack();
+        }
+
+        function nextTrack() {
+            let idx = currentIndex + 1;
+            if (idx >= tracks.length) idx = 0;
+            loadTrack(idx);
+            playTrack();
+        }
+
+        function updateProgress() {
+            if (audio.duration) {
+                const pct = (audio.currentTime / audio.duration) * 100;
+                progressFill.style.width = `${pct}%`;
+                currentTimeEl.innerText = formatTime(audio.currentTime);
+            }
+        }
+
+        function formatTime(s) {
+            if (!s || isNaN(s)) return "00:00";
+            const m = Math.floor(s / 60);
+            const sec = Math.floor(s % 60);
+            return `${m}:${sec < 10 ? '0' : ''}${sec}`;
+        }
+
+        function updateListUI() {
+            const items = document.querySelectorAll('.track-item-g');
+            items.forEach((item, idx) => {
+                if (idx === currentIndex) item.classList.add('active');
+                else item.classList.remove('active');
+            });
+        }
+
+        init();
+    </script>
+</body>
+</html>

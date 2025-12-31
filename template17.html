@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Y2K Cyber-Pop Player</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Russo+One&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            /* Y2K Palette */
+            --bg-dark: #12001b;
+            --neon-pink: #ff00ff;
+            --acid-green: #ccff00;
+            --cyber-blue: #00ffff;
+            --glass-white: rgba(255, 255, 255, 0.1);
+            
+            /* Typography */
+            --font-display: 'Russo One', sans-serif;
+            --font-mono: 'Space Mono', monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: #fff;
+            font-family: var(--font-mono);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            /* Checkerboard pattern */
+            background-image: 
+                linear-gradient(45deg, #1a0526 25%, transparent 25%, transparent 75%, #1a0526 75%, #1a0526),
+                linear-gradient(45deg, #1a0526 25%, transparent 25%, transparent 75%, #1a0526 75%, #1a0526);
+            background-size: 40px 40px;
+            background-position: 0 0, 20px 20px;
+        }
+
+        /* --- Orbital Background Animation --- */
+        .orbital-bg {
+            position: absolute;
+            top: 50%; left: 50%;
+            width: 800px; height: 800px;
+            transform: translate(-50%, -50%);
+            background: radial-gradient(circle, rgba(204, 255, 0, 0.1) 0%, transparent 60%);
+            z-index: -1;
+            animation: pulseOrb 5s infinite ease-in-out;
+        }
+
+        @keyframes pulseOrb {
+            0%, 100% { transform: translate(-50%, -50%) scale(1); opacity: 0.5; }
+            50% { transform: translate(-50%, -50%) scale(1.2); opacity: 0.8; }
+        }
+
+        /* --- Main Console --- */
+        .y2k-console {
+            width: 900px;
+            max-width: 95%;
+            background: rgba(20, 20, 30, 0.8);
+            border: 3px solid var(--neon-pink);
+            box-shadow: 10px 10px 0px #000;
+            border-radius: 20px;
+            display: grid;
+            grid-template-columns: 1.2fr 1fr;
+            gap: 20px;
+            padding: 20px;
+            position: relative;
+            backdrop-filter: blur(10px);
+        }
+
+        /* Decorative Header */
+        .console-header {
+            grid-column: 1 / -1;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 15px;
+            border-bottom: 2px dashed var(--cyber-blue);
+            margin-bottom: 10px;
+        }
+
+        .brand-title {
+            font-family: var(--font-display);
+            font-size: 1.5rem;
+            background: linear-gradient(90deg, var(--neon-pink), var(--cyber-blue));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 2px 2px 0px rgba(0,0,0,0.5);
+        }
+
+        /* --- Left Stage: Visuals --- */
+        .stage-area {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* The 3D Visualizer Object */
+        .star-burst {
+            width: 200px;
+            height: 200px;
+            margin: 0 auto;
+            background: var(--acid-green);
+            /* Clip path star shape */
+            clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+            box-shadow: inset -10px -10px 0 rgba(0,0,0,0.3), 0 0 20px var(--acid-green);
+            transition: all 0.3s steps(5);
+            position: relative;
+        }
+
+        /* Spin animation */
+        .stage-area.playing .star-burst {
+            animation: spinStar 4s linear infinite;
+        }
+
+        @keyframes spinStar {
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Inner circle of star */
+        .star-burst::after {
+            content: 'MP3';
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            font-family: var(--font-display);
+            color: #000;
+            font-size: 1.5rem;
+            font-weight: bold;
+            pointer-events: none;
+        }
+
+        /* Track Info Box */
+        .info-box {
+            background: #000;
+            border: 2px solid var(--cyber-blue);
+            padding: 15px;
+            border-radius: 4px;
+            text-align: center;
+            box-shadow: 5px 5px 0 var(--cyber-blue);
+            position: relative;
+        }
+
+        .info-title {
+            font-family: var(--font-display);
+            font-size: 1.4rem;
+            color: #fff;
+            margin-bottom: 5px;
+            text-transform: uppercase;
+        }
+
+        .info-artist {
+            color: var(--acid-green);
+            font-size: 0.9rem;
+            letter-spacing: 1px;
+        }
+
+        /* Chunky Progress Bar */
+        .progress-wrapper {
+            position: relative;
+            margin-top: 10px;
+        }
+
+        .bar-container {
+            height: 20px;
+            background: #333;
+            border: 2px solid #555;
+            box-shadow: inset 2px 2px 5px #000;
+        }
+
+        .bar-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--neon-pink), var(--cyber-blue));
+            border-right: 2px solid #fff;
+            transition: width 0.1s linear;
+        }
+
+        .time-digits {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 5px;
+            font-family: var(--font-mono);
+            font-weight: 700;
+            color: var(--cyber-blue);
+        }
+
+        /* Controls: 3D Buttons */
+        .controls-panel {
+            display: flex;
+            gap: 15px;
+            margin-top: 10px;
+            justify-content: center;
+        }
+
+        .btn-cyber {
+            border: none;
+            background: var(--neon-pink);
+            color: #fff;
+            font-family: var(--font-display);
+            text-transform: uppercase;
+            font-size: 1rem;
+            padding: 10px 20px;
+            cursor: pointer;
+            /* 3D Effect */
+            box-shadow: 0 6px 0 #990099, 0 10px 10px rgba(0,0,0,0.3);
+            transition: all 0.1s;
+            border-radius: 4px;
+        }
+
+        .btn-cyber:active {
+            transform: translateY(6px);
+            box-shadow: 0 0 0 #990099, inset 0 2px 5px rgba(0,0,0,0.5);
+        }
+
+        .btn-cyber.stop-btn { background: #333; box-shadow: 0 6px 0 #111, 0 10px 10px rgba(0,0,0,0.3); }
+        .btn-cyber.stop-btn:active { box-shadow: 0 0 0 #111; }
+
+        .btn-cyber.nav-btn { background: var(--cyber-blue); box-shadow: 0 6px 0 #008b8b, 0 10px 10px rgba(0,0,0,0.3); }
+        .btn-cyber.nav-btn:active { box-shadow: 0 0 0 #008b8b; }
+
+        /* --- Right Side: Data Grid --- */
+        .data-panel {
+            background: rgba(255,255,255,0.05);
+            border-radius: 10px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .panel-label {
+            background: var(--acid-green);
+            color: #000;
+            display: inline-block;
+            padding: 2px 10px;
+            font-family: var(--font-display);
+            font-size: 0.8rem;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            transform: rotate(-2deg);
+            box-shadow: 2px 2px 0 #000;
+        }
+
+        .playlist-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            overflow-y: auto;
+            flex-grow: 1;
+        }
+
+        .track-card {
+            background: rgba(0,0,0,0.4);
+            padding: 10px;
+            border-left: 4px solid #555;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .track-card:hover {
+            transform: translateX(5px);
+            background: rgba(255,255,255,0.1);
+            border-left-color: var(--cyber-blue);
+        }
+
+        .track-card.active {
+            border: 2px solid var(--neon-pink);
+            background: linear-gradient(90deg, rgba(255,0,255,0.2), transparent);
+            border-left: 4px solid var(--neon-pink);
+        }
+
+        .track-card.active .track-status {
+            color: var(--acid-green);
+        }
+
+        .card-title {
+            font-weight: bold;
+            font-size: 0.9rem;
+        }
+
+        .card-artist {
+            font-size: 0.7rem;
+            color: #aaa;
+        }
+
+        .track-status {
+            font-family: var(--font-display);
+            font-size: 0.8rem;
+            color: #555;
+        }
+
+        /* Scrollbar */
+        .playlist-grid::-webkit-scrollbar { width: 6px; }
+        .playlist-grid::-webkit-scrollbar-thumb { background: var(--neon-pink); border-radius: 3px; }
+
+        /* Responsive */
+        @media (max-width: 800px) {
+            .y2k-console {
+                grid-template-columns: 1fr;
+                height: auto;
+                border-width: 2px;
+                border-radius: 10px;
+            }
+            .star-burst {
+                width: 150px; height: 150px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="orbital-bg"></div>
+
+    <main class="y2k-console">
+        
+        <div class="console-header">
+            <div class="brand-title">Sonic // Wave</div>
+            <div style="font-size:0.8rem; color:var(--cyber-blue);">v.2000</div>
+        </div>
+
+        <!-- Left Section -->
+        <section class="stage-area" id="stageArea">
+            
+            <!-- Visualizer -->
+            <div class="star-burst"></div>
+
+            <!-- Info -->
+            <div class="info-box">
+                <div class="info-title" id="infoTitle">LOADING...</div>
+                <div class="info-artist" id="infoArtist">WAITING</div>
+                
+                <div class="progress-wrapper">
+                    <div class="bar-container">
+                        <div class="bar-fill" id="barFill"></div>
+                    </div>
+                    <div class="time-digits">
+                        <span id="currentTime">00:00</span>
+                        <span id="duration">00:00</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Controls -->
+            <div class="controls-panel">
+                <button class="btn-cyber nav-btn" id="prevBtn">◄ PREV</button>
+                <button class="btn-cyber" id="playBtn">PLAY ►</button>
+                <button class="btn-cyber stop-btn" id="stopBtn">STOP ■</button>
+                <button class="btn-cyber nav-btn" id="nextBtn">NEXT ►</button>
+            </div>
+
+        </section>
+
+        <!-- Right Section -->
+        <aside class="data-panel">
+            <div class="panel-label">PLAYLIST.DAT</div>
+            <div class="playlist-grid" id="playlistGrid">
+                <!-- Populated via JS -->
+            </div>
+        </aside>
+
+    </main>
+
+    <script>
+        const tracks = [
+            {
+                title: "I Just Called To Say I Love You",
+                artist: "Stevie Wonder",
+                url: "https://music.giau.info/mp3/1765329418087_I_Just_Called_To_Say_I_Love_You.mp3"
+            },
+            {
+                title: "Another Day In Paradise",
+                artist: "Phil Collins",
+                url: "https://music.giau.info/mp3/1765329417208_Another_Day_In_Paradise.mp3"
+            },
+            {
+                title: "If Life Is So Short",
+                artist: "The Moffatts",
+                url: "https://music.giau.info/mp3/1765329418894_If_Life_Is_So_Short.mp3"
+            }
+        ];
+
+        let currentIndex = 0;
+        let isPlaying = false;
+        const audio = new Audio();
+
+        // DOM
+        const stageArea = document.getElementById('stageArea');
+        const playBtn = document.getElementById('playBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const infoTitle = document.getElementById('infoTitle');
+        const infoArtist = document.getElementById('infoArtist');
+        const barFill = document.getElementById('barFill');
+        const currentTimeEl = document.getElementById('currentTime');
+        const durationEl = document.getElementById('duration');
+        const playlistGrid = document.getElementById('playlistGrid');
+
+        function init() {
+            renderPlaylist();
+            loadTrack(0);
+
+            playBtn.addEventListener('click', togglePlay);
+            stopBtn.addEventListener('click', stopTrack);
+            prevBtn.addEventListener('click', prevTrack);
+            nextBtn.addEventListener('click', nextTrack);
+
+            audio.addEventListener('timeupdate', updateProgress);
+            audio.addEventListener('loadedmetadata', () => {
+                durationEl.innerText = formatTime(audio.duration);
+            });
+            audio.addEventListener('ended', nextTrack);
+        }
+
+        function renderPlaylist() {
+            playlistGrid.innerHTML = '';
+            tracks.forEach((track, idx) => {
+                const card = document.createElement('div');
+                card.className = 'track-card';
+                card.innerHTML = `
+                    <div>
+                        <div class="card-title">${track.title.toUpperCase()}</div>
+                        <div class="card-artist">${track.artist}</div>
+                    </div>
+                    <div class="track-status" id="status-${idx}">OFF</div>
+                `;
+                card.addEventListener('click', () => {
+                    if (currentIndex === idx && isPlaying) {
+                        pauseTrack();
+                    } else {
+                        loadTrack(idx);
+                        playTrack();
+                    }
+                });
+                playlistGrid.appendChild(card);
+            });
+        }
+
+        function loadTrack(index) {
+            currentIndex = index;
+            const track = tracks[index];
+            audio.src = track.url;
+            
+            infoTitle.innerText = track.title.toUpperCase();
+            infoArtist.innerText = track.artist;
+            
+            barFill.style.width = "0%";
+            currentTimeEl.innerText = "00:00";
+            
+            updatePlaylistUI();
+        }
+
+        function togglePlay() {
+            if (isPlaying) pauseTrack();
+            else playTrack();
+        }
+
+        function playTrack() {
+            const p = audio.play();
+            if (p !== undefined) {
+                p.then(() => {
+                    isPlaying = true;
+                    stageArea.classList.add('playing');
+                    playBtn.innerText = "PAUSE ||";
+                    updateStatusText("PLAYING");
+                }).catch(e => console.error(e));
+            }
+        }
+
+        function pauseTrack() {
+            audio.pause();
+            isPlaying = false;
+            stageArea.classList.remove('playing');
+            playBtn.innerText = "PLAY ►";
+            updateStatusText("PAUSED");
+        }
+
+        function stopTrack() {
+            pauseTrack();
+            audio.currentTime = 0;
+            barFill.style.width = "0%";
+            currentTimeEl.innerText = "00:00";
+            updateStatusText("STOPPED");
+        }
+
+        function prevTrack() {
+            let idx = currentIndex - 1;
+            if (idx < 0) idx = tracks.length - 1;
+            loadTrack(idx);
+            playTrack();
+        }
+
+        function nextTrack() {
+            let idx = currentIndex + 1;
+            if (idx >= tracks.length) idx = 0;
+            loadTrack(idx);
+            playTrack();
+        }
+
+        function updateProgress() {
+            if (audio.duration) {
+                const pct = (audio.currentTime / audio.duration) * 100;
+                barFill.style.width = `${pct}%`;
+                currentTimeEl.innerText = formatTime(audio.currentTime);
+            }
+        }
+
+        function formatTime(s) {
+            if (!s || isNaN(s)) return "00:00";
+            const m = Math.floor(s / 60);
+            const sec = Math.floor(s % 60);
+            return `${m}:${sec < 10 ? '0' : ''}${sec}`;
+        }
+
+        function updatePlaylistUI() {
+            const cards = document.querySelectorAll('.track-card');
+            cards.forEach((card, idx) => {
+                const status = document.getElementById(`status-${idx}`);
+                if (idx === currentIndex) {
+                    card.classList.add('active');
+                    status.innerText = isPlaying ? "PLAYING" : "READY";
+                    status.style.color = isPlaying ? "var(--acid-green)" : "var(--neon-pink)";
+                } else {
+                    card.classList.remove('active');
+                    status.innerText = "OFF";
+                    status.style.color = "#555";
+                }
+            });
+        }
+        
+        function updateStatusText(text) {
+            const status = document.getElementById(`status-${currentIndex}`);
+            if(status) status.innerText = text.toUpperCase();
+        }
+
+        init();
+    </script>
+</body>
+</html>
