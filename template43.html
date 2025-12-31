@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brutalist Audio Unit</title>
+    
+    <!-- Font: Courier Prime (Typewriter/Mono) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --bg-color: #e0e0e0;
+            --ink-color: #121212;
+            --accent-color: #ccff00; /* Acid Green */
+            --danger-color: #ff3c00; /* International Orange */
+            --paper-color: #ffffff;
+            
+            --border-width: 3px;
+            --shadow-offset: 6px;
+            
+            --font-mono: 'Courier Prime', monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            background-color: var(--bg-color);
+            background-image: 
+                linear-gradient(45deg, #ccc 25%, transparent 25%), 
+                linear-gradient(-45deg, #ccc 25%, transparent 25%), 
+                linear-gradient(45deg, transparent 75%, #ccc 75%), 
+                linear-gradient(-45deg, transparent 75%, #ccc 75%);
+            background-size: 20px 20px;
+            background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+            font-family: var(--font-mono);
+            color: var(--ink-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* --- Main Card --- */
+        .brutal-card {
+            width: 700px;
+            background: var(--paper-color);
+            border: var(--border-width) solid var(--ink-color);
+            box-shadow: var(--shadow-offset) var(--shadow-offset) 0px var(--ink-color);
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        /* --- Header Section --- */
+        .card-header {
+            background: var(--ink-color);
+            color: var(--paper-color);
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 700;
+            font-size: 1.2rem;
+            text-transform: uppercase;
+        }
+
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            background: var(--accent-color);
+            border: 2px solid var(--paper-color);
+            animation: blink 1s step-end infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        /* --- Visualizer / Info Area --- */
+        .visual-area {
+            padding: 40px;
+            border-bottom: var(--border-width) solid var(--ink-color);
+            display: flex;
+            gap: 30px;
+        }
+
+        /* Technical Diagram Style Art */
+        .tech-diagram {
+            width: 120px;
+            height: 120px;
+            border: 2px dashed var(--ink-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            background: repeating-linear-gradient(
+                0deg,
+                transparent,
+                transparent 4px,
+                rgba(0,0,0,0.05) 5px,
+                rgba(0,0,0,0.05) 6px
+            );
+        }
+
+        .circle-graphic {
+            width: 60px;
+            height: 60px;
+            border: 4px solid var(--ink-color);
+            border-radius: 50%;
+            position: relative;
+            transition: all 0.3s;
+        }
+
+        .circle-graphic::after {
+            content: '';
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 15px;
+            height: 15px;
+            background: var(--danger-color);
+        }
+        
+        /* Spinning state for the circle */
+        .spinning {
+            border-top-color: transparent;
+            animation: spin-brutal 2s linear infinite;
+        }
+
+        @keyframes spin-brutal {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .track-identity {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .title-huge {
+            font-size: 2.5rem;
+            line-height: 1;
+            margin: 0 0 10px 0;
+            text-transform: uppercase;
+            font-weight: 700;
+            letter-spacing: -1px;
+        }
+
+        .artist-sub {
+            font-size: 1.2rem;
+            color: #666;
+            text-decoration: underline;
+            text-decoration-style: double;
+        }
+
+        /* --- Controls --- */
+        .controls-deck {
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* Progress Bar Styling */
+        .progress-container {
+            width: 100%;
+            height: 30px;
+            border: 2px solid var(--ink-color);
+            position: relative;
+            cursor: pointer;
+            background: #fff;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: var(--ink-color);
+            width: 0%;
+            transition: width 0.1s linear;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 10px;
+        }
+
+        .progress-bar::after {
+            content: '||';
+            color: var(--paper-color);
+            font-size: 0.8rem;
+        }
+
+        .time-codes {
+            display: flex;
+            justify-content: space-between;
+            font-weight: bold;
+            font-size: 0.9rem;
+            margin-top: 5px;
+        }
+
+        /* Buttons Grid */
+        .btn-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+            gap: 15px;
+        }
+
+        .btn-brutal {
+            background: #fff;
+            border: var(--border-width) solid var(--ink-color);
+            box-shadow: 4px 4px 0px var(--ink-color);
+            padding: 15px;
+            font-family: var(--font-mono);
+            font-weight: 700;
+            font-size: 1rem;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.1s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .btn-brutal:hover {
+            background: var(--accent-color);
+        }
+
+        .btn-brutal:active {
+            transform: translate(4px, 4px);
+            box-shadow: 0px 0px 0px var(--ink-color);
+        }
+
+        .btn-play {
+            grid-column: span 2;
+            background: var(--ink-color);
+            color: var(--paper-color);
+        }
+        
+        .btn-play:hover {
+            background: #333;
+        }
+
+        .btn-stop {
+            border-color: var(--danger-color);
+            color: var(--danger-color);
+        }
+        
+        .btn-stop:hover {
+            background: var(--danger-color);
+            color: #fff;
+        }
+
+        /* --- Playlist --- */
+        .playlist-box {
+            padding: 0;
+            border-top: var(--border-width) solid var(--ink-color);
+        }
+
+        .pl-item {
+            padding: 15px 30px;
+            border-bottom: 1px solid var(--ink-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .pl-item:last-child {
+            border-bottom: none;
+        }
+
+        .pl-item:hover {
+            background: #f0f0f0;
+            padding-left: 35px; /* Shift effect */
+        }
+
+        .pl-item.active {
+            background: var(--accent-color);
+            font-weight: 700;
+        }
+
+        .pl-item.active .pl-num {
+            text-decoration: line-through;
+        }
+
+        .pl-meta {
+            font-size: 0.8rem;
+            opacity: 0.7;
+        }
+
+        /* --- Responsive --- */
+        @media (max-width: 750px) {
+            .brutal-card {
+                width: 95%;
+                margin: 20px 0;
+            }
+            .visual-area {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+            }
+            .title-huge {
+                font-size: 1.8rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="brutal-card">
+        <!-- Header -->
+        <header class="card-header">
+            <span>AUDIO_MODULE_V1</span>
+            <div class="status-dot"></div>
+        </header>
+
+        <!-- Info & Visual -->
+        <section class="visual-area">
+            <div class="tech-diagram">
+                <div class="circle-graphic" id="disk"></div>
+            </div>
+            <div class="track-identity">
+                <h1 class="title-huge" id="titleDisplay">SELECT_TRACK</h1>
+                <div class="artist-sub" id="artistDisplay">WAITING FOR INPUT</div>
+            </div>
+        </section>
+
+        <!-- Controls -->
+        <section class="controls-deck">
+            
+            <div class="progress-container" id="progressContainer">
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+            
+            <div class="time-codes">
+                <span id="currentTime">00:00</span>
+                <span id="duration">00:00</span>
+            </div>
+
+            <div class="btn-grid">
+                <button class="btn-brutal" id="prevBtn">PREV</button>
+                <button class="btn-brutal btn-stop" id="stopBtn">STOP</button>
+                <button class="btn-brutal btn-play" id="playBtn">PLAY / PAUSE</button>
+                <button class="btn-brutal" id="nextBtn">NEXT</button>
+            </div>
+        </section>
+
+        <!-- Playlist -->
+        <section class="playlist-box" id="playlist">
+            <!-- JS Populated -->
+        </section>
+    </div>
+
+    <audio id="audioPlayer"></audio>
+
+    <script>
+        const songs = [
+            {
+                title: "I Just Called To Say I Love You",
+                artist: "Stevie Wonder",
+                url: "https://music.giau.info/mp3/1765329418087_I_Just_Called_To_Say_I_Love_You.mp3"
+            },
+            {
+                title: "Another Day In Paradise",
+                artist: "Phil Collins",
+                url: "https://music.giau.info/mp3/1765329417208_Another_Day_In_Paradise.mp3"
+            },
+            {
+                title: "If Life Is So Short",
+                artist: "The Moffatts",
+                url: "https://music.giau.info/mp3/1765329418894_If_Life_Is_So_Short.mp3"
+            }
+        ];
+
+        const audio = document.getElementById('audioPlayer');
+        const playBtn = document.getElementById('playBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const disk = document.getElementById('disk');
+        
+        const titleDisplay = document.getElementById('titleDisplay');
+        const artistDisplay = document.getElementById('artistDisplay');
+        
+        const progressContainer = document.getElementById('progressContainer');
+        const progressBar = document.getElementById('progressBar');
+        const currentTimeEl = document.getElementById('currentTime');
+        const durationEl = document.getElementById('duration');
+        const playlistEl = document.getElementById('playlist');
+
+        let currentIdx = 0;
+        let isDragging = false;
+
+        function init() {
+            renderPlaylist();
+            loadTrack(0);
+            setupListeners();
+        }
+
+        function loadTrack(index) {
+            currentIdx = index;
+            const song = songs[index];
+            audio.src = song.url;
+            
+            // UI Update
+            titleDisplay.textContent = song.title;
+            artistDisplay.textContent = song.artist;
+            
+            // Disk animation reset
+            disk.classList.remove('spinning');
+            void disk.offsetWidth; // Trigger reflow
+            if(!audio.paused) disk.classList.add('spinning');
+
+            updatePlaylistUI();
+            resetProgress();
+        }
+
+        function togglePlay() {
+            if (audio.paused) playTrack();
+            else pauseTrack();
+        }
+
+        function playTrack() {
+            audio.play();
+            disk.classList.add('spinning');
+            playBtn.textContent = "PAUSE";
+        }
+
+        function pauseTrack() {
+            audio.pause();
+            disk.classList.remove('spinning');
+            playBtn.textContent = "PLAY";
+        }
+
+        function stopTrack() {
+            pauseTrack();
+            audio.currentTime = 0;
+            resetProgress();
+            playBtn.textContent = "PLAY";
+            disk.classList.remove('spinning');
+        }
+
+        function nextTrack() {
+            currentIdx = (currentIdx + 1) % songs.length;
+            loadTrack(currentIdx);
+            playTrack();
+        }
+
+        function prevTrack() {
+            currentIdx = (currentIdx - 1 + songs.length) % songs.length;
+            loadTrack(currentIdx);
+            playTrack();
+        }
+
+        function updateProgress() {
+            if (!isDragging && audio.duration) {
+                const percent = (audio.currentTime / audio.duration) * 100;
+                progressBar.style.width = `${percent}%`;
+                
+                const curM = Math.floor(audio.currentTime / 60).toString().padStart(2, '0');
+                const curS = Math.floor(audio.currentTime % 60).toString().padStart(2, '0');
+                const durM = Math.floor(audio.duration / 60).toString().padStart(2, '0');
+                const durS = Math.floor(audio.duration % 60).toString().padStart(2, '0');
+                
+                currentTimeEl.textContent = `${curM}:${curS}`;
+                durationEl.textContent = `${durM}:${durS}`;
+            }
+        }
+
+        function setProgress(e) {
+            const width = progressContainer.clientWidth;
+            const clickX = e.offsetX;
+            const duration = audio.duration;
+            audio.currentTime = (clickX / width) * duration;
+        }
+
+        function resetProgress() {
+            progressBar.style.width = '0%';
+            currentTimeEl.textContent = '00:00';
+        }
+
+        function renderPlaylist() {
+            playlistEl.innerHTML = '';
+            songs.forEach((song, idx) => {
+                const div = document.createElement('div');
+                div.className = 'pl-item';
+                div.innerHTML = `
+                    <div>
+                        <span class="pl-num">0${idx + 1} / </span>
+                        <span class="pl-name">${song.title}</span>
+                    </div>
+                    <div class="pl-meta">${song.artist}</div>
+                `;
+                div.onclick = () => {
+                    loadTrack(idx);
+                    playTrack();
+                };
+                playlistEl.appendChild(div);
+            });
+        }
+
+        function updatePlaylistUI() {
+            const items = document.querySelectorAll('.pl-item');
+            items.forEach((item, idx) => {
+                item.classList.toggle('active', idx === currentIdx);
+            });
+        }
+
+        function setupListeners() {
+            playBtn.addEventListener('click', togglePlay);
+            stopBtn.addEventListener('click', stopTrack);
+            nextBtn.addEventListener('click', nextTrack);
+            prevBtn.addEventListener('click', prevTrack);
+            
+            progressContainer.addEventListener('click', setProgress);
+            progressContainer.addEventListener('mousedown', () => isDragging = true);
+            progressContainer.addEventListener('mouseup', () => isDragging = false);
+            
+            audio.addEventListener('timeupdate', updateProgress);
+            audio.addEventListener('ended', nextTrack);
+        }
+
+        init();
+    </script>
+</body>
+</html>

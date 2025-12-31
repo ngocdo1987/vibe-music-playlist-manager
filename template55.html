@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Orbital Space Player</title>
+    
+    <!-- Font: Exo 2 (Futuristic/Tech) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@300;600;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --space-bg: #050510;
+            --neon-cyan: #00f3ff;
+            --neon-purple: #bc13fe;
+            --glass-panel: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            
+            --font-tech: 'Exo 2', sans-serif;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: var(--space-bg);
+            background-image: 
+                radial-gradient(white, rgba(255,255,255,.2) 2px, transparent 3px),
+                radial-gradient(white, rgba(255,255,255,.15) 1px, transparent 2px),
+                radial-gradient(white, rgba(255,255,255,.1) 2px, transparent 3px);
+            background-size: 550px 550px, 350px 350px, 250px 250px;
+            background-position: 0 0, 40px 60px, 130px 270px;
+            font-family: var(--font-tech);
+            color: white;
+            overflow: hidden;
+        }
+
+        /* --- Star Field Animation --- */
+        .star-field {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: -1;
+        }
+        
+        .star {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            opacity: 0.8;
+            animation: twinkle var(--duration) infinite ease-in-out;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; transform: scale(0.8); }
+            50% { opacity: 1; transform: scale(1.2); }
+        }
+
+        /* --- Main Interface --- */
+        .space-station {
+            width: 800px;
+            height: 550px;
+            display: grid;
+            grid-template-columns: 1fr 280px;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* --- Left: The Orbital HUD --- */
+        .hud-orbit {
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Circular Progress Ring (SVG) */
+        .orbit-ring-svg {
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            transform: rotate(-90deg);
+            pointer-events: none; /* Click through to planet */
+        }
+
+        .orbit-track {
+            fill: none;
+            stroke: rgba(255,255,255,0.1);
+            stroke-width: 10;
+        }
+
+        .orbit-progress {
+            fill: none;
+            stroke: var(--neon-cyan);
+            stroke-width: 10;
+            stroke-linecap: round;
+            stroke-dasharray: 1200; /* 2 * PI * r approx */
+            stroke-dashoffset: 1200;
+            filter: drop-shadow(0 0 10px var(--neon-cyan));
+            transition: stroke-dashoffset 0.1s linear;
+        }
+
+        /* The Planet (Visualizer) */
+        .planet {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, #4a00e0, #8e2de2);
+            box-shadow: inset -20px -20px 40px rgba(0,0,0,0.8), 0 0 50px rgba(188, 19, 254, 0.4);
+            position: relative;
+            z-index: 5;
+            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        /* Planet Rings */
+        .planet::after {
+            content: '';
+            position: absolute;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%) rotateX(70deg);
+            width: 320px;
+            height: 320px;
+            border-radius: 50%;
+            border: 15px solid rgba(255,255,255,0.1);
+            border-top-color: rgba(255,255,255,0.6);
+            box-shadow: 0 0 0 10px rgba(0,0,0,0.5);
+        }
+
+        .planet.active {
+            animation: pulse-planet 2s infinite alternate;
+        }
+
+        @keyframes pulse-planet {
+            from { box-shadow: inset -20px -20px 40px rgba(0,0,0,0.8), 0 0 50px rgba(188, 19, 254, 0.4); }
+            to { box-shadow: inset -20px -20px 40px rgba(0,0,0,0.8), 0 0 80px rgba(188, 19, 254, 0.7); }
+        }
+
+        /* Floating Controls (Satellites) */
+        .satellite-btn {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            background: rgba(10, 10, 30, 0.8);
+            border: 2px solid var(--neon-cyan);
+            border-radius: 50%;
+            backdrop-filter: blur(10px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            color: var(--neon-cyan);
+            z-index: 6;
+            box-shadow: 0 0 15px rgba(0, 243, 255, 0.2);
+        }
+
+        .satellite-btn:hover {
+            background: var(--neon-cyan);
+            color: #000;
+            transform: scale(1.2);
+            box-shadow: 0 0 30px rgba(0, 243, 255, 0.6);
+        }
+        
+        .satellite-btn:active {
+            transform: scale(1.1);
+        }
+
+        /* Positioning Satellites around the planet */
+        .sat-play { top: 50%; left: 50%; transform: translate(-50%, -50%); width: 80px; height: 80px; z-index: 10; background: rgba(255,255,255,0.1); border: none; }
+        .sat-prev { top: 20%; left: 20%; }
+        .sat-next { top: 20%; right: 20%; }
+        .sat-stop { bottom: 20%; left: 50%; transform: translateX(-50%); border-color: var(--neon-purple); color: var(--neon-purple); }
+
+        /* Holographic Info */
+        .holo-info {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            background: var(--glass-panel);
+            backdrop-filter: blur(5px);
+            padding: 15px;
+            border-left: 3px solid var(--neon-purple);
+            border-top: 1px solid var(--glass-border);
+            max-width: 250px;
+        }
+
+        .holo-title {
+            font-weight: 800;
+            font-size: 1.2rem;
+            text-transform: uppercase;
+            color: var(--neon-cyan);
+            margin-bottom: 5px;
+            text-shadow: 0 0 10px var(--neon-cyan);
+        }
+
+        .holo-artist {
+            font-size: 0.9rem;
+            color: rgba(255,255,255,0.8);
+            letter-spacing: 1px;
+        }
+
+        /* --- Right: Mission Log (Playlist) --- */
+        .mission-log {
+            background: rgba(0,0,0,0.4);
+            border-left: 2px solid var(--neon-purple);
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            clip-path: polygon(20px 0, 100% 0, 100% 100%, 0 100%);
+        }
+
+        .log-header {
+            border-bottom: 1px solid var(--glass-border);
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--neon-purple);
+            font-size: 0.8rem;
+        }
+
+        .log-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .log-item {
+            padding: 15px;
+            margin-bottom: 10px;
+            background: var(--glass-panel);
+            border: 1px solid var(--glass-border);
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.9rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .log-item::before {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%;
+            width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 243, 255, 0.2), transparent);
+            transition: 0.5s;
+        }
+
+        .log-item:hover {
+            border-color: var(--neon-cyan);
+            background: rgba(0, 243, 255, 0.1);
+        }
+        
+        .log-item:hover::before {
+            left: 100%;
+        }
+
+        .log-item.active {
+            background: rgba(188, 19, 254, 0.2);
+            border-color: var(--neon-purple);
+        }
+        
+        .log-item.active::after {
+            content: '>';
+            position: absolute;
+            right: 10px;
+            color: var(--neon-purple);
+            font-weight: bold;
+            animation: blink 1s step-end infinite;
+        }
+
+        @keyframes blink { 50% { opacity: 0; } }
+
+        /* Scrollbar */
+        .log-list::-webkit-scrollbar { width: 6px; }
+        .log-list::-webkit-scrollbar-track { background: transparent; }
+        .log-list::-webkit-scrollbar-thumb { background: var(--neon-purple); border-radius: 3px; }
+
+        /* Responsive */
+        @media (max-width: 820px) {
+            .space-station {
+                width: 95%;
+                grid-template-columns: 1fr;
+                height: auto;
+                padding-bottom: 50px;
+            }
+            .hud-orbit {
+                height: 400px;
+                margin-bottom: 30px;
+            }
+            .mission-log {
+                clip-path: none;
+                border-left: none;
+                border-top: 2px solid var(--neon-purple);
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="star-field" id="starField">
+        <!-- JS will generate stars here -->
+    </div>
+
+    <main class="space-station">
+        
+        <!-- Left: Orbital HUD -->
+        <div class="hud-orbit">
+            <!-- Circular SVG Progress -->
+            <svg class="orbit-ring-svg" viewBox="0 0 400 400">
+                <circle class="orbit-track" cx="200" cy="200" r="180"></circle>
+                <circle class="orbit-progress" id="orbitCircle" cx="200" cy="200" r="180"></circle>
+            </svg>
+
+            <!-- The Planet -->
+            <div class="planet" id="planetVisual"></div>
+
+            <!-- Floating Controls -->
+            <button class="satellite-btn sat-prev" id="prevBtn" title="Previous Sector">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
+            </button>
+            
+            <button class="satellite-btn sat-next" id="nextBtn" title="Next Sector">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
+            </button>
+
+            <button class="satellite-btn sat-play" id="playBtn" title="Engage Hyperdrive">
+                <svg id="iconPlay" width="32" height="32" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                <svg id="iconPause" width="32" height="32" viewBox="0 0 24 24" fill="currentColor" style="display:none;"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+            </button>
+            
+            <button class="satellite-btn sat-stop" id="stopBtn" title="Abort Mission">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h12v12H6z"/></svg>
+            </button>
+
+            <!-- Holographic Info -->
+            <div class="holo-info">
+                <div class="holo-title" id="titleDisplay">SCANNING...</div>
+                <div class="holo-artist" id="artistDisplay">UNKNOWN SYSTEM</div>
+                <div style="margin-top:10px; font-size:0.8rem; color:var(--neon-cyan);">
+                    SIGNAL: <span id="currentTime">0:00</span> / <span id="duration">0:00</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right: Mission Log -->
+        <div class="mission-log">
+            <div class="log-header">Mission Logs</div>
+            <ul class="log-list" id="playlist">
+                <!-- JS Populated -->
+            </ul>
+        </div>
+
+    </main>
+
+    <audio id="audioPlayer"></audio>
+
+    <script>
+        const songs = [
+            {
+                title: "I Just Called To Say I Love You",
+                artist: "Stevie Wonder",
+                url: "https://music.giau.info/mp3/1765329418087_I_Just_Called_To_Say_I_Love_You.mp3"
+            },
+            {
+                title: "Another Day In Paradise",
+                artist: "Phil Collins",
+                url: "https://music.giau.info/mp3/1765329417208_Another_Day_In_Paradise.mp3"
+            },
+            {
+                title: "If Life Is So Short",
+                artist: "The Moffatts",
+                url: "https://music.giau.info/mp3/1765329418894_If_Life_Is_So_Short.mp3"
+            }
+        ];
+
+        // Generate Stars
+        const starField = document.getElementById('starField');
+        for(let i=0; i<100; i++) {
+            const star = document.createElement('div');
+            star.className = 'star';
+            const xy = [Math.random() * 100, Math.random() * 100];
+            const size = Math.random() * 3;
+            const duration = Math.random() * 3 + 2;
+            
+            star.style.left = xy[0] + '%';
+            star.style.top = xy[1] + '%';
+            star.style.width = size + 'px';
+            star.style.height = size + 'px';
+            star.style.setProperty('--duration', duration + 's');
+            starField.appendChild(star);
+        }
+
+        const audio = document.getElementById('audioPlayer');
+        const playBtn = document.getElementById('playBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const iconPlay = document.getElementById('iconPlay');
+        const iconPause = document.getElementById('iconPause');
+        const planetVisual = document.getElementById('planetVisual');
+        const orbitCircle = document.getElementById('orbitCircle');
+        
+        const titleDisplay = document.getElementById('titleDisplay');
+        const artistDisplay = document.getElementById('artistDisplay');
+        const currentTimeEl = document.getElementById('currentTime');
+        const durationEl = document.getElementById('duration');
+        const playlistEl = document.getElementById('playlist');
+
+        // SVG Circle Math
+        const circleRadius = orbitCircle.r.baseVal.value;
+        const circumference = 2 * Math.PI * circleRadius;
+        orbitCircle.style.strokeDasharray = `${circumference} ${circumference}`;
+
+        let currentIdx = 0;
+
+        function init() {
+            renderPlaylist();
+            loadTrack(0);
+            setupEvents();
+        }
+
+        function loadTrack(index) {
+            currentIdx = index;
+            const song = songs[index];
+            audio.src = song.url;
+            
+            titleDisplay.textContent = song.title.toUpperCase();
+            artistDisplay.textContent = song.artist.toUpperCase();
+            
+            // Randomize Planet color for effect
+            const hue = Math.floor(Math.random() * 360);
+            planetVisual.style.background = `radial-gradient(circle at 30% 30%, hsl(${hue}, 60%, 50%), hsl(${hue+40}, 60%, 20%))`;
+            planetVisual.style.boxShadow = `inset -20px -20px 40px rgba(0,0,0,0.8), 0 0 50px hsl(${hue}, 80%, 50%)`;
+            
+            updatePlaylistUI();
+            resetOrbit();
+        }
+
+        function togglePlay() {
+            if (audio.paused) playAudio();
+            else pauseAudio();
+        }
+
+        function playAudio() {
+            audio.play();
+            iconPlay.style.display = 'none';
+            iconPause.style.display = 'block';
+            planetVisual.classList.add('active');
+        }
+
+        function pauseAudio() {
+            audio.pause();
+            iconPlay.style.display = 'block';
+            iconPause.style.display = 'none';
+            planetVisual.classList.remove('active');
+        }
+
+        function stopAudio() {
+            pauseAudio();
+            audio.currentTime = 0;
+            resetOrbit();
+        }
+
+        function nextTrack() {
+            currentIdx = (currentIdx + 1) % songs.length;
+            loadTrack(currentIdx);
+            playAudio();
+        }
+
+        function prevTrack() {
+            currentIdx = (currentIdx - 1 + songs.length) % songs.length;
+            loadTrack(currentIdx);
+            playAudio();
+        }
+
+        function updateOrbit() {
+            if(audio.duration) {
+                const percent = audio.currentTime / audio.duration;
+                const offset = circumference - (percent * circumference);
+                orbitCircle.style.strokeDashoffset = offset;
+                
+                const curM = Math.floor(audio.currentTime / 60);
+                const curS = Math.floor(audio.currentTime % 60);
+                const durM = Math.floor(audio.duration / 60);
+                const durS = Math.floor(audio.duration % 60);
+                
+                currentTimeEl.textContent = `${curM}:${curS < 10 ? '0'+curS : curS}`;
+                durationEl.textContent = `${durM}:${durS < 10 ? '0'+durS : durS}`;
+            }
+        }
+
+        function resetOrbit() {
+            orbitCircle.style.strokeDashoffset = circumference;
+            currentTimeEl.textContent = "0:00";
+            durationEl.textContent = "0:00";
+        }
+
+        function renderPlaylist() {
+            playlistEl.innerHTML = '';
+            songs.forEach((song, idx) => {
+                const li = document.createElement('li');
+                li.className = 'log-item';
+                li.innerHTML = `
+                    <span style="font-weight:bold; color:var(--neon-cyan); margin-right:10px;">0${idx+1}</span>
+                    <span>${song.title.toUpperCase()}</span>
+                `;
+                li.onclick = () => {
+                    loadTrack(idx);
+                    playAudio();
+                };
+                playlistEl.appendChild(li);
+            });
+        }
+
+        function updatePlaylistUI() {
+            const items = document.querySelectorAll('.log-item');
+            items.forEach((item, idx) => {
+                item.classList.toggle('active', idx === currentIdx);
+            });
+        }
+
+        function setupEvents() {
+            playBtn.addEventListener('click', togglePlay);
+            stopBtn.addEventListener('click', stopAudio);
+            nextBtn.addEventListener('click', nextTrack);
+            prevBtn.addEventListener('click', prevTrack);
+            
+            audio.addEventListener('timeupdate', updateOrbit);
+            audio.addEventListener('ended', nextTrack);
+        }
+
+        init();
+    </script>
+</body>
+</html>

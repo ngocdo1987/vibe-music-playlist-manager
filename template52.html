@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pop Art Comic Player</title>
+    
+    <!-- Fonts: Bangers (Comic Style) & Roboto (Body) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Roboto:wght@400;700;900&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --pop-yellow: #ffd93d;
+            --pop-red: #ff4b4b;
+            --pop-blue: #0087ff;
+            --pop-black: #1a1a1a;
+            --pop-white: #ffffff;
+            
+            --font-comic: 'Bangers', cursive;
+            --font-sans: 'Roboto', sans-serif;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: var(--pop-white);
+            /* Halftone Pattern Background */
+            background-image: radial-gradient(var(--pop-black) 20%, transparent 20%), radial-gradient(var(--pop-black) 20%, transparent 20%);
+            background-size: 20px 20px;
+            background-position: 0 0, 10px 10px;
+            overflow: hidden;
+            font-family: var(--font-sans);
+        }
+
+        /* --- Main Comic Card --- */
+        .comic-cover {
+            width: 750px;
+            height: 550px;
+            background: var(--pop-white);
+            border: 8px solid var(--pop-black);
+            box-shadow: 15px 15px 0px var(--pop-yellow), 20px 20px 0px var(--pop-black);
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            position: relative;
+            z-index: 10;
+            overflow: hidden;
+        }
+
+        /* --- Left: Action Panel --- */
+        .action-panel {
+            background: linear-gradient(135deg, var(--pop-yellow) 0%, #ffea70 100%);
+            border-right: 4px solid var(--pop-black);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        /* Half-tone overlay on panel */
+        .action-panel::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background-image: radial-gradient(var(--pop-black) 20%, transparent 20%);
+            background-size: 10px 10px;
+            opacity: 0.1;
+        }
+
+        /* Speech Bubble / Visualizer */
+        .speech-bubble {
+            width: 220px;
+            height: 220px;
+            background: var(--pop-white);
+            border: 4px solid var(--pop-black);
+            border-radius: 50% 40% 50% 50%;
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 10px 10px 0px rgba(0,0,0,0.1);
+            animation: bounce-pop 2s infinite ease-in-out;
+        }
+
+        .speech-tail {
+            position: absolute;
+            bottom: -20px;
+            left: 40px;
+            border-left: 20px solid transparent;
+            border-right: 20px solid transparent;
+            border-top: 30px solid var(--pop-white);
+        }
+
+        @keyframes bounce-pop {
+            0%, 100% { transform: scale(1) rotate(0deg); }
+            50% { transform: scale(1.05) rotate(-5deg); }
+        }
+
+        /* Action Text */
+        .action-text {
+            font-family: var(--font-comic);
+            font-size: 3.5rem;
+            color: var(--pop-red);
+            text-shadow: 3px 3px 0px var(--pop-black);
+            letter-spacing: 2px;
+            transform: rotate(-10deg);
+            z-index: 2;
+        }
+
+        /* --- Right: Info & Controls --- */
+        .info-panel {
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            background: radial-gradient(circle, #fff 0%, #f0f0f0 100%);
+            position: relative;
+        }
+
+        /* Title Box */
+        .comic-title {
+            font-family: var(--font-comic);
+            font-size: 2.5rem;
+            color: var(--pop-blue);
+            text-transform: uppercase;
+            background: var(--pop-yellow);
+            display: inline-block;
+            padding: 5px 15px;
+            border: 4px solid var(--pop-black);
+            transform: skew(-10deg);
+            box-shadow: 5px 5px 0px var(--pop-black);
+            margin-bottom: 10px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
+        }
+
+        .artist-name {
+            font-family: var(--font-sans);
+            font-weight: 900;
+            font-size: 1.2rem;
+            color: var(--pop-black);
+            border-bottom: 4px solid var(--pop-black);
+            display: inline-block;
+            margin-bottom: 30px;
+            letter-spacing: 1px;
+        }
+
+        /* --- Controls (Comic Buttons) --- */
+        .comic-controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .btn-panel {
+            flex: 1;
+            padding: 15px;
+            border: 3px solid var(--pop-black);
+            background: var(--pop-white);
+            cursor: pointer;
+            transition: transform 0.1s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: var(--font-comic);
+            font-size: 1.5rem;
+            box-shadow: 5px 5px 0px var(--pop-black);
+        }
+
+        .btn-panel:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: 7px 7px 0px var(--pop-black);
+        }
+
+        .btn-panel:active {
+            transform: translate(2px, 2px);
+            box-shadow: 0 0 0px var(--pop-black);
+        }
+
+        .btn-play {
+            background: var(--pop-red);
+            color: white;
+            border-color: var(--pop-black);
+            flex-grow: 1.5;
+        }
+
+        /* --- Progress Bar --- */
+        .progress-frame {
+            background: var(--pop-black);
+            padding: 3px;
+            border: 2px solid var(--pop-black);
+            box-shadow: 4px 4px 0px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+        }
+
+        .progress-inner {
+            height: 20px;
+            background: var(--pop-white);
+            width: 100%;
+            position: relative;
+        }
+
+        .progress-fill {
+            height: 100%;
+            width: 0%;
+            background: repeating-linear-gradient(
+                45deg,
+                var(--pop-blue),
+                var(--pop-blue) 10px,
+                var(--pop-yellow) 10px,
+                var(--pop-yellow) 20px
+            );
+            transition: width 0.1s linear;
+        }
+        
+        .time-stamp {
+            font-family: var(--font-comic);
+            display: flex;
+            justify-content: space-between;
+            margin-top: 5px;
+            font-size: 1.1rem;
+        }
+
+        /* --- Playlist (Comic Grid) --- */
+        .comic-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+        }
+
+        .grid-item {
+            background: var(--pop-white);
+            border: 3px solid var(--pop-black);
+            padding: 10px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 0.8rem;
+            font-weight: bold;
+            position: relative;
+        }
+
+        .grid-item:hover {
+            transform: scale(1.05);
+            background: var(--pop-yellow);
+            z-index: 2;
+        }
+        
+        .grid-item.active {
+            background: var(--pop-blue);
+            color: white;
+            box-shadow: 4px 4px 0px var(--pop-black);
+        }
+
+        .grid-item.active::before {
+            content: '★';
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            background: var(--pop-red);
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border: 2px solid var(--pop-black);
+            font-size: 0.8rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 800px) {
+            .comic-cover {
+                width: 95%;
+                grid-template-columns: 1fr;
+                height: auto;
+            }
+            .action-panel {
+                height: 250px;
+                border-right: none;
+                border-bottom: 4px solid var(--pop-black);
+            }
+            .comic-title { font-size: 1.8rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="comic-cover">
+        <!-- Left: Action Visualizer -->
+        <div class="action-panel">
+            <div class="speech-bubble" id="bubble">
+                <div class="speech-tail"></div>
+                <div class="action-text" id="actionText">POW!</div>
+            </div>
+        </div>
+
+        <!-- Right: Controls -->
+        <div class="info-panel">
+            <div class="comic-title" id="titleDisplay">SUPER AUDIO</div>
+            <div class="artist-name" id="artistDisplay">Issue #1</div>
+
+            <div class="comic-controls">
+                <button class="btn-panel" id="prevBtn">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
+                </button>
+                <button class="btn-panel btn-play" id="playBtn">
+                    <svg id="iconPlay" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                    <svg id="iconPause" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" style="display:none;"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+                </button>
+                <button class="btn-panel" id="stopBtn">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h12v12H6z"/></svg>
+                </button>
+                <button class="btn-panel" id="nextBtn">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
+                </button>
+            </div>
+
+            <div class="progress-frame" id="progressContainer">
+                <div class="progress-inner">
+                    <div class="progress-fill" id="progressBar"></div>
+                </div>
+            </div>
+            <div class="time-stamp">
+                <span id="currentTime">00:00</span>
+                <span id="duration">00:00</span>
+            </div>
+
+            <div style="margin-top: 30px; font-family: var(--font-comic); font-size: 1.2rem; text-transform: uppercase;">
+                Select Issue:
+            </div>
+            <div class="comic-grid" id="playlist">
+                <!-- JS Populated -->
+            </div>
+        </div>
+    </div>
+
+    <audio id="audioPlayer"></audio>
+
+    <script>
+        const songs = [
+            {
+                title: "I Just Called To Say I Love You",
+                artist: "Stevie Wonder",
+                url: "https://music.giau.info/mp3/1765329418087_I_Just_Called_To_Say_I_Love_You.mp3"
+            },
+            {
+                title: "Another Day In Paradise",
+                artist: "Phil Collins",
+                url: "https://music.giau.info/mp3/1765329417208_Another_Day_In_Paradise.mp3"
+            },
+            {
+                title: "If Life Is So Short",
+                artist: "The Moffatts",
+                url: "https://music.giau.info/mp3/1765329418894_If_Life_Is_So_Short.mp3"
+            }
+        ];
+
+        const audio = document.getElementById('audioPlayer');
+        const playBtn = document.getElementById('playBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const iconPlay = document.getElementById('iconPlay');
+        const iconPause = document.getElementById('iconPause');
+        const actionText = document.getElementById('actionText');
+        
+        const titleDisplay = document.getElementById('titleDisplay');
+        const artistDisplay = document.getElementById('artistDisplay');
+        const progressContainer = document.getElementById('progressContainer');
+        const progressBar = document.getElementById('progressBar');
+        const currentTimeEl = document.getElementById('currentTime');
+        const durationEl = document.getElementById('duration');
+        const playlistEl = document.getElementById('playlist');
+
+        const comicWords = ["POW!", "ZAP!", "BOOM!", "WHAM!", "BANG!"];
+
+        let currentIdx = 0;
+        let isDragging = false;
+        let wordInterval;
+
+        function init() {
+            renderPlaylist();
+            loadTrack(0);
+            setupEvents();
+        }
+
+        function loadTrack(index) {
+            currentIdx = index;
+            const song = songs[index];
+            audio.src = song.url;
+            
+            titleDisplay.textContent = song.title;
+            artistDisplay.textContent = "ISSUE #" + (index + 1);
+            
+            updatePlaylistUI();
+            resetProgress();
+        }
+
+        function togglePlay() {
+            if (audio.paused) playAudio();
+            else pauseAudio();
+        }
+
+        function playAudio() {
+            audio.play();
+            iconPlay.style.display = 'none';
+            iconPause.style.display = 'block';
+            // Start changing action words
+            startComicText();
+        }
+
+        function pauseAudio() {
+            audio.pause();
+            iconPlay.style.display = 'block';
+            iconPause.style.display = 'none';
+            stopComicText();
+        }
+
+        function stopAudio() {
+            pauseAudio();
+            audio.currentTime = 0;
+            resetProgress();
+        }
+
+        function nextTrack() {
+            currentIdx = (currentIdx + 1) % songs.length;
+            loadTrack(currentIdx);
+            playAudio();
+        }
+
+        function prevTrack() {
+            currentIdx = (currentIdx - 1 + songs.length) % songs.length;
+            loadTrack(currentIdx);
+            playAudio();
+        }
+
+        function updateProgress() {
+            if (!isDragging && audio.duration) {
+                const percent = (audio.currentTime / audio.duration) * 100;
+                progressBar.style.width = `${percent}%`;
+                
+                const curM = Math.floor(audio.currentTime / 60);
+                const curS = Math.floor(audio.currentTime % 60);
+                const durM = Math.floor(audio.duration / 60);
+                const durS = Math.floor(audio.duration % 60);
+                
+                currentTimeEl.textContent = `${curM}:${curS < 10 ? '0'+curS : curS}`;
+                durationEl.textContent = `${durM}:${durS < 10 ? '0'+durS : durS}`;
+            }
+        }
+
+        function setProgress(e) {
+            const width = progressContainer.clientWidth;
+            // Account for border
+            const clickX = e.offsetX;
+            const duration = audio.duration;
+            audio.currentTime = (clickX / width) * duration;
+        }
+
+        function resetProgress() {
+            progressBar.style.width = '0%';
+            currentTimeEl.textContent = "00:00";
+            durationEl.textContent = "00:00";
+        }
+
+        function startComicText() {
+            clearInterval(wordInterval);
+            wordInterval = setInterval(() => {
+                const randomWord = comicWords[Math.floor(Math.random() * comicWords.length)];
+                actionText.textContent = randomWord;
+            }, 500);
+        }
+
+        function stopComicText() {
+            clearInterval(wordInterval);
+            actionText.textContent = "Zzz...";
+        }
+
+        function renderPlaylist() {
+            playlistEl.innerHTML = '';
+            songs.forEach((song, idx) => {
+                const item = document.createElement('div');
+                item.className = 'grid-item';
+                item.textContent = `#${idx + 1} ${song.title.substring(0, 8)}..`;
+                item.onclick = () => {
+                    loadTrack(idx);
+                    playAudio();
+                };
+                playlistEl.appendChild(item);
+            });
+        }
+
+        function updatePlaylistUI() {
+            const items = document.querySelectorAll('.grid-item');
+            items.forEach((item, idx) => {
+                item.classList.toggle('active', idx === currentIdx);
+            });
+        }
+
+        function setupEvents() {
+            playBtn.addEventListener('click', togglePlay);
+            stopBtn.addEventListener('click', stopAudio);
+            nextBtn.addEventListener('click', nextTrack);
+            prevBtn.addEventListener('click', prevTrack);
+            
+            progressContainer.addEventListener('click', setProgress);
+            progressContainer.addEventListener('mousedown', () => isDragging = true);
+            progressContainer.addEventListener('mouseup', () => isDragging = false);
+            
+            audio.addEventListener('timeupdate', updateProgress);
+            audio.addEventListener('ended', nextTrack);
+        }
+
+        init();
+    </script>
+</body>
+</html>

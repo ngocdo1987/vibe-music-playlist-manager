@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Memphis Geometric Player</title>
+    
+    <!-- Fonts: Bungee (Chunky Retro) & Space Mono (Technical) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bungee+Shade&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --pastel-blue: #a8dadc;
+            --pastel-yellow: #e9c46a;
+            --pastel-red: #e76f51;
+            --deep-ink: #1d3557;
+            --chalk-white: #f1faee;
+            
+            --border-thick: 4px solid var(--deep-ink);
+            --shadow-hard: 6px 6px 0px var(--deep-ink);
+            
+            --font-display: 'Bungee Shade', cursive;
+            --font-tech: 'Space Mono', monospace;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: var(--pastel-yellow);
+            background-image: radial-gradient(var(--pastel-blue) 20%, transparent 20%);
+            background-size: 30px 30px;
+            font-family: var(--font-tech);
+            color: var(--deep-ink);
+            overflow: hidden;
+        }
+
+        /* Floating Background Shapes */
+        .shape-bg {
+            position: absolute;
+            opacity: 0.4;
+            z-index: -1;
+            animation: float-geom 10s infinite ease-in-out;
+        }
+        .shape-circle {
+            width: 100px; height: 100px;
+            border-radius: 50%;
+            background: var(--pastel-red);
+            top: 10%; left: 10%;
+            animation-delay: 0s;
+        }
+        .shape-triangle {
+            width: 0; height: 0;
+            border-left: 50px solid transparent;
+            border-right: 50px solid transparent;
+            border-bottom: 86px solid var(--deep-ink);
+            bottom: 15%; right: 10%;
+            animation-delay: -5s;
+        }
+        
+        @keyframes float-geom {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(10deg); }
+        }
+
+        /* --- Main Card --- */
+        .memphis-card {
+            width: 400px;
+            background: var(--chalk-white);
+            border: var(--border-thick);
+            box-shadow: var(--shadow-hard);
+            padding: 0;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Decoration Stripes */
+        .deco-stripes {
+            height: 20px;
+            background: repeating-linear-gradient(
+                45deg,
+                var(--deep-ink),
+                var(--deep-ink) 10px,
+                var(--pastel-red) 10px,
+                var(--pastel-red) 20px
+            );
+            border-bottom: var(--border-thick);
+        }
+
+        /* --- Art Section --- */
+        .art-geo {
+            width: 100%;
+            height: 250px;
+            background: var(--pastel-blue);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            border-bottom: var(--border-thick);
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Geometric Rotating Art */
+        .geo-shape {
+            width: 140px;
+            height: 140px;
+            border: 8px solid var(--deep-ink);
+            position: relative;
+            background: white;
+            animation: spin-geo 10s linear infinite;
+        }
+        
+        .geo-shape::before {
+            content: '';
+            position: absolute;
+            top: 10px; left: 10px; right: 10px; bottom: 10px;
+            background: var(--pastel-red);
+            clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+        }
+
+        @keyframes spin-geo {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* --- Info --- */
+        .info-geo {
+            padding: 20px;
+            text-align: center;
+        }
+
+        .track-title {
+            font-family: var(--font-display);
+            font-size: 1.8rem;
+            line-height: 1;
+            margin: 0 0 10px 0;
+            color: var(--deep-ink);
+        }
+
+        .track-artist {
+            font-weight: bold;
+            font-size: 1rem;
+            text-transform: uppercase;
+            background: var(--deep-ink);
+            color: var(--chalk-white);
+            display: inline-block;
+            padding: 5px 10px;
+            transform: rotate(-2deg);
+        }
+
+        /* --- Controls --- */
+        .controls-geo {
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .btn-shape {
+            background: var(--pastel-yellow);
+            border: 3px solid var(--deep-ink);
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 4px 4px 0 var(--deep-ink);
+            transition: all 0.1s;
+            color: var(--deep-ink);
+        }
+
+        .btn-shape:active {
+            transform: translate(4px, 4px);
+            box-shadow: 0 0 0;
+        }
+
+        /* Previous (Triangle) */
+        .btn-prev {
+            width: 50px;
+            height: 50px;
+            border-radius: 0 25px 0 25px; /* Parallelogramish */
+        }
+
+        /* Play (Circle) */
+        .btn-play {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: var(--pastel-red);
+        }
+
+        /* Stop (Square) */
+        .btn-stop {
+            width: 40px;
+            height: 40px;
+            background: var(--chalk-white);
+            transform: rotate(45deg); /* Diamond */
+        }
+        .btn-stop:active { transform: translate(4px, 4px) rotate(45deg); }
+
+        /* Next (Triangle) */
+        .btn-next {
+            width: 50px;
+            height: 50px;
+            border-radius: 25px 0 25px 0;
+        }
+
+        /* --- Progress --- */
+        .progress-geo {
+            margin: 0 20px 20px 20px;
+        }
+
+        .progress-line {
+            height: 15px;
+            background: #fff;
+            border: 3px solid var(--deep-ink);
+            position: relative;
+            box-shadow: 4px 4px 0 var(--deep-ink);
+        }
+
+        .progress-fill {
+            height: 100%;
+            width: 0%;
+            background: var(--deep-ink);
+            transition: width 0.1s linear;
+        }
+        
+        .time-mono {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            margin-top: 5px;
+            font-weight: bold;
+        }
+
+        /* --- Playlist --- */
+        .playlist-geo {
+            border-top: var(--border-thick);
+            background: var(--chalk-white);
+            padding: 10px 20px;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+
+        .pl-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 2px dotted var(--deep-ink);
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .pl-item:hover {
+            background: var(--pastel-yellow);
+            padding-left: 15px;
+        }
+
+        .pl-bullet {
+            width: 10px;
+            height: 10px;
+            background: var(--pastel-red);
+            border-radius: 50%;
+            margin-right: 15px;
+            opacity: 0;
+            transform: scale(0);
+            transition: 0.3s;
+        }
+
+        .pl-item.active .pl-bullet {
+            opacity: 1;
+            transform: scale(1);
+            border-radius: 0; /* Square when active */
+        }
+
+        .pl-name {
+            font-weight: bold;
+            flex: 1;
+        }
+
+        /* Scrollbar */
+        .playlist-geo::-webkit-scrollbar { width: 8px; }
+        .playlist-geo::-webkit-scrollbar-thumb { background: var(--deep-ink); }
+
+    </style>
+</head>
+<body>
+
+    <!-- Background Shapes -->
+    <div class="shape-bg shape-circle"></div>
+    <div class="shape-bg shape-triangle"></div>
+
+    <div class="memphis-card">
+        <div class="deco-stripes"></div>
+        
+        <!-- Art -->
+        <div class="art-geo">
+            <div class="geo-shape" id="geoArt"></div>
+        </div>
+
+        <!-- Info -->
+        <div class="info-geo">
+            <h2 class="track-title" id="titleDisplay">MEMPHIS</h2>
+            <div class="track-artist" id="artistDisplay">DESIGN</div>
+        </div>
+
+        <!-- Progress -->
+        <div class="progress-geo" id="progressContainer">
+            <div class="progress-line">
+                <div class="progress-fill" id="progressBar"></div>
+            </div>
+            <div class="time-mono">
+                <span id="currentTime">0:00</span>
+                <span id="duration">0:00</span>
+            </div>
+        </div>
+
+        <!-- Controls -->
+        <div class="controls-geo">
+            <button class="btn-shape btn-prev" id="prevBtn" aria-label="Previous">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
+            </button>
+            
+            <button class="btn-shape btn-play" id="playBtn" aria-label="Play">
+                <svg id="iconPlay" width="30" height="30" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                <svg id="iconPause" width="30" height="30" viewBox="0 0 24 24" fill="currentColor" style="display:none;"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+            </button>
+            
+            <button class="btn-shape btn-stop" id="stopBtn" aria-label="Stop">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" style="transform: rotate(-45deg);"><path d="M6 6h12v12H6z"/></svg>
+            </button>
+            
+            <button class="btn-shape btn-next" id="nextBtn" aria-label="Next">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
+            </button>
+        </div>
+
+        <!-- Playlist -->
+        <div class="playlist-geo" id="playlist">
+            <!-- JS Populated -->
+        </div>
+    </div>
+
+    <audio id="audioPlayer"></audio>
+
+    <script>
+        const songs = [
+            {
+                title: "I Just Called To Say I Love You",
+                artist: "Stevie Wonder",
+                url: "https://music.giau.info/mp3/1765329418087_I_Just_Called_To_Say_I_Love_You.mp3"
+            },
+            {
+                title: "Another Day In Paradise",
+                artist: "Phil Collins",
+                url: "https://music.giau.info/mp3/1765329417208_Another_Day_In_Paradise.mp3"
+            },
+            {
+                title: "If Life Is So Short",
+                artist: "The Moffatts",
+                url: "https://music.giau.info/mp3/1765329418894_If_Life_Is_So_Short.mp3"
+            }
+        ];
+
+        const audio = document.getElementById('audioPlayer');
+        const playBtn = document.getElementById('playBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const iconPlay = document.getElementById('iconPlay');
+        const iconPause = document.getElementById('iconPause');
+        const geoArt = document.getElementById('geoArt');
+        
+        const titleDisplay = document.getElementById('titleDisplay');
+        const artistDisplay = document.getElementById('artistDisplay');
+        const progressContainer = document.getElementById('progressContainer');
+        const progressBar = document.getElementById('progressBar');
+        const currentTimeEl = document.getElementById('currentTime');
+        const durationEl = document.getElementById('duration');
+        const playlistEl = document.getElementById('playlist');
+
+        let currentIdx = 0;
+        let isDragging = false;
+
+        function init() {
+            renderPlaylist();
+            loadTrack(0);
+            setupListeners();
+        }
+
+        function loadTrack(index) {
+            currentIdx = index;
+            const song = songs[index];
+            audio.src = song.url;
+            
+            titleDisplay.textContent = song.title.toUpperCase();
+            artistDisplay.textContent = song.artist.toUpperCase();
+            
+            updatePlaylistUI();
+            resetProgress();
+            
+            // Randomize geometric shape rotation speed slightly for fun
+            geoArt.style.animationDuration = `${8 + Math.random() * 5}s`;
+        }
+
+        function togglePlay() {
+            if (audio.paused) playAudio();
+            else pauseAudio();
+        }
+
+        function playAudio() {
+            audio.play();
+            iconPlay.style.display = 'none';
+            iconPause.style.display = 'block';
+            geoArt.style.animationPlayState = 'running';
+        }
+
+        function pauseAudio() {
+            audio.pause();
+            iconPlay.style.display = 'block';
+            iconPause.style.display = 'none';
+            geoArt.style.animationPlayState = 'paused';
+        }
+
+        function stopAudio() {
+            pauseAudio();
+            audio.currentTime = 0;
+            resetProgress();
+        }
+
+        function nextTrack() {
+            currentIdx = (currentIdx + 1) % songs.length;
+            loadTrack(currentIdx);
+            playAudio();
+        }
+
+        function prevTrack() {
+            currentIdx = (currentIdx - 1 + songs.length) % songs.length;
+            loadTrack(currentIdx);
+            playAudio();
+        }
+
+        function updateProgress() {
+            if (!isDragging && audio.duration) {
+                const percent = (audio.currentTime / audio.duration) * 100;
+                progressBar.style.width = `${percent}%`;
+                
+                const curM = Math.floor(audio.currentTime / 60);
+                const curS = Math.floor(audio.currentTime % 60);
+                const durM = Math.floor(audio.duration / 60);
+                const durS = Math.floor(audio.duration % 60);
+                
+                currentTimeEl.textContent = `${curM}:${curS < 10 ? '0'+curS : curS}`;
+                durationEl.textContent = `${durM}:${durS < 10 ? '0'+durS : durS}`;
+            }
+        }
+
+        function setProgress(e) {
+            const width = progressContainer.clientWidth;
+            // Subtract padding/borders to get accurate width of the container
+            const clickX = e.offsetX;
+            const duration = audio.duration;
+            audio.currentTime = (clickX / width) * duration;
+        }
+
+        function resetProgress() {
+            progressBar.style.width = '0%';
+            currentTimeEl.textContent = "0:00";
+            durationEl.textContent = "0:00";
+        }
+
+        function renderPlaylist() {
+            playlistEl.innerHTML = '';
+            songs.forEach((song, idx) => {
+                const item = document.createElement('div');
+                item.className = 'pl-item';
+                item.innerHTML = `
+                    <div class="pl-bullet"></div>
+                    <div class="pl-name">${song.title.toUpperCase()}</div>
+                `;
+                item.onclick = () => {
+                    loadTrack(idx);
+                    playAudio();
+                };
+                playlistEl.appendChild(item);
+            });
+        }
+
+        function updatePlaylistUI() {
+            const items = document.querySelectorAll('.pl-item');
+            items.forEach((item, idx) => {
+                item.classList.toggle('active', idx === currentIdx);
+            });
+        }
+
+        function setupListeners() {
+            playBtn.addEventListener('click', togglePlay);
+            stopBtn.addEventListener('click', stopAudio);
+            nextBtn.addEventListener('click', nextTrack);
+            prevBtn.addEventListener('click', prevTrack);
+            
+            progressContainer.addEventListener('click', setProgress);
+            progressContainer.addEventListener('mousedown', () => isDragging = true);
+            progressContainer.addEventListener('mouseup', () => isDragging = false);
+            
+            audio.addEventListener('timeupdate', updateProgress);
+            audio.addEventListener('ended', nextTrack);
+        }
+
+        init();
+    </script>
+</body>
+</html>

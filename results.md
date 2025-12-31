@@ -277,3 +277,86 @@ It features a high-contrast dark mode, "Acid Green" accents, scanline overlays, 
 Here is the third design. This is a Neo-Brutalist Editorial / Pop Art style.
 
 It moves away from dark modes and uses a high-contrast palette of Cream, Black, Electric Yellow, and Hot Pink. It features sharp geometric shapes, hard drop shadows, "Vogue-style" typography mixing Playfair Display and JetBrains Mono, and a rotating abstract CSS art piece as the album cover.
+
+============
+
+Here is a completely different design concept. This version adopts a "Glassmorphism & Neo-Brutalist" aesthetic. It features a vibrant, living gradient background, a translucent frosted-glass interface, and dynamic CSS-generated abstract "Album Art" that changes based on the active track.
+
+============
+
+Here is a sixth distinct design. This concept embraces a "Neo-Brutalist / Swiss Style" aesthetic.
+
+It features high-contrast borders, hard drop shadows, raw typography, and a technical, industrial feel. The interface is flat, sharp, and highly interactive with a focus on bold color blocking.
+
+============
+
+Here is a seventh distinct design. This concept adopts a "Deep Sea / Bioluminescence" aesthetic.
+
+It features a circular "porthole" interface, a dark abyssal background with rising bubbles, neon cyan accents, and a circular SVG progress bar that mimics a submarine sonar ring.
+
+============
+
+Here is an eighth distinct design. This concept embraces a "1950s American Diner / Retro Jukebox" aesthetic.
+
+It features a classic checkered floor background, neon signage typography, vintage hand-drawn fonts, and a physical 45 RPM vinyl record visualization. The UI mimics a tabletop jukebox with chrome accents and rounded plastic buttons.
+
+============
+
+Here is a tenth distinct design. This concept adopts a "Victorian Steampunk" aesthetic.
+
+It features brass gears, a steam pressure gauge acting as the progress bar, dark wood textures, and a classic industrial feel. The UI feels like a device from an alternate history.
+
+============
+
+Here is an eleventh distinct design. This concept adopts a "Memphis Design / Post-Modern" aesthetic.
+
+It features high-energy pastel colors, bold geometric shapes (triangles, squiggles, and blocks), thick contrasting borders, and playful typography. It mimics the chaotic but organized style of 1980s Italian design.
+
+============
+
+Here is a thirteenth distinct design. This concept adopts the "Vaporwave Aesthetic" (retro-futuristic 90s nostalgia).
+
+It features the iconic sunset grid, neon pink and cyan color schemes, Windows 95-style "floating" UI windows, and a rotating 3D wireframe cube visualizer.
+
+============
+
+Here is a fourteenth distinct design. This concept adopts a "Retro Terminal / Cyberpunk Hacker" aesthetic.
+
+It features a classic green-phosphor monitor look, CRT scanline effects, ASCII art headers, and monospaced typography. It feels like a computer interface from the 1980s or a hacking terminal.
+
+============
+
+Here is a fifteenth distinct design. This concept adopts a "1920s Art Deco / Luxury" aesthetic.
+
+It features rich gold gradients, geometric sunbursts, sharp symmetrical lines, serif typography, and a sense of opulence reminiscent of The Great Gatsby.
+
+============
+
+Here is a sixteenth distinct design. This concept adopts a "1940s Film Noir Detective" aesthetic.
+
+It features a gritty monochromatic color palette, typewriter fonts, a dramatic spotlight background, "evidence file" layouts, and atmospheric smoke effects.
+
+============
+
+Here is an eighteenth distinct design. This concept adopts a "Pop Art / Comic Book" aesthetic.
+
+It features Ben-Day dot patterns, bold halftone gradients, explosive sound effects ("POW!", "ZAP!"), and a style reminiscent of 1960s superhero comics.
+
+============
+
+Here is a nineteenth distinct design. This concept adopts a "Military Tactical HUD" aesthetic.
+
+It features a dark interface with radar sweeps, green phosphor accents, stencil typography, and a "mission objective" playlist. It looks like a control panel for a drone or submarine.
+
+============
+
+Here is a twenty-second distinct design. This concept adopts a "Wild West / Saloon" aesthetic.
+
+It features wooden plank textures, "WANTED" poster styling, a sheriff badge visualizer, and a rugged, dusty color palette.
+
+============
+
+Here is a twenty-fifth distinct design. This concept adopts a "Sci-Fi Space Station" aesthetic.
+
+It features a deep space background with twinkling stars, holographic glass interfaces, orbital progress rings, and a rotating planetary visualizer.
+

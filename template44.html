@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Abyssal Audio Interface</title>
+    
+    <!-- Fonts: Bebas Neue (Tall/Impact) & Rajdhani (Tech/Square) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --deep-blue: #020c1b;
+            --navy: #112240;
+            --neon-cyan: #64ffda;
+            --cyan-dim: rgba(100, 255, 218, 0.1);
+            --glass: rgba(2, 12, 27, 0.7);
+            
+            --font-display: 'Bebas Neue', cursive;
+            --font-tech: 'Rajdhani', sans-serif;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: var(--deep-blue);
+            background-image: radial-gradient(circle at 50% 50%, #1d3f5e 0%, #020c1b 80%);
+            color: #ccd6f6;
+            font-family: var(--font-tech);
+            overflow: hidden;
+        }
+
+        /* --- Ambient Bubbles --- */
+        .bubble-container {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .bubble {
+            position: absolute;
+            background: rgba(100, 255, 218, 0.1);
+            border-radius: 50%;
+            bottom: -20px;
+            animation: rise 10s infinite ease-in;
+        }
+
+        .bubble:nth-child(2n) { background: rgba(100, 255, 218, 0.05); animation-duration: 15s; left: 20%; width: 40px; height: 40px; }
+        .bubble:nth-child(3n) { background: rgba(100, 255, 218, 0.08); animation-duration: 12s; left: 60%; width: 20px; height: 20px; animation-delay: 2s; }
+        .bubble:nth-child(4n) { background: rgba(100, 255, 218, 0.06); animation-duration: 18s; left: 80%; width: 60px; height: 60px; animation-delay: 5s; }
+        .bubble:nth-child(5n) { background: rgba(100, 255, 218, 0.1); animation-duration: 8s; left: 10%; width: 30px; height: 30px; animation-delay: 1s; }
+
+        @keyframes rise {
+            0% { transform: translateY(0); opacity: 0; }
+            50% { opacity: 1; }
+            100% { transform: translateY(-110vh); opacity: 0; }
+        }
+
+        /* --- Main Porthole Interface --- */
+        .interface-container {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 40px;
+        }
+
+        .porthole {
+            width: 360px;
+            height: 360px;
+            border-radius: 50%;
+            background: radial-gradient(circle at center, rgba(17, 34, 64, 0.8), rgba(2, 12, 27, 0.95));
+            border: 10px solid var(--navy);
+            box-shadow: 
+                0 0 0 4px #233554,
+                0 0 50px rgba(0, 0, 0, 0.8),
+                inset 0 0 60px rgba(0, 0, 0, 0.9);
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Circular Progress SVG */
+        .progress-ring {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            transform: rotate(-90deg);
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        .progress-ring__circle {
+            transition: stroke-dashoffset 0.1s linear;
+            transform-origin: 50% 50%;
+            stroke: var(--neon-cyan);
+            filter: drop-shadow(0 0 8px var(--neon-cyan));
+        }
+
+        /* Inner Content */
+        .porthole-content {
+            z-index: 10;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 70%; /* Restrict text width */
+        }
+
+        .track-title {
+            font-family: var(--font-display);
+            font-size: 3rem;
+            line-height: 0.9;
+            color: var(--neon-cyan);
+            text-transform: uppercase;
+            text-shadow: 0 0 20px rgba(100, 255, 218, 0.4);
+            margin-bottom: 5px;
+            letter-spacing: 2px;
+        }
+
+        .track-artist {
+            font-size: 1.2rem;
+            color: #8892b0;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 30px;
+        }
+
+        .time-display {
+            font-family: var(--font-tech);
+            font-size: 1.1rem;
+            color: var(--neon-cyan);
+            background: rgba(0,0,0,0.3);
+            padding: 5px 15px;
+            border-radius: 15px;
+            border: 1px solid rgba(100, 255, 218, 0.2);
+        }
+
+        /* Controls on the Rim */
+        .rim-controls {
+            position: absolute;
+            width: 100%; height: 100%;
+            top: 0; left: 0;
+            pointer-events: none; /* Let clicks pass through to center */
+        }
+
+        .rim-btn {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            background: var(--navy);
+            border: 2px solid #64ffda;
+            border-radius: 50%;
+            color: var(--neon-cyan);
+            cursor: pointer;
+            pointer-events: auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 0 15px rgba(0,0,0,0.5);
+            transition: all 0.3s;
+            font-size: 1.2rem;
+        }
+
+        .rim-btn:hover {
+            background: var(--neon-cyan);
+            color: var(--deep-blue);
+            box-shadow: 0 0 20px var(--neon-cyan);
+        }
+        
+        .rim-btn:active {
+            transform: scale(0.9);
+        }
+
+        /* Positioning buttons on the circle */
+        .btn-top { top: -25px; left: 50%; transform: translateX(-50%); } /* Not used */
+        .btn-right { top: 50%; right: -25px; transform: translateY(-50%); }
+        .btn-left { top: 50%; left: -25px; transform: translateY(-50%); }
+        .btn-bottom { bottom: -25px; left: 50%; transform: translateX(-50%); }
+
+        /* Center Play Button */
+        .center-play-btn {
+            position: absolute;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: transparent;
+            border: 2px solid rgba(100, 255, 218, 0.3);
+            color: white;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 20;
+            transition: all 0.3s;
+        }
+
+        .center-play-btn:hover {
+            border-color: var(--neon-cyan);
+            background: rgba(100, 255, 218, 0.1);
+            box-shadow: 0 0 30px rgba(100, 255, 218, 0.2);
+        }
+
+        /* --- Sonar Playlist --- */
+        .sonar-panel {
+            width: 360px;
+            background: rgba(17, 34, 64, 0.6);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(100, 255, 218, 0.2);
+            padding: 20px;
+            border-radius: 20px;
+            position: relative;
+        }
+
+        .sonar-panel::before {
+            content: 'SONAR_TARGETING';
+            display: block;
+            font-size: 0.8rem;
+            color: rgba(100, 255, 218, 0.5);
+            margin-bottom: 10px;
+            letter-spacing: 2px;
+        }
+
+        .sonar-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+
+        .sonar-item {
+            display: flex;
+            align-items: center;
+            padding: 10px 15px;
+            border-bottom: 1px solid rgba(100, 255, 218, 0.05);
+            cursor: pointer;
+            transition: all 0.2s;
+            border-left: 2px solid transparent;
+        }
+
+        .sonar-item:hover {
+            background: rgba(100, 255, 218, 0.05);
+            padding-left: 20px;
+        }
+
+        .sonar-item.active {
+            background: linear-gradient(90deg, rgba(100, 255, 218, 0.1), transparent);
+            border-left-color: var(--neon-cyan);
+        }
+
+        .sonar-dot {
+            width: 8px;
+            height: 8px;
+            background: #8892b0;
+            border-radius: 50%;
+            margin-right: 15px;
+        }
+
+        .sonar-item.active .sonar-dot {
+            background: var(--neon-cyan);
+            box-shadow: 0 0 10px var(--neon-cyan);
+            animation: pulse-dot 1.5s infinite;
+        }
+
+        .sonar-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sonar-title {
+            font-family: var(--font-display);
+            font-size: 1.2rem;
+            line-height: 1;
+            color: #ccd6f6;
+        }
+        
+        .sonar-item.active .sonar-title {
+            color: var(--neon-cyan);
+        }
+
+        .sonar-meta {
+            font-size: 0.8rem;
+            color: #8892b0;
+            letter-spacing: 1px;
+        }
+
+        @keyframes pulse-dot {
+            0% { opacity: 0.5; transform: scale(1); }
+            50% { opacity: 1; transform: scale(1.2); }
+            100% { opacity: 0.5; transform: scale(1); }
+        }
+
+        /* Responsive */
+        @media (max-width: 400px) {
+            .porthole { width: 300px; height: 300px; }
+            .sonar-panel { width: 300px; }
+            .track-title { font-size: 2.5rem; }
+            /* Adjust rim buttons */
+            .rim-btn { width: 40px; height: 40px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="bubble-container">
+        <div class="bubble"></div><div class="bubble"></div><div class="bubble"></div><div class="bubble"></div>
+    </div>
+
+    <div class="interface-container">
+        
+        <!-- The Porthole -->
+        <div class="porthole">
+            <!-- SVG Progress Ring -->
+            <svg class="progress-ring" width="360" height="360">
+                <!-- Track -->
+                <circle class="progress-ring__circle-bg" stroke="rgba(100, 255, 218, 0.1)" stroke-width="4" fill="transparent" r="160" cx="180" cy="180" />
+                <!-- Indicator -->
+                <circle class="progress-ring__circle" id="progressCircle" stroke-width="4" fill="transparent" r="160" cx="180" cy="180" 
+                        stroke-dasharray="1005" stroke-dashoffset="1005" />
+            </svg>
+
+            <!-- Rim Controls -->
+            <button class="rim-btn btn-left" id="prevBtn" title="Previous">
+                &#9664;
+            </button>
+            <button class="rim-btn btn-right" id="nextBtn" title="Next">
+                &#9654;
+            </button>
+            <button class="rim-btn btn-bottom" id="stopBtn" title="Stop">
+                &#9632;
+            </button>
+
+            <!-- Center Content -->
+            <div class="porthole-content">
+                <h1 class="track-title" id="titleDisplay">DEPTH_00</h1>
+                <p class="track-artist" id="artistDisplay">SCANNING...</p>
+                <div class="time-display" id="timeDisplay">00:00</div>
+            </div>
+
+            <!-- Center Trigger -->
+            <button class="center-play-btn" id="playBtn" title="Play/Pause">
+                <span id="playIcon">&#9658;</span>
+                <span id="pauseIcon" style="display:none;">&#10074;&#10074;</span>
+            </button>
+        </div>
+
+        <!-- Sonar Playlist -->
+        <div class="sonar-panel">
+            <ul class="sonar-list" id="playlist">
+                <!-- JS Injected -->
+            </ul>
+        </div>
+
+    </div>
+
+    <audio id="audioPlayer"></audio>
+
+    <script>
+        const songs = [
+            {
+                title: "I Just Called To Say I Love You",
+                artist: "Stevie Wonder",
+                url: "https://music.giau.info/mp3/1765329418087_I_Just_Called_To_Say_I_Love_You.mp3"
+            },
+            {
+                title: "Another Day In Paradise",
+                artist: "Phil Collins",
+                url: "https://music.giau.info/mp3/1765329417208_Another_Day_In_Paradise.mp3"
+            },
+            {
+                title: "If Life Is So Short",
+                artist: "The Moffatts",
+                url: "https://music.giau.info/mp3/1765329418894_If_Life_Is_So_Short.mp3"
+            }
+        ];
+
+        const audio = document.getElementById('audioPlayer');
+        const playBtn = document.getElementById('playBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const playIcon = document.getElementById('playIcon');
+        const pauseIcon = document.getElementById('pauseIcon');
+        
+        const progressCircle = document.getElementById('progressCircle');
+        const timeDisplay = document.getElementById('timeDisplay');
+        const titleDisplay = document.getElementById('titleDisplay');
+        const artistDisplay = document.getElementById('artistDisplay');
+        const playlistEl = document.getElementById('playlist');
+
+        // SVG Setup
+        const radius = progressCircle.r.baseVal.value;
+        const circumference = radius * 2 * Math.PI;
+        
+        progressCircle.style.strokeDasharray = `${circumference} ${circumference}`;
+        progressCircle.style.strokeDashoffset = circumference;
+
+        let currentIdx = 0;
+
+        function init() {
+            renderPlaylist();
+            loadTrack(0);
+            setupEvents();
+        }
+
+        function loadTrack(index) {
+            currentIdx = index;
+            const song = songs[index];
+            audio.src = song.url;
+            
+            titleDisplay.textContent = song.title;
+            artistDisplay.textContent = song.artist;
+            timeDisplay.textContent = "00:00";
+            setProgress(0);
+            
+            updatePlaylistUI();
+        }
+
+        function togglePlay() {
+            if (audio.paused) {
+                audio.play();
+            } else {
+                audio.pause();
+            }
+        }
+
+        function stopTrack() {
+            audio.pause();
+            audio.currentTime = 0;
+            timeDisplay.textContent = "00:00";
+            setProgress(0);
+        }
+
+        function nextTrack() {
+            currentIdx = (currentIdx + 1) % songs.length;
+            loadTrack(currentIdx);
+            audio.play();
+        }
+
+        function prevTrack() {
+            currentIdx = (currentIdx - 1 + songs.length) % songs.length;
+            loadTrack(currentIdx);
+            audio.play();
+        }
+
+        function setProgress(percent) {
+            const offset = circumference - (percent / 100) * circumference;
+            progressCircle.style.strokeDashoffset = offset;
+        }
+
+        function updateProgress() {
+            const percent = (audio.currentTime / audio.duration) * 100;
+            setProgress(percent);
+            
+            const curM = Math.floor(audio.currentTime / 60).toString().padStart(2, '0');
+            const curS = Math.floor(audio.currentTime % 60).toString().padStart(2, '0');
+            timeDisplay.textContent = `${curM}:${curS}`;
+        }
+
+        function renderPlaylist() {
+            playlistEl.innerHTML = '';
+            songs.forEach((song, idx) => {
+                const li = document.createElement('li');
+                li.className = 'sonar-item';
+                li.innerHTML = `
+                    <div class="sonar-dot"></div>
+                    <div class="sonar-info">
+                        <span class="sonar-title">${song.title}</span>
+                        <span class="sonar-meta">${song.artist}</span>
+                    </div>
+                `;
+                li.onclick = () => {
+                    loadTrack(idx);
+                    audio.play();
+                };
+                playlistEl.appendChild(li);
+            });
+        }
+
+        function updatePlaylistUI() {
+            const items = document.querySelectorAll('.sonar-item');
+            items.forEach((item, idx) => {
+                item.classList.toggle('active', idx === currentIdx);
+            });
+        }
+
+        function setupEvents() {
+            playBtn.addEventListener('click', togglePlay);
+            stopBtn.addEventListener('click', stopTrack);
+            nextBtn.addEventListener('click', nextTrack);
+            prevBtn.addEventListener('click', prevTrack);
+            
+            audio.addEventListener('timeupdate', updateProgress);
+            audio.addEventListener('ended', nextTrack);
+            audio.addEventListener('play', () => {
+                playIcon.style.display = 'none';
+                pauseIcon.style.display = 'block';
+            });
+            audio.addEventListener('pause', () => {
+                playIcon.style.display = 'block';
+                pauseIcon.style.display = 'none';
+            });
+        }
+
+        init();
+    </script>
+</body>
+</html>

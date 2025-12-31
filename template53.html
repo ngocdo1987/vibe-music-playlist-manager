@@ -1,0 +1,600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tactical Radar Player</title>
+    
+    <!-- Font: Share Tech Mono (Military/Tech) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --hud-green: #0f0;
+            --hud-dim: #003300;
+            --hud-alert: #ff3333;
+            --hud-bg: #0a0f0a;
+            --glass-panel: rgba(0, 20, 0, 0.6);
+            
+            --font-hud: 'Share Tech Mono', monospace;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #050505;
+            background-image: 
+                linear-gradient(rgba(0, 255, 0, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 255, 0, 0.03) 1px, transparent 1px);
+            background-size: 30px 30px;
+            font-family: var(--font-hud);
+            color: var(--hud-green);
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* --- HUD Overlay Elements --- */
+        .vignette {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle, transparent 50%, #000 100%);
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        .scanline {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0) 50%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.2));
+            background-size: 100% 4px;
+            pointer-events: none;
+            z-index: 6;
+        }
+
+        /* --- Main Interface --- */
+        .tactical-console {
+            width: 800px;
+            height: 500px;
+            border: 2px solid var(--hud-green);
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            position: relative;
+            background: var(--hud-bg);
+            box-shadow: 0 0 20px rgba(0, 255, 0, 0.1);
+        }
+
+        /* Corner Brackets */
+        .bracket {
+            position: absolute;
+            width: 20px; height: 20px;
+            border: 2px solid var(--hud-green);
+            transition: all 0.3s;
+        }
+        .tl { top: -2px; left: -2px; border-right: none; border-bottom: none; }
+        .tr { top: -2px; right: -2px; border-left: none; border-bottom: none; }
+        .bl { bottom: -2px; left: -2px; border-right: none; border-top: none; }
+        .br { bottom: -2px; right: -2px; border-left: none; border-top: none; }
+
+        /* --- Left: Radar Screen --- */
+        .radar-module {
+            border-right: 2px solid var(--hud-green);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            background: radial-gradient(circle, rgba(0,50,0,0.4), transparent 70%);
+        }
+
+        .radar-scope {
+            width: 220px;
+            height: 220px;
+            border: 2px solid var(--hud-dim);
+            border-radius: 50%;
+            position: relative;
+            background: rgba(0,20,0,0.3);
+            overflow: hidden;
+            box-shadow: 0 0 15px var(--hud-dim);
+        }
+
+        /* Grid Rings */
+        .radar-ring {
+            position: absolute;
+            border: 1px solid var(--hud-dim);
+            border-radius: 50%;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        .r1 { width: 25%; height: 25%; }
+        .r2 { width: 50%; height: 50%; }
+        .r3 { width: 75%; height: 75%; }
+
+        /* Crosshair */
+        .crosshair {
+            position: absolute;
+            background: var(--hud-dim);
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+        }
+        .ch-x { width: 100%; height: 1px; }
+        .ch-y { width: 1px; height: 100%; }
+
+        /* The Sweep */
+        .radar-sweep {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            border-radius: 50%;
+            background: conic-gradient(from 0deg, transparent 0deg, transparent 270deg, rgba(0, 255, 0, 0.5) 360deg);
+            animation: sweep 4s linear infinite;
+            opacity: 0.3;
+        }
+
+        @keyframes sweep {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* Target Blip */
+        .target-blip {
+            position: absolute;
+            width: 10px; height: 10px;
+            background: var(--hud-alert);
+            border-radius: 50%;
+            top: 40%; left: 60%;
+            box-shadow: 0 0 10px var(--hud-alert);
+            animation: blip-pulse 1s infinite;
+            display: none;
+        }
+        
+        .radar-module.active .target-blip {
+            display: block;
+        }
+
+        @keyframes blip-pulse {
+            0% { transform: scale(1); opacity: 1; }
+            100% { transform: scale(2); opacity: 0; }
+        }
+
+        .radar-status {
+            margin-top: 20px;
+            font-size: 0.8rem;
+            color: var(--hud-dim);
+            text-align: center;
+        }
+
+        /* --- Right: Data & Controls --- */
+        .data-module {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .mission-header {
+            border-bottom: 1px solid var(--hud-dim);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .mission-title {
+            font-size: 1.2rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+        
+        .mission-id {
+            font-size: 0.8rem;
+            color: var(--hud-alert);
+        }
+
+        /* Info Box */
+        .target-info {
+            border: 1px solid var(--hud-dim);
+            padding: 15px;
+            background: rgba(0, 50, 0, 0.2);
+            margin-bottom: 20px;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+        }
+
+        .label { color: var(--hud-dim); }
+        .value { color: #fff; text-shadow: 0 0 5px var(--hud-green); }
+
+        /* Progress Bar (Tactical) */
+        .load-bar-container {
+            margin-bottom: 20px;
+        }
+
+        .load-bar-bg {
+            height: 10px;
+            background: #111;
+            border: 1px solid var(--hud-dim);
+            position: relative;
+        }
+
+        .load-bar-fill {
+            height: 100%;
+            background: var(--hud-green);
+            width: 0%;
+            transition: width 0.1s linear;
+            box-shadow: 0 0 10px var(--hud-green);
+        }
+
+        /* Controls (Buttons) */
+        .control-panel {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .btn-tac {
+            background: transparent;
+            border: 1px solid var(--hud-green);
+            color: var(--hud-green);
+            font-family: var(--font-hud);
+            padding: 10px;
+            cursor: pointer;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .btn-tac::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; width: 5px; height: 5px;
+            background: var(--hud-green);
+            opacity: 0;
+        }
+
+        .btn-tac:hover {
+            background: rgba(0, 255, 0, 0.1);
+            box-shadow: 0 0 10px rgba(0,255,0,0.2);
+        }
+        
+        .btn-tac:hover::before { opacity: 1; }
+
+        .btn-tac:active {
+            background: var(--hud-green);
+            color: #000;
+        }
+
+        .btn-tac.main {
+            grid-column: 2;
+            font-weight: bold;
+            background: rgba(0, 255, 0, 0.1);
+        }
+
+        /* Playlist (Target List) */
+        .target-list {
+            border: 1px solid var(--hud-dim);
+            background: rgba(0,0,0,0.3);
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .target-item {
+            padding: 10px;
+            border-bottom: 1px solid #111;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: 0.2s;
+        }
+
+        .target-item:hover {
+            background: rgba(0, 255, 0, 0.05);
+            padding-left: 15px;
+        }
+
+        .target-item.active {
+            background: rgba(0, 255, 0, 0.1);
+            border-left: 3px solid var(--hud-green);
+            color: #fff;
+        }
+
+        .target-icon {
+            width: 20px; height: 20px;
+            border: 1px solid var(--hud-dim);
+            margin-right: 15px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 0.6rem;
+        }
+
+        .target-item.locked .target-icon {
+            border-color: var(--hud-alert);
+            color: var(--hud-alert);
+            animation: blink 1s step-end infinite;
+        }
+
+        @keyframes blink { 50% { opacity: 0; } }
+
+        /* Responsive */
+        @media (max-width: 820px) {
+            .tactical-console {
+                width: 95%;
+                grid-template-columns: 1fr;
+                height: auto;
+            }
+            .radar-module {
+                border-right: none;
+                border-bottom: 2px solid var(--hud-green);
+                padding-bottom: 30px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="vignette"></div>
+    <div class="scanline"></div>
+
+    <div class="tactical-console">
+        <!-- Corner Deco -->
+        <div class="bracket tl"></div>
+        <div class="bracket tr"></div>
+        <div class="bracket bl"></div>
+        <div class="bracket br"></div>
+
+        <!-- Left: Radar -->
+        <div class="radar-module" id="radarModule">
+            <div class="radar-scope">
+                <div class="radar-ring r1"></div>
+                <div class="radar-ring r2"></div>
+                <div class="radar-ring r3"></div>
+                <div class="crosshair ch-x"></div>
+                <div class="crosshair ch-y"></div>
+                <div class="radar-sweep"></div>
+                <div class="target-blip"></div>
+            </div>
+            <div class="radar-status">
+                <span>SECTOR: <span id="sectorId">A7</span></span><br>
+                <span>STATUS: <span id="radarStatus">IDLE</span></span>
+            </div>
+        </div>
+
+        <!-- Right: Data -->
+        <div class="data-module">
+            <div class="mission-header">
+                <span class="mission-title">Audio Command</span>
+                <span class="mission-id">TOP SECRET</span>
+            </div>
+
+            <div class="target-info">
+                <div class="info-row">
+                    <span class="label">TARGET NAME:</span>
+                    <span class="value" id="targetName">UNKNOWN</span>
+                </div>
+                <div class="info-row">
+                    <span class="label">ORIGIN:</span>
+                    <span class="value" id="originName">UNIDENTIFIED</span>
+                </div>
+                <div class="info-row">
+                    <span class="label">ENCRYPTION:</span>
+                    <span class="value">MP3-128</span>
+                </div>
+            </div>
+
+            <div class="load-bar-container" id="loadBar">
+                <div class="load-bar-bg">
+                    <div class="load-bar-fill" id="loadFill"></div>
+                </div>
+                <div style="display:flex; justify-content:space-between; font-size:0.7rem; margin-top:5px; color:var(--hud-dim);">
+                    <span id="currentTime">00:00</span>
+                    <span id="duration">00:00</span>
+                </div>
+            </div>
+
+            <div class="control-panel">
+                <button class="btn-tac" id="prevBtn">[ < ]</button>
+                <button class="btn-tac main" id="playBtn">ENGAGE</button>
+                <button class="btn-tac" id="nextBtn">[ > ]</button>
+                <button class="btn-tac" id="stopBtn" style="grid-column: 1/-1; border-color: var(--hud-alert); color: var(--hud-alert);">ABORT</button>
+            </div>
+
+            <div class="target-list" id="playlist">
+                <!-- JS Injected -->
+            </div>
+        </div>
+    </div>
+
+    <audio id="audioPlayer"></audio>
+
+    <script>
+        const songs = [
+            {
+                title: "I Just Called To Say I Love You",
+                artist: "Stevie Wonder",
+                url: "https://music.giau.info/mp3/1765329418087_I_Just_Called_To_Say_I_Love_You.mp3"
+            },
+            {
+                title: "Another Day In Paradise",
+                artist: "Phil Collins",
+                url: "https://music.giau.info/mp3/1765329417208_Another_Day_In_Paradise.mp3"
+            },
+            {
+                title: "If Life Is So Short",
+                artist: "The Moffatts",
+                url: "https://music.giau.info/mp3/1765329418894_If_Life_Is_So_Short.mp3"
+            }
+        ];
+
+        const audio = document.getElementById('audioPlayer');
+        const playBtn = document.getElementById('playBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const radarModule = document.getElementById('radarModule');
+        
+        const targetName = document.getElementById('targetName');
+        const originName = document.getElementById('originName');
+        const sectorId = document.getElementById('sectorId');
+        const radarStatus = document.getElementById('radarStatus');
+        
+        const loadBar = document.getElementById('loadBar');
+        const loadFill = document.getElementById('loadFill');
+        const currentTimeEl = document.getElementById('currentTime');
+        const durationEl = document.getElementById('duration');
+        const playlistEl = document.getElementById('playlist');
+
+        let currentIdx = 0;
+        let isDragging = false;
+
+        function init() {
+            renderPlaylist();
+            loadTrack(0);
+            setupEvents();
+        }
+
+        function loadTrack(index) {
+            currentIdx = index;
+            const song = songs[index];
+            audio.src = song.url;
+            
+            targetName.textContent = song.title.toUpperCase();
+            originName.textContent = song.artist.toUpperCase();
+            sectorId.textContent = `SECTOR ${String.fromCharCode(65+index)}${Math.floor(Math.random()*90)+10}`;
+            
+            updatePlaylistUI();
+            resetProgress();
+        }
+
+        function togglePlay() {
+            if (audio.paused) playAudio();
+            else pauseAudio();
+        }
+
+        function playAudio() {
+            audio.play();
+            playBtn.textContent = "DISARM";
+            radarModule.classList.add('active');
+            radarStatus.textContent = "TRACKING";
+            radarStatus.style.color = "#0f0";
+        }
+
+        function pauseAudio() {
+            audio.pause();
+            playBtn.textContent = "ENGAGE";
+            radarModule.classList.remove('active');
+            radarStatus.textContent = "PAUSED";
+            radarStatus.style.color = "#003300";
+        }
+
+        function stopAudio() {
+            pauseAudio();
+            audio.currentTime = 0;
+            playBtn.textContent = "ENGAGE";
+            radarStatus.textContent = "TERMINATED";
+            radarStatus.style.color = "#ff3333";
+            resetProgress();
+        }
+
+        function nextTrack() {
+            currentIdx = (currentIdx + 1) % songs.length;
+            loadTrack(currentIdx);
+            playAudio();
+        }
+
+        function prevTrack() {
+            currentIdx = (currentIdx - 1 + songs.length) % songs.length;
+            loadTrack(currentIdx);
+            playAudio();
+        }
+
+        function updateProgress() {
+            if (!isDragging && audio.duration) {
+                const percent = (audio.currentTime / audio.duration) * 100;
+                loadFill.style.width = `${percent}%`;
+                
+                const curM = Math.floor(audio.currentTime / 60).toString().padStart(2, '0');
+                const curS = Math.floor(audio.currentTime % 60).toString().padStart(2, '0');
+                const durM = Math.floor(audio.duration / 60).toString().padStart(2, '0');
+                const durS = Math.floor(audio.duration % 60).toString().padStart(2, '0');
+                
+                currentTimeEl.textContent = `T:${curM}:${curS}`;
+                durationEl.textContent = `D:${durM}:${durS}`;
+            }
+        }
+
+        function setProgress(e) {
+            const width = loadBar.clientWidth;
+            const clickX = e.offsetX;
+            const duration = audio.duration;
+            audio.currentTime = (clickX / width) * duration;
+        }
+
+        function resetProgress() {
+            loadFill.style.width = '0%';
+            currentTimeEl.textContent = "T:00:00";
+            durationEl.textContent = "D:00:00";
+        }
+
+        function renderPlaylist() {
+            playlistEl.innerHTML = '';
+            songs.forEach((song, idx) => {
+                const div = document.createElement('div');
+                div.className = 'target-item';
+                div.innerHTML = `
+                    <div class="target-icon">ID</div>
+                    <div class="target-data">${song.title.substring(0, 25).toUpperCase()}...</div>
+                `;
+                div.onclick = () => {
+                    loadTrack(idx);
+                    playAudio();
+                };
+                playlistEl.appendChild(div);
+            });
+        }
+
+        function updatePlaylistUI() {
+            const items = document.querySelectorAll('.target-item');
+            items.forEach((item, idx) => {
+                item.classList.remove('active', 'locked');
+                if (idx === currentIdx) {
+                    item.classList.add('active');
+                    item.querySelector('.target-icon').textContent = 'TGT';
+                    if(!audio.paused) item.classList.add('locked');
+                } else {
+                    item.querySelector('.target-icon').textContent = 'ID';
+                }
+            });
+        }
+
+        function setupEvents() {
+            playBtn.addEventListener('click', togglePlay);
+            stopBtn.addEventListener('click', stopAudio);
+            nextBtn.addEventListener('click', nextTrack);
+            prevBtn.addEventListener('click', prevTrack);
+            
+            loadBar.addEventListener('click', setProgress);
+            loadBar.addEventListener('mousedown', () => isDragging = true);
+            loadBar.addEventListener('mouseup', () => isDragging = false);
+            
+            audio.addEventListener('timeupdate', updateProgress);
+            audio.addEventListener('ended', nextTrack);
+        }
+
+        init();
+    </script>
+</body>
+</html>

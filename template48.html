@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vaporwave Audio Player</title>
+    
+    <!-- Fonts: VT323 (Pixel/Terminal) & Rubik Glitch (Glitchy Titles) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Rubik+Glitch&family=VT323&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --vape-pink: #ff71ce;
+            --vape-cyan: #01cdfe;
+            --vape-purple: #b967ff;
+            --vape-yellow: #fffb96;
+            --dark-bg: #2b001b;
+            --grid-color: rgba(185, 103, 255, 0.3);
+            
+            --font-pixel: 'VT323', monospace;
+            --font-glitch: 'Rubik Glitch', display;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: var(--dark-bg);
+            /* Vaporwave Sunset Gradient */
+            background: linear-gradient(to bottom, #2b001b 0%, #59004d 60%, #ff71ce 100%);
+            font-family: var(--font-pixel);
+            color: #fff;
+            overflow: hidden;
+            perspective: 1000px;
+        }
+
+        /* --- Moving Perspective Grid --- */
+        .retro-grid {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 40%;
+            background-image: 
+                linear-gradient(var(--grid-color) 1px, transparent 1px),
+                linear-gradient(90deg, var(--grid-color) 1px, transparent 1px);
+            background-size: 40px 40px;
+            background-position: center bottom;
+            transform: perspective(500px) rotateX(60deg);
+            transform-origin: bottom;
+            animation: move-grid 2s linear infinite;
+            z-index: 0;
+        }
+
+        @keyframes move-grid {
+            0% { background-position: 0 0; }
+            100% { background-position: 0 40px; }
+        }
+
+        /* --- CRT Scanline Overlay --- */
+        .scanlines {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+            background-size: 100% 4px, 6px 100%;
+            pointer-events: none;
+            z-index: 100;
+        }
+
+        /* --- Main Window (Win95 Style) --- */
+        .aesthetic-window {
+            position: relative;
+            width: 600px;
+            background: rgba(20, 20, 30, 0.8);
+            backdrop-filter: blur(10px);
+            border: 3px solid var(--vape-cyan);
+            border-top-color: var(--vape-pink);
+            border-left-color: var(--vape-purple);
+            box-shadow: 8px 8px 0px rgba(0,0,0,0.5);
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            padding: 10px;
+            z-index: 10;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotateX(0deg); }
+            50% { transform: translateY(-10px) rotateX(2deg); }
+        }
+
+        /* Title Bar */
+        .title-bar {
+            grid-column: 1 / -1;
+            background: var(--vape-cyan);
+            color: var(--dark-bg);
+            padding: 5px 10px;
+            font-size: 1.2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: bold;
+            margin-bottom: 10px;
+            border-bottom: 2px solid var(--dark-bg);
+        }
+
+        .win-btn {
+            width: 20px; height: 20px;
+            background: #fff;
+            border: 2px solid #000;
+            cursor: pointer;
+            box-shadow: 1px 1px 0 #000;
+        }
+
+        /* --- 3D Cube Visualizer --- */
+        .visualizer-pane {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 250px;
+            perspective: 600px;
+            border: 2px solid var(--vape-purple);
+            background: rgba(0,0,0,0.3);
+        }
+
+        .cube-scene {
+            width: 100px;
+            height: 100px;
+            position: relative;
+            transform-style: preserve-3d;
+            animation: spin-cube 8s linear infinite;
+        }
+
+        .cube-face {
+            position: absolute;
+            width: 100px;
+            height: 100px;
+            border: 2px solid var(--vape-pink);
+            background: rgba(255, 113, 206, 0.15);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2rem;
+            color: var(--vape-cyan);
+            box-shadow: 0 0 10px var(--vape-pink);
+        }
+
+        .front  { transform: rotateY(0deg) translateZ(50px); }
+        .back   { transform: rotateY(180deg) translateZ(50px); }
+        .right  { transform: rotateY(90deg) translateZ(50px); }
+        .left   { transform: rotateY(-90deg) translateZ(50px); }
+        .top    { transform: rotateX(90deg) translateZ(50px); }
+        .bottom { transform: rotateX(-90deg) translateZ(50px); }
+
+        @keyframes spin-cube {
+            from { transform: rotateX(0deg) rotateY(0deg); }
+            to { transform: rotateX(360deg) rotateY(360deg); }
+        }
+
+        /* --- Controls Pane --- */
+        .controls-pane {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            padding: 10px;
+        }
+
+        .track-title-vape {
+            font-family: var(--font-glitch);
+            font-size: 1.8rem;
+            color: var(--vape-pink);
+            text-shadow: 2px 2px var(--vape-cyan);
+            margin: 0;
+            line-height: 1.2;
+        }
+
+        .track-artist-vape {
+            font-size: 1.2rem;
+            color: var(--vape-cyan);
+            text-shadow: 1px 1px 0 #000;
+        }
+
+        /* Vaporwave Progress Bar */
+        .progress-container {
+            width: 100%;
+            height: 25px;
+            background: #444;
+            border: 2px solid #fff;
+            box-shadow: 2px 2px 0 #000;
+            position: relative;
+        }
+
+        .progress-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--vape-purple), var(--vape-pink));
+            border-right: 2px solid #fff;
+            transition: width 0.1s linear;
+        }
+
+        .time-display {
+            display: flex;
+            justify-content: space-between;
+            font-size: 1.2rem;
+            margin-top: 5px;
+        }
+
+        /* 3D Buttons */
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .btn-retro {
+            background: #c0c0c0;
+            border-top: 2px solid #fff;
+            border-left: 2px solid #fff;
+            border-right: 2px solid #000;
+            border-bottom: 2px solid #000;
+            padding: 5px 15px;
+            font-family: var(--font-pixel);
+            font-size: 1.1rem;
+            cursor: pointer;
+            color: #000;
+            box-shadow: 2px 2px 0 #000;
+            
+        }
+        
+        .btn-retro:active {
+            border-top: 2px solid #000;
+            border-left: 2px solid #000;
+            border-right: 2px solid #fff;
+            border-bottom: 2px solid #fff;
+            transform: translate(1px, 1px);
+            box-shadow: none;
+        }
+
+        .btn-retro.main {
+            background: var(--vape-pink);
+            color: #fff;
+            font-weight: bold;
+        }
+
+        /* --- Floating Playlist Window --- */
+        .playlist-window {
+            position: absolute;
+            bottom: -120px;
+            right: -50px;
+            width: 250px;
+            background: rgba(20, 20, 30, 0.9);
+            border: 3px solid var(--vape-yellow);
+            box-shadow: 5px 5px 0 #000;
+            padding: 5px;
+            z-index: 20;
+            transform: rotate(2deg);
+            animation: float-playlist 7s ease-in-out infinite;
+        }
+
+        @keyframes float-playlist {
+            0%, 100% { transform: rotate(2deg) translateY(0); }
+            50% { transform: rotate(2deg) translateY(-5px); }
+        }
+
+        .playlist-header {
+            background: var(--vape-yellow);
+            color: #000;
+            padding: 2px 5px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .playlist-items {
+            max-height: 120px;
+            overflow-y: auto;
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            background: #000;
+        }
+        
+        /* Custom Scrollbar for list */
+        .playlist-items::-webkit-scrollbar { width: 10px; }
+        .playlist-items::-webkit-scrollbar-track { background: #333; }
+        .playlist-items::-webkit-scrollbar-thumb { background: var(--vape-pink); border: 1px solid #fff; }
+
+        .pl-item {
+            padding: 5px 10px;
+            border-bottom: 1px solid #333;
+            color: #fff;
+            font-family: var(--font-pixel);
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .pl-item:hover {
+            background: var(--vape-purple);
+        }
+        
+        .pl-item.active {
+            background: var(--vape-cyan);
+            color: #000;
+            text-decoration: line-through; /* Vaporwave trope */
+        }
+
+        /* Responsive */
+        @media (max-width: 650px) {
+            .aesthetic-window {
+                width: 90%;
+                grid-template-columns: 1fr;
+            }
+            .playlist-window {
+                position: relative;
+                bottom: 0;
+                right: 0;
+                transform: none;
+                animation: none;
+                width: 100%;
+                margin-top: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Background Elements -->
+    <div class="retro-grid"></div>
+    <div class="scanlines"></div>
+
+    <!-- Main Interface -->
+    <div class="aesthetic-window">
+        
+        <!-- Title Bar -->
+        <div class="title-bar">
+            <span>AUDIO_PLAYER.exe</span>
+            <div class="win-btn"></div>
+        </div>
+
+        <!-- Visualizer (3D Cube) -->
+        <div class="visualizer-pane">
+            <div class="cube-scene" id="cubeScene">
+                <div class="cube-face front">♪</div>
+                <div class="cube-face back">♫</div>
+                <div class="cube-face right">♩</div>
+                <div class="cube-face left">♬</div>
+                <div class="cube-face top"></div>
+                <div class="cube-face bottom"></div>
+            </div>
+        </div>
+
+        <!-- Controls -->
+        <div class="controls-pane">
+            <h1 class="track-title-vape" id="titleDisplay">LOADING...</h1>
+            <div class="track-artist-vape" id="artistDisplay">SYSTEM_READY</div>
+
+            <div class="progress-container" id="progressBar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <div class="time-display">
+                <span id="currentTime">00:00</span>
+                <span id="duration">00:00</span>
+            </div>
+
+            <div class="btn-group">
+                <button class="btn-retro" id="prevBtn">|&lt;</button>
+                <button class="btn-retro main" id="playBtn">PLAY</button>
+                <button class="btn-retro" id="stopBtn">STOP</button>
+                <button class="btn-retro" id="nextBtn">&gt;|</button>
+            </div>
+        </div>
+
+        <!-- Floating Playlist Window -->
+        <div class="playlist-window">
+            <div class="playlist-header">PLAYLIST.TXT</div>
+            <ul class="playlist-items" id="playlist">
+                <!-- JS Injected -->
+            </ul>
+        </div>
+    </div>
+
+    <audio id="audioPlayer"></audio>
+
+    <script>
+        const songs = [
+            {
+                title: "I Just Called To Say I Love You",
+                artist: "Stevie Wonder",
+                url: "https://music.giau.info/mp3/1765329418087_I_Just_Called_To_Say_I_Love_You.mp3"
+            },
+            {
+                title: "Another Day In Paradise",
+                artist: "Phil Collins",
+                url: "https://music.giau.info/mp3/1765329417208_Another_Day_In_Paradise.mp3"
+            },
+            {
+                title: "If Life Is So Short",
+                artist: "The Moffatts",
+                url: "https://music.giau.info/mp3/1765329418894_If_Life_Is_So_Short.mp3"
+            }
+        ];
+
+        const audio = document.getElementById('audioPlayer');
+        const playBtn = document.getElementById('playBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const cubeScene = document.getElementById('cubeScene');
+        
+        const titleDisplay = document.getElementById('titleDisplay');
+        const artistDisplay = document.getElementById('artistDisplay');
+        const progressBar = document.getElementById('progressBar');
+        const progressFill = document.getElementById('progressFill');
+        const currentTimeEl = document.getElementById('currentTime');
+        const durationEl = document.getElementById('duration');
+        const playlistEl = document.getElementById('playlist');
+
+        let currentIdx = 0;
+        let isDragging = false;
+
+        function init() {
+            renderPlaylist();
+            loadTrack(0);
+            setupEvents();
+        }
+
+        function loadTrack(index) {
+            currentIdx = index;
+            const song = songs[index];
+            audio.src = song.url;
+            
+            titleDisplay.textContent = song.title.toUpperCase();
+            artistDisplay.textContent = song.artist.toUpperCase();
+            
+            updatePlaylistUI();
+            resetProgress();
+        }
+
+        function togglePlay() {
+            if (audio.paused) playAudio();
+            else pauseAudio();
+        }
+
+        function playAudio() {
+            audio.play();
+            playBtn.textContent = "PAUSE";
+            // Speed up cube
+            cubeScene.style.animationDuration = "4s";
+        }
+
+        function pauseAudio() {
+            audio.pause();
+            playBtn.textContent = "PLAY";
+            // Slow down cube
+            cubeScene.style.animationDuration = "8s";
+        }
+
+        function stopAudio() {
+            pauseAudio();
+            audio.currentTime = 0;
+            resetProgress();
+        }
+
+        function nextTrack() {
+            currentIdx = (currentIdx + 1) % songs.length;
+            loadTrack(currentIdx);
+            playAudio();
+        }
+
+        function prevTrack() {
+            currentIdx = (currentIdx - 1 + songs.length) % songs.length;
+            loadTrack(currentIdx);
+            playAudio();
+        }
+
+        function updateProgress() {
+            if (!isDragging && audio.duration) {
+                const percent = (audio.currentTime / audio.duration) * 100;
+                progressFill.style.width = `${percent}%`;
+                
+                const curM = Math.floor(audio.currentTime / 60);
+                const curS = Math.floor(audio.currentTime % 60);
+                const durM = Math.floor(audio.duration / 60);
+                const durS = Math.floor(audio.duration % 60);
+                
+                currentTimeEl.textContent = `${curM}:${curS < 10 ? '0'+curS : curS}`;
+                durationEl.textContent = `${durM}:${durS < 10 ? '0'+durS : durS}`;
+            }
+        }
+
+        function setProgress(e) {
+            const width = progressBar.clientWidth;
+            const clickX = e.offsetX;
+            const duration = audio.duration;
+            audio.currentTime = (clickX / width) * duration;
+        }
+
+        function resetProgress() {
+            progressFill.style.width = '0%';
+            currentTimeEl.textContent = "00:00";
+            durationEl.textContent = "00:00";
+        }
+
+        function renderPlaylist() {
+            playlistEl.innerHTML = '';
+            songs.forEach((song, idx) => {
+                const li = document.createElement('li');
+                li.className = 'pl-item';
+                li.innerHTML = `
+                    <span>${idx + 1}. ${song.title}</span>
+                `;
+                li.onclick = () => {
+                    loadTrack(idx);
+                    playAudio();
+                };
+                playlistEl.appendChild(li);
+            });
+        }
+
+        function updatePlaylistUI() {
+            const items = document.querySelectorAll('.pl-item');
+            items.forEach((item, idx) => {
+                item.classList.toggle('active', idx === currentIdx);
+            });
+        }
+
+        function setupEvents() {
+            playBtn.addEventListener('click', togglePlay);
+            stopBtn.addEventListener('click', stopAudio);
+            nextBtn.addEventListener('click', nextTrack);
+            prevBtn.addEventListener('click', prevTrack);
+            
+            progressBar.addEventListener('click', setProgress);
+            progressBar.addEventListener('mousedown', () => isDragging = true);
+            progressBar.addEventListener('mouseup', () => isDragging = false);
+            
+            audio.addEventListener('timeupdate', updateProgress);
+            audio.addEventListener('ended', nextTrack);
+        }
+
+        init();
+    </script>
+</body>
+</html>

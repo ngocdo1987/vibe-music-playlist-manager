@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neon Diner Jukebox</title>
+    
+    <!-- Fonts: Rock Salt (Handwritten) & Anton (Bold Retro) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Anton&family=Rock+Salt&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --diner-red: #ff0055;
+            --diner-blue: #00ccff;
+            --cream: #fdfbf7;
+            --chrome: linear-gradient(to bottom, #e0e0e0 0%, #ffffff 50%, #a0a0a0 100%);
+            --shadow-dark: rgba(0,0,0,0.4);
+            
+            --font-hand: 'Rock Salt', cursive;
+            --font-bold: 'Anton', sans-serif;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #222;
+            background-image: 
+                linear-gradient(45deg, #333 25%, transparent 25%), 
+                linear-gradient(-45deg, #333 25%, transparent 25%), 
+                linear-gradient(45deg, transparent 75%, #333 75%), 
+                linear-gradient(-45deg, transparent 75%, #333 75%);
+            background-size: 40px 40px;
+            background-position: 0 0, 0 20px, 20px -20px, -20px 0px;
+            font-family: var(--font-bold);
+            color: #333;
+            overflow: hidden;
+        }
+
+        /* --- Jukebox Body --- */
+        .jukebox {
+            width: 400px;
+            background: var(--cream);
+            border-radius: 20px 20px 0 0;
+            border: 8px solid #ccc;
+            border-bottom: none;
+            box-shadow: 0 10px 30px var(--shadow-dark), inset 0 0 20px rgba(0,0,0,0.1);
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-bottom: 10px;
+        }
+
+        /* Chrome Top Dome */
+        .chrome-dome {
+            width: 80%;
+            height: 40px;
+            background: var(--chrome);
+            border-radius: 20px 20px 0 0;
+            margin-bottom: -5px;
+            position: relative;
+            z-index: 2;
+            border: 2px solid #999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .chrome-dome::after {
+            content: 'JUKEBOX';
+            font-size: 0.8rem;
+            color: #666;
+            letter-spacing: 2px;
+            font-family: sans-serif;
+            background: linear-gradient(to bottom, #fff, #ccc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* Neon Sign Header */
+        .neon-header {
+            font-family: var(--font-hand);
+            font-size: 2.5rem;
+            color: #fff;
+            text-align: center;
+            margin: 20px 0;
+            text-shadow: 
+                0 0 5px #fff,
+                0 0 10px #fff,
+                0 0 20px var(--diner-red),
+                0 0 40px var(--diner-red),
+                0 0 80px var(--diner-red);
+            animation: flicker 3s infinite alternate;
+        }
+
+        @keyframes flicker {
+            0%, 18%, 22%, 25%, 53%, 57%, 100% { opacity: 1; }
+            20%, 24%, 55% { opacity: 0.8; }
+        }
+
+        /* --- Vinyl Section --- */
+        .vinyl-stage {
+            width: 220px;
+            height: 220px;
+            background: #111;
+            border-radius: 50%;
+            border: 10px solid #ddd;
+            box-shadow: inset 0 0 20px #000, 5px 5px 15px rgba(0,0,0,0.3);
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .vinyl-record {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: repeating-radial-gradient(
+                #111,
+                #111 2px,
+                #222 3px,
+                #222 4px
+            );
+            position: absolute;
+            transition: transform 0.5s;
+        }
+
+        .vinyl-label {
+            width: 80px;
+            height: 80px;
+            background: var(--diner-blue);
+            border-radius: 50%;
+            position: absolute;
+            z-index: 2;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 0 5px rgba(0,0,0,0.5);
+        }
+
+        .vinyl-label span {
+            font-family: var(--font-bold);
+            color: white;
+            font-size: 1.2rem;
+            transform: rotate(-30deg);
+        }
+
+        .vinyl-spindle {
+            width: 10px;
+            height: 10px;
+            background: silver;
+            border-radius: 50%;
+            position: absolute;
+            z-index: 3;
+        }
+
+        .spin {
+            animation: rotateRecord 2s linear infinite;
+        }
+
+        @keyframes rotateRecord {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* --- Info Section --- */
+        .song-info-card {
+            background: #fff;
+            border: 2px solid var(--diner-blue);
+            border-radius: 10px;
+            padding: 15px;
+            width: 85%;
+            margin-bottom: 20px;
+            box-shadow: 3px 3px 0 rgba(0,0,0,0.2);
+            position: relative;
+        }
+
+        .song-info-card::before {
+            content: 'NOW PLAYING';
+            position: absolute;
+            top: -10px;
+            left: 10px;
+            background: var(--diner-red);
+            color: white;
+            font-size: 0.6rem;
+            padding: 2px 6px;
+            font-family: sans-serif;
+            border-radius: 2px;
+        }
+
+        .track-title {
+            font-family: var(--font-hand);
+            font-size: 1.2rem;
+            color: #333;
+            margin: 0;
+            line-height: 1.2;
+        }
+
+        .track-artist {
+            font-family: sans-serif;
+            font-weight: bold;
+            color: var(--diner-blue);
+            margin-top: 5px;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+        }
+
+        /* --- Controls --- */
+        .controls-panel {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .btn-juke {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            border: none;
+            background: linear-gradient(to bottom, #fff, #ccc);
+            box-shadow: 0 4px 0 #999, 0 5px 5px rgba(0,0,0,0.3);
+            cursor: pointer;
+            font-family: var(--font-bold);
+            font-size: 1.2rem;
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.1s;
+        }
+
+        .btn-juke:active {
+            transform: translateY(4px);
+            box-shadow: 0 0 0 #999, inset 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        .btn-main {
+            width: 65px;
+            height: 65px;
+            background: linear-gradient(to bottom, var(--diner-blue), #0099cc);
+            color: white;
+            text-shadow: 0 1px 0 rgba(0,0,0,0.3);
+            box-shadow: 0 4px 0 #007799, 0 5px 5px rgba(0,0,0,0.3);
+        }
+
+        /* --- Playlist --- */
+        .playlist-menu {
+            width: 90%;
+            background: #fff;
+            border: 2px dashed #999;
+            border-radius: 10px;
+            padding: 10px;
+            height: 120px;
+            overflow-y: auto;
+        }
+
+        .pl-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+            font-family: sans-serif;
+            font-size: 0.85rem;
+            transition: 0.2s;
+        }
+
+        .pl-item:hover {
+            background-color: #f0f8ff;
+            color: var(--diner-blue);
+        }
+
+        .pl-item.active {
+            background-color: var(--diner-red);
+            color: white;
+            border-radius: 5px;
+        }
+
+        /* Base Stand */
+        .base-stand {
+            width: 400px;
+            height: 40px;
+            background: #222;
+            border-radius: 0 0 20px 20px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.5);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 30px;
+        }
+
+        .leg {
+            width: 10px;
+            height: 20px;
+            background: #555;
+        }
+
+        /* Responsive */
+        @media (max-width: 450px) {
+            .jukebox, .base-stand { width: 95%; }
+            .neon-header { font-size: 1.8rem; }
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="jukebox">
+        <div class="chrome-dome"></div>
+        
+        <div class="neon-header">MUSIC</div>
+
+        <div class="vinyl-stage">
+            <div class="vinyl-record" id="vinyl"></div>
+            <div class="vinyl-label"><span id="vinylNum">A1</span></div>
+            <div class="vinyl-spindle"></div>
+        </div>
+
+        <div class="song-info-card">
+            <h3 class="track-title" id="titleDisplay">Select a Song</h3>
+            <div class="track-artist" id="artistDisplay">Insert Coin</div>
+            <div style="font-size: 0.8rem; color: #888; text-align: right; font-family: sans-serif; margin-top: 5px;">
+                <span id="currentTime">0:00</span> / <span id="duration">0:00</span>
+            </div>
+        </div>
+
+        <div class="controls-panel">
+            <button class="btn-juke" id="prevBtn">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
+            </button>
+            <button class="btn-juke btn-main" id="playBtn">
+                <svg id="iconPlay" width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                <svg id="iconPause" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" style="display:none;"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+            </button>
+            <button class="btn-juke" id="stopBtn" style="font-size:0.8rem;">STOP</button>
+            <button class="btn-juke" id="nextBtn">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
+            </button>
+        </div>
+
+        <div class="playlist-menu" id="playlist">
+            <!-- Items -->
+        </div>
+    </div>
+
+    <div class="base-stand">
+        <div class="leg"></div>
+        <div class="leg"></div>
+    </div>
+
+    <audio id="audioPlayer"></audio>
+
+    <script>
+        const songs = [
+            {
+                title: "I Just Called To Say I Love You",
+                artist: "Stevie Wonder",
+                url: "https://music.giau.info/mp3/1765329418087_I_Just_Called_To_Say_I_Love_You.mp3"
+            },
+            {
+                title: "Another Day In Paradise",
+                artist: "Phil Collins",
+                url: "https://music.giau.info/mp3/1765329417208_Another_Day_In_Paradise.mp3"
+            },
+            {
+                title: "If Life Is So Short",
+                artist: "The Moffatts",
+                url: "https://music.giau.info/mp3/1765329418894_If_Life_Is_So_Short.mp3"
+            }
+        ];
+
+        const audio = document.getElementById('audioPlayer');
+        const playBtn = document.getElementById('playBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const iconPlay = document.getElementById('iconPlay');
+        const iconPause = document.getElementById('iconPause');
+        
+        const vinyl = document.getElementById('vinyl');
+        const vinylNum = document.getElementById('vinylNum');
+        const titleDisplay = document.getElementById('titleDisplay');
+        const artistDisplay = document.getElementById('artistDisplay');
+        const currentTimeEl = document.getElementById('currentTime');
+        const durationEl = document.getElementById('duration');
+        const playlistEl = document.getElementById('playlist');
+
+        let currentIndex = 0;
+
+        function init() {
+            renderPlaylist();
+            loadTrack(0);
+            setupListeners();
+        }
+
+        function loadTrack(index) {
+            currentIndex = index;
+            const song = songs[index];
+            audio.src = song.url;
+            
+            titleDisplay.textContent = song.title;
+            artistDisplay.textContent = song.artist;
+            
+            // Update vinyl label text to simulate changing records
+            vinylNum.textContent = `A${index + 1}`;
+            
+            updatePlaylistUI();
+            resetProgress();
+        }
+
+        function togglePlay() {
+            if (audio.paused) playAudio();
+            else pauseAudio();
+        }
+
+        function playAudio() {
+            audio.play();
+            vinyl.classList.add('spin');
+            iconPlay.style.display = 'none';
+            iconPause.style.display = 'block';
+        }
+
+        function pauseAudio() {
+            audio.pause();
+            vinyl.classList.remove('spin');
+            iconPlay.style.display = 'block';
+            iconPause.style.display = 'none';
+        }
+
+        function stopAudio() {
+            pauseAudio();
+            audio.currentTime = 0;
+            resetProgress();
+        }
+
+        function nextTrack() {
+            currentIndex = (currentIndex + 1) % songs.length;
+            loadTrack(currentIndex);
+            playAudio();
+        }
+
+        function prevTrack() {
+            currentIndex = (currentIndex - 1 + songs.length) % songs.length;
+            loadTrack(currentIndex);
+            playAudio();
+        }
+
+        function updateProgress() {
+            if(audio.duration) {
+                const curM = Math.floor(audio.currentTime / 60);
+                const curS = Math.floor(audio.currentTime % 60);
+                const durM = Math.floor(audio.duration / 60);
+                const durS = Math.floor(audio.duration % 60);
+                
+                currentTimeEl.textContent = `${curM}:${curS < 10 ? '0'+curS : curS}`;
+                durationEl.textContent = `${durM}:${durS < 10 ? '0'+durS : durS}`;
+            }
+        }
+        
+        function resetProgress() {
+            currentTimeEl.textContent = "0:00";
+            durationEl.textContent = "0:00";
+        }
+
+        function renderPlaylist() {
+            playlistEl.innerHTML = '';
+            songs.forEach((song, idx) => {
+                const div = document.createElement('div');
+                div.className = 'pl-item';
+                div.innerHTML = `
+                    <span>${idx + 1}. ${song.title.substring(0, 20)}...</span>
+                    <span style="font-size:0.7rem; opacity:0.6;">${song.artist}</span>
+                `;
+                div.onclick = () => {
+                    loadTrack(idx);
+                    playAudio();
+                };
+                playlistEl.appendChild(div);
+            });
+        }
+
+        function updatePlaylistUI() {
+            const items = document.querySelectorAll('.pl-item');
+            items.forEach((item, idx) => {
+                item.classList.toggle('active', idx === currentIndex);
+            });
+        }
+
+        function setupListeners() {
+            playBtn.addEventListener('click', togglePlay);
+            stopBtn.addEventListener('click', stopAudio);
+            nextBtn.addEventListener('click', nextTrack);
+            prevBtn.addEventListener('click', prevTrack);
+            
+            audio.addEventListener('timeupdate', updateProgress);
+            audio.addEventListener('ended', nextTrack);
+        }
+
+        init();
+    </script>
+</body>
+</html>

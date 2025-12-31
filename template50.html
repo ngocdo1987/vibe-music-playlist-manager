@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Art Deco Audio Console</title>
+    
+    <!-- Fonts: Cinzel (Deco Serif) & Raleway (Elegant Sans) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700;900&family=Raleway:wght@300;500&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --gold-light: #fdf5e6;
+            --gold-base: #d4af37;
+            --gold-dark: #aa6c39;
+            --obsidian: #0a0a0a;
+            --cream: #f5f5f0;
+            --emerald: #005a4f;
+            
+            --font-deco: 'Cinzel', serif;
+            --font-elegant: 'Raleway', sans-serif;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: var(--obsidian);
+            background-image: 
+                radial-gradient(circle at 50% 50%, #1a1a1a 0%, #000 100%);
+            font-family: var(--font-elegant);
+            color: var(--obsidian);
+            overflow: hidden;
+        }
+
+        /* Geometric Pattern Overlay */
+        .deco-bg {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-image: linear-gradient(30deg, #111 12%, transparent 12.5%, transparent 87%, #111 87.5%, #111), 
+                              linear-gradient(150deg, #111 12%, transparent 12.5%, transparent 87%, #111 87.5%, #111), 
+                              linear-gradient(30deg, #111 12%, transparent 12.5%, transparent 87%, #111 87.5%, #111), 
+                              linear-gradient(150deg, #111 12%, transparent 12.5%, transparent 87%, #111 87.5%, #111), 
+                              linear-gradient(60deg, #222 25%, transparent 25.5%, transparent 75%, #222 75%, #222), 
+                              linear-gradient(60deg, #222 25%, transparent 25.5%, transparent 75%, #222 75%, #222);
+            background-size: 40px 70px;
+            background-position: 0 0, 0 0, 20px 35px, 20px 35px, 0 0, 20px 35px;
+            opacity: 0.1;
+            z-index: -1;
+        }
+
+        /* --- Main Gold Frame --- */
+        .deco-frame {
+            width: 700px;
+            padding: 15px;
+            background: linear-gradient(135deg, var(--gold-dark), var(--gold-base), var(--gold-light), var(--gold-base), var(--gold-dark));
+            box-shadow: 0 0 40px rgba(212, 175, 55, 0.2);
+            position: relative;
+        }
+
+        /* Corner Flourishes */
+        .corner-deco {
+            position: absolute;
+            width: 40px; height: 40px;
+            border: 2px solid var(--obsidian);
+            z-index: 10;
+        }
+        .tl { top: 5px; left: 5px; border-right: none; border-bottom: none; }
+        .tr { top: 5px; right: 5px; border-left: none; border-bottom: none; }
+        .bl { bottom: 5px; left: 5px; border-right: none; border-top: none; }
+        .br { bottom: 5px; right: 5px; border-left: none; border-top: none; }
+
+        .inner-panel {
+            background-color: var(--cream);
+            padding: 40px;
+            border: 1px solid var(--obsidian);
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+        }
+
+        /* --- Left: Visualizer --- */
+        .visual-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-right: 1px solid rgba(0,0,0,0.1);
+            position: relative;
+        }
+
+        .sunburst {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            border: 2px solid var(--gold-base);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            background: conic-gradient(from 0deg, var(--gold-base), var(--gold-light), var(--gold-dark), var(--gold-base));
+            animation: spin-gold 20s linear infinite;
+        }
+
+        .fan-blades {
+            width: 80%;
+            height: 80%;
+            background: var(--obsidian);
+            clip-path: polygon(50% 50%, 50% 0%, 60% 40%, 100% 50%, 60% 60%, 50% 100%, 40% 60%, 0% 50%, 40% 40%);
+            position: relative;
+        }
+
+        .fan-blades::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: var(--emerald);
+            clip-path: polygon(50% 50%, 50% 10%, 60% 40%, 90% 50%, 60% 60%, 50% 90%, 40% 60%, 10% 50%, 40% 40%);
+        }
+
+        @keyframes spin-gold {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .band-label {
+            margin-top: 30px;
+            font-family: var(--font-deco);
+            text-align: center;
+            border: 1px solid var(--gold-base);
+            padding: 10px 20px;
+            background: #fff;
+            box-shadow: 4px 4px 0 rgba(0,0,0,0.1);
+        }
+
+        .label-line {
+            font-size: 0.8rem;
+            letter-spacing: 2px;
+            color: #666;
+            text-transform: uppercase;
+            margin-bottom: 5px;
+            border-bottom: 1px solid #ccc;
+            padding-bottom: 2px;
+        }
+
+        .label-text {
+            font-weight: 700;
+            font-size: 1.1rem;
+        }
+
+        /* --- Right: Controls --- */
+        .control-section {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .header-deco {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .header-title {
+            font-family: var(--font-deco);
+            font-size: 2rem;
+            letter-spacing: 4px;
+            margin: 0;
+            text-transform: uppercase;
+            border-bottom: 2px solid var(--gold-base);
+            display: inline-block;
+            padding-bottom: 10px;
+        }
+
+        .track-info {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .song-title {
+            font-family: var(--font-deco);
+            font-size: 1.4rem;
+            color: var(--obsidian);
+            margin-bottom: 5px;
+        }
+
+        .song-artist {
+            font-size: 1rem;
+            color: var(--gold-dark);
+            font-style: italic;
+        }
+
+        /* Progress Bar */
+        .progress-wrapper {
+            margin-bottom: 30px;
+            position: relative;
+        }
+
+        .progress-bar {
+            height: 6px;
+            background: #e0e0e0;
+            border: 1px solid var(--gold-base);
+            position: relative;
+            cursor: pointer;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--obsidian);
+            width: 0%;
+            transition: width 0.1s linear;
+            background-image: linear-gradient(45deg, transparent 25%, var(--gold-base) 25%, var(--gold-base) 50%, transparent 50%, transparent 75%, var(--gold-base) 75%, var(--gold-base));
+            background-size: 10px 10px;
+        }
+        
+        .diamond-knob {
+            width: 16px;
+            height: 16px;
+            background: var(--gold-base);
+            transform: rotate(45deg);
+            position: absolute;
+            top: -6px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+        }
+
+        .time-labels {
+            display: flex;
+            justify-content: space-between;
+            font-family: var(--font-deco);
+            font-size: 0.8rem;
+            margin-top: 8px;
+        }
+
+        /* Controls */
+        .control-diamonds {
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .btn-deco {
+            width: 50px;
+            height: 50px;
+            background: transparent;
+            border: 2px solid var(--gold-base);
+            color: var(--gold-dark);
+            transform: rotate(45deg);
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.3s;
+            box-shadow: 4px 4px 0 rgba(0,0,0,0.1);
+        }
+
+        .btn-deco svg {
+            transform: rotate(-45deg); /* Counter-rotate icon */
+            width: 20px;
+            height: 20px;
+            fill: currentColor;
+        }
+
+        .btn-deco:hover {
+            background: var(--gold-base);
+            color: #fff;
+            transform: rotate(45deg) scale(1.1);
+        }
+
+        .btn-deco:active {
+            transform: rotate(45deg) scale(0.95);
+            box-shadow: none;
+        }
+        
+        .btn-main {
+            width: 70px;
+            height: 70px;
+            border-color: var(--obsidian);
+            background: var(--obsidian);
+            color: var(--gold-base);
+        }
+        
+        .btn-main:hover {
+            background: var(--gold-base);
+            color: var(--obsidian);
+            border-color: var(--obsidian);
+        }
+
+        /* Playlist */
+        .playlist-deco {
+            border-top: 1px solid var(--gold-base);
+            padding-top: 15px;
+            max-height: 150px;
+            overflow-y: auto;
+            font-family: var(--font-deco);
+        }
+
+        .pl-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 5px;
+            cursor: pointer;
+            border-bottom: 1px solid transparent;
+            transition: 0.2s;
+        }
+
+        .pl-item:hover {
+            color: var(--gold-dark);
+            padding-left: 10px;
+        }
+
+        .pl-item.active {
+            background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.2));
+            border-bottom: 1px solid var(--gold-base);
+            font-weight: bold;
+        }
+        
+        .pl-num {
+            opacity: 0.5;
+            margin-right: 15px;
+        }
+
+        /* Responsive */
+        @media (max-width: 750px) {
+            .deco-frame { width: 95%; }
+            .inner-panel { grid-template-columns: 1fr; padding: 20px; }
+            .visual-section { border-right: none; border-bottom: 1px solid rgba(0,0,0,0.1); padding-bottom: 20px; margin-bottom: 20px; }
+            .header-title { font-size: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="deco-bg"></div>
+
+    <div class="deco-frame">
+        <!-- Decorative Corners -->
+        <div class="corner-deco tl"></div>
+        <div class="corner-deco tr"></div>
+        <div class="corner-deco bl"></div>
+        <div class="corner-deco br"></div>
+
+        <div class="inner-panel">
+            
+            <!-- Left Visual -->
+            <section class="visual-section">
+                <div class="sunburst">
+                    <div class="fan-blades"></div>
+                </div>
+                
+                <div class="band-label">
+                    <div class="label-line">High Fidelity</div>
+                    <div class="label-text">ROARING '20s</div>
+                </div>
+            </section>
+
+            <!-- Right Controls -->
+            <section class="control-section">
+                
+                <div class="header-deco">
+                    <h1 class="header-title">Phonograph</h1>
+                </div>
+
+                <div class="track-info">
+                    <h2 class="song-title" id="titleDisplay">Select Track</h2>
+                    <p class="song-artist" id="artistDisplay">--</p>
+                </div>
+
+                <!-- Progress -->
+                <div class="progress-wrapper" id="progressBar">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill">
+                            <div class="diamond-knob" id="progressKnob" style="display:none;"></div>
+                        </div>
+                    </div>
+                    <div class="time-labels">
+                        <span id="currentTime">0:00</span>
+                        <span id="duration">0:00</span>
+                    </div>
+                </div>
+
+                <!-- Controls -->
+                <div class="control-diamonds">
+                    <button class="btn-deco" id="prevBtn" title="Previous">
+                        <svg viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
+                    </button>
+                    
+                    <button class="btn-deco btn-main" id="playBtn" title="Play">
+                        <svg id="iconPlay" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                        <svg id="iconPause" viewBox="0 0 24 24" style="display:none;"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+                    </button>
+                    
+                    <button class="btn-deco" id="nextBtn" title="Next">
+                        <svg viewBox="0 0 24 24"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
+                    </button>
+                </div>
+
+                <!-- Playlist -->
+                <div class="playlist-deco" id="playlist">
+                    <!-- JS Populated -->
+                </div>
+
+            </section>
+        </div>
+    </div>
+
+    <audio id="audioPlayer"></audio>
+
+    <script>
+        const songs = [
+            {
+                title: "I Just Called To Say I Love You",
+                artist: "Stevie Wonder",
+                url: "https://music.giau.info/mp3/1765329418087_I_Just_Called_To_Say_I_Love_You.mp3"
+            },
+            {
+                title: "Another Day In Paradise",
+                artist: "Phil Collins",
+                url: "https://music.giau.info/mp3/1765329417208_Another_Day_In_Paradise.mp3"
+            },
+            {
+                title: "If Life Is So Short",
+                artist: "The Moffatts",
+                url: "https://music.giau.info/mp3/1765329418894_If_Life_Is_So_Short.mp3"
+            }
+        ];
+
+        const audio = document.getElementById('audioPlayer');
+        const playBtn = document.getElementById('playBtn');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const iconPlay = document.getElementById('iconPlay');
+        const iconPause = document.getElementById('iconPause');
+        
+        const titleDisplay = document.getElementById('titleDisplay');
+        const artistDisplay = document.getElementById('artistDisplay');
+        const progressBar = document.getElementById('progressBar');
+        const progressFill = document.getElementById('progressFill');
+        const progressKnob = document.getElementById('progressKnob');
+        const currentTimeEl = document.getElementById('currentTime');
+        const durationEl = document.getElementById('duration');
+        const playlistEl = document.getElementById('playlist');
+
+        let currentIdx = 0;
+        let isDragging = false;
+
+        function init() {
+            renderPlaylist();
+            loadTrack(0);
+            setupEvents();
+        }
+
+        function loadTrack(index) {
+            currentIdx = index;
+            const song = songs[index];
+            audio.src = song.url;
+            
+            titleDisplay.textContent = song.title.toUpperCase();
+            artistDisplay.textContent = song.artist.toUpperCase();
+            
+            updatePlaylistUI();
+            resetProgress();
+        }
+
+        function togglePlay() {
+            if (audio.paused) playAudio();
+            else pauseAudio();
+        }
+
+        function playAudio() {
+            audio.play();
+            iconPlay.style.display = 'none';
+            iconPause.style.display = 'block';
+        }
+
+        function pauseAudio() {
+            audio.pause();
+            iconPlay.style.display = 'block';
+            iconPause.style.display = 'none';
+        }
+
+        function nextTrack() {
+            currentIdx = (currentIdx + 1) % songs.length;
+            loadTrack(currentIdx);
+            playAudio();
+        }
+
+        function prevTrack() {
+            currentIdx = (currentIdx - 1 + songs.length) % songs.length;
+            loadTrack(currentIdx);
+            playAudio();
+        }
+
+        function updateProgress() {
+            if (!isDragging && audio.duration) {
+                const percent = (audio.currentTime / audio.duration) * 100;
+                progressFill.style.width = `${percent}%`;
+                progressKnob.style.display = 'block';
+                progressKnob.style.left = `calc(${percent}% - 8px)`; // Center knob
+                
+                const curM = Math.floor(audio.currentTime / 60).toString().padStart(2, '0');
+                const curS = Math.floor(audio.currentTime % 60).toString().padStart(2, '0');
+                const durM = Math.floor(audio.duration / 60).toString().padStart(2, '0');
+                const durS = Math.floor(audio.duration % 60).toString().padStart(2, '0');
+                
+                currentTimeEl.textContent = `${curM}:${curS}`;
+                durationEl.textContent = `${durM}:${durS}`;
+            }
+        }
+
+        function setProgress(e) {
+            const width = progressBar.clientWidth;
+            const clickX = e.offsetX;
+            const duration = audio.duration;
+            audio.currentTime = (clickX / width) * duration;
+        }
+
+        function resetProgress() {
+            progressFill.style.width = '0%';
+            progressKnob.style.display = 'none';
+            currentTimeEl.textContent = "0:00";
+            durationEl.textContent = "0:00";
+        }
+
+        function renderPlaylist() {
+            playlistEl.innerHTML = '';
+            songs.forEach((song, idx) => {
+                const item = document.createElement('div');
+                item.className = 'pl-item';
+                item.innerHTML = `
+                    <div style="display:flex; align-items:center;">
+                        <span class="pl-num">${idx + 1}</span>
+                        <span>${song.title}</span>
+                    </div>
+                `;
+                item.onclick = () => {
+                    loadTrack(idx);
+                    playAudio();
+                };
+                playlistEl.appendChild(item);
+            });
+        }
+
+        function updatePlaylistUI() {
+            const items = document.querySelectorAll('.pl-item');
+            items.forEach((item, idx) => {
+                item.classList.toggle('active', idx === currentIdx);
+            });
+        }
+
+        function setupEvents() {
+            playBtn.addEventListener('click', togglePlay);
+            nextBtn.addEventListener('click', nextTrack);
+            prevBtn.addEventListener('click', prevTrack);
+            
+            progressBar.addEventListener('click', setProgress);
+            progressBar.addEventListener('mousedown', () => isDragging = true);
+            progressBar.addEventListener('mouseup', () => isDragging = false);
+            
+            audio.addEventListener('timeupdate', updateProgress);
+            audio.addEventListener('ended', nextTrack);
+        }
+
+        init();
+    </script>
+</body>
+</html>
