@@ -1,0 +1,11 @@
+<!-- Sortable Song Item Partial for Admin -->
+<li class="list-group-item sortable-item" data-song-id="{{song_id}}">
+    <div class="d-flex align-items-center">
+        <i class="bi bi-grip-vertical me-3 drag-handle"></i>
+        <i class="bi bi-music-note me-2"></i>
+        <span>{{title}}</span>
+        <a href="/admin/song/{{song_id}}/remove/{{playlist_id}}" class="btn btn-sm btn-outline-danger ms-auto">
+            <i class="bi bi-x"></i>
+        </a>
+    </div>
+</li>

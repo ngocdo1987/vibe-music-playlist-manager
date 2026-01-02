@@ -1,7 +1,5 @@
-database.sqlite
-node_modules
-.env
-mp3
-build
+*.mod
+*.o
 *.db
-music_manager
+.env
+fortran_fcgi

@@ -1,0 +1,214 @@
+/* Music Manager - Custom Styles */
+
+/* Smooth transitions for theme switching */
+html {
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Card hover effects */
+.playlist-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    cursor: pointer;
+}
+
+.playlist-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+/* Player card styling */
+.player-card {
+    border: none;
+    box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.1);
+}
+
+.player-card .card-header {
+    border-bottom: none;
+}
+
+/* Now playing section */
+.now-playing {
+    padding: 1.5rem;
+    background: linear-gradient(135deg, var(--bs-primary) 0%, var(--bs-info) 100%);
+    border-radius: 0.5rem;
+    color: white;
+}
+
+/* Playlist items */
+.playlist-item {
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.playlist-item:hover {
+    background-color: var(--bs-tertiary-bg);
+}
+
+.playlist-item.active {
+    background-color: var(--bs-primary-bg-subtle);
+    border-left: 4px solid var(--bs-primary);
+}
+
+.playlist-item .play-icon {
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.playlist-item:hover .play-icon,
+.playlist-item.active .play-icon {
+    opacity: 1;
+    color: var(--bs-primary);
+}
+
+/* Sortable items for admin */
+.sortable-item {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.sortable-item:hover {
+    background-color: var(--bs-tertiary-bg);
+}
+
+.sortable-item.sortable-ghost {
+    opacity: 0.5;
+    background-color: var(--bs-primary-bg-subtle);
+}
+
+.sortable-item.sortable-chosen {
+    box-shadow: 0 0.25rem 0.5rem rgba(0, 0, 0, 0.2);
+}
+
+.drag-handle {
+    cursor: grab;
+    color: var(--bs-secondary);
+}
+
+.drag-handle:hover {
+    color: var(--bs-primary);
+}
+
+/* Audio player styling */
+audio {
+    border-radius: 0.5rem;
+}
+
+audio::-webkit-media-controls-panel {
+    background-color: var(--bs-body-bg);
+}
+
+/* Theme toggle button */
+#themeToggle {
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Stats cards */
+.card.bg-primary,
+.card.bg-success {
+    border: none;
+}
+
+/* Table styling */
+.table-responsive {
+    border-radius: 0.5rem;
+    overflow: hidden;
+}
+
+.table th {
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 0.05em;
+}
+
+/* Form styling */
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--bs-primary);
+    box-shadow: 0 0 0 0.25rem rgba(var(--bs-primary-rgb), 0.25);
+}
+
+/* Button styling */
+.btn {
+    border-radius: 0.375rem;
+    font-weight: 500;
+}
+
+.btn-primary {
+    box-shadow: 0 2px 4px rgba(var(--bs-primary-rgb), 0.3);
+}
+
+.btn-success {
+    box-shadow: 0 2px 4px rgba(var(--bs-success-rgb), 0.3);
+}
+
+/* Alert styling */
+.alert {
+    border: none;
+    border-radius: 0.5rem;
+}
+
+/* Footer */
+footer {
+    border-top: 1px solid var(--bs-border-color);
+}
+
+/* Navbar */
+.navbar-brand i {
+    color: var(--bs-primary);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .now-playing {
+        padding: 1rem;
+    }
+    
+    .playlist-item .play-icon {
+        opacity: 1;
+    }
+}
+
+/* Loading spinner */
+.spinner-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+/* File upload drag area */
+.upload-area {
+    border: 2px dashed var(--bs-border-color);
+    border-radius: 0.5rem;
+    padding: 2rem;
+    text-align: center;
+    transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.upload-area:hover,
+.upload-area.dragover {
+    border-color: var(--bs-primary);
+    background-color: var(--bs-primary-bg-subtle);
+}
+
+/* Dark theme adjustments */
+[data-bs-theme="dark"] .now-playing {
+    background: linear-gradient(135deg, #1a365d 0%, #1e4d6b 100%);
+}
+
+[data-bs-theme="dark"] .playlist-card:hover,
+[data-bs-theme="dark"] .sortable-item.sortable-chosen {
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.4);
+}

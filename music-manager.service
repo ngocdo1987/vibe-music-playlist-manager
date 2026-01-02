@@ -1,0 +1,17 @@
+[Unit]
+Description=Fortran Music Manager FastCGI Application
+After=network.target
+
+[Service]
+Type=forking
+User=fortran
+Group=fortran
+WorkingDirectory=/home/fortran/music-manager
+ExecStart=/usr/bin/spawn-fcgi -a 127.0.0.1 -p 9000 -P /run/music-manager.pid ./fortran_fcgi
+ExecStop=/bin/kill -TERM $MAINPID
+PIDFile=/run/music-manager.pid
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

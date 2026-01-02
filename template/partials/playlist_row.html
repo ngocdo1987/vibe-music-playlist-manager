@@ -1,0 +1,15 @@
+<!-- Playlist Table Row Partial -->
+<tr>
+    <td>{{id}}</td>
+    <td><strong>{{name}}</strong></td>
+    <td>{{description}}</td>
+    <td>
+        <a href="/admin/playlist/{{id}}/edit" class="btn btn-sm btn-primary me-1">
+            <i class="bi bi-pencil"></i>
+        </a>
+        <a href="/admin/playlist/{{id}}/delete" class="btn btn-sm btn-danger"
+            onclick="return confirm('Delete this playlist?')">
+            <i class="bi bi-trash"></i>
+        </a>
+    </td>
+</tr>

@@ -1,0 +1,1 @@
+- Chưa lưu được UTF-8 vào DB, ví dụ nhập "Test thử tiếng Việt xem như thế nào" thì trong DB lại lưu "Test th%E1%BB%AD ti%E1%BA%BFng Vi%E1%BB%87t xem nh%C6%B0 th%E1%BA%BF n%C3%A0o" (khi tạo mới playlist)
