@@ -360,3 +360,80 @@ Here is a twenty-fifth distinct design. This concept adopts a "Sci-Fi Space Stat
 
 It features a deep space background with twinkling stars, holographic glass interfaces, orbital progress rings, and a rotating planetary visualizer.
 
+============
+
+Here is a third, completely unique design: "Ethereal Flow".
+
+This design abandons the technical and digital vibes of the previous two in favor of a high-end, atmospheric editorial aesthetic. It focuses on deep, immersive colors (Deep Violet & Teal), soft glassmorphism, floating ambient lighting, and elegant typography.
+
+============
+
+Here is a fourth, completely distinct design: "Industrial Constructivist".
+
+This style contrasts sharply with the previous designs by embracing Neo-Brutalism. It features heavy black borders, hard drop shadows (no blur), a high-contrast monochrome palette with Safety Orange accents, and asymmetrical typography.
+
+============
+
+Here is a fifth, completely different design: "Retro Pop Cassette".
+
+This design embraces the Memphis Design style from the 1980s—think pastel colors, squiggly lines, geometric shapes, and a playful toy-like aesthetic. It features a pure CSS Cassette Tape that spins when music plays.
+
+============
+
+Here is a completely different design concept.
+
+Design Concept: "Retro-Modern Editorial"
+This design moves away from the dark cinematic look to a Swiss/International Typographic Style mixed with a physical Vinyl/Tape Player aesthetic.
+
+Typography: Uses DM Serif Display (for bold, elegant headers) and Space Mono (for technical data).
+Visuals: High contrast (Black/White/Orange), a rotating vinyl record animation, and a "running text" marquee.
+Motion: The record spins when playing; the song title scrolls infinitely; buttons have mechanical "snap" transitions.
+Atmosphere: A subtle grain texture overlay to mimic paper or old film.
+
+============
+
+Here is a third, distinct design concept.
+
+Design Concept: "Neo-Brutalist Pop"
+This design is high-energy, playful, and bold. It uses thick borders, hard drop shadows (no blur), and a high-contrast color palette of Acid Green, Hot Pink, and Jet Black.
+
+Typography: Uses Space Grotesk for a geometric, modern, and chunky feel.
+Visuals: A rotating CSS gradient "disc" and a pulsing background blob.
+Motion: "Bouncy" button physics (buttons press down physically) and a glitch text effect on track titles.
+Atmosphere: Loud, trendy, and unapologetically digital.
+
+============
+
+Here is a fifth, unique design concept.
+
+Design Concept: "Retro Cassette Deck (Y2K Style)"
+This design is a nostalgic tribute to 90s portable music players. It features a physical-looking cassette tape with spinning reels, a digital LCD display with an orange glow, and mechanical-style buttons.
+
+Typography: Share Tech Mono — a wide, technical font that mimics digital displays and gadget interfaces.
+Visuals: A constructed "Cassette" component with two rotating reels. The background uses a technical grid pattern.
+Motion: The reels spin when playing, the buttons physically depress on click, and the LCD text flickers slightly on track change.
+Palette: Industrial Grey, Plastic White, LCD Orange, and Jet Black.
+
+============
+
+Here is a seventh, distinct design.
+
+Design Concept: "Synthwave / Outrun Arcade"
+This design plunges into the 1980s retro-futurism aesthetic. It features a glowing sunset, a perspective grid floor, neon pinks and cyans, and typography that looks like a laser display.
+
+Typography: Audiowide (wide, sci-fi headings) and Rajdhani (technical, angular body text).
+Visuals: A "Sun" background with a gradient, a moving perspective grid, and an arcade-style control panel.
+Motion: The grid moves infinitely to simulate forward motion, the sun glows and pulses, and buttons have "laser" hover effects.
+Palette: Deep Void Purple, Neon Pink, Cyan, and Sunset Gold.
+
+============
+
+Here is an eighth, unique design concept.
+
+Design Concept: "Industrial Constructivism"
+This design treats the player as a piece of heavy machinery or architectural infrastructure. It features concrete textures, chamfered corners, rigid geometric shapes, and a high-contrast monochrome palette with Safety Orange accents.
+
+Typography: Oswald (for heavy, condensed industrial headers) and Space Mono (for precise technical data).
+Visuals: A rotating Constructivist wireframe pattern (squares within squares) acting as the "optical sensor." The UI elements look like physical controls.
+Motion: Rigid, mechanical rotations (no easing), stiff hover states, and a "loading" bar that looks like a structural beam.
+Palette: Concrete Gray, Charcoal, White, and Safety Orange.

@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neo-Brutalist Pop Player</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* --- CSS Variables --- */
+        :root {
+            --bg-color: #f0f0f0;
+            --card-bg: #ffffff;
+            --border-color: #000000;
+            --accent-green: #ccff00; /* Acid Green */
+            --accent-pink: #ff0099;  /* Hot Pink */
+            --accent-blue: #00f0ff;  /* Electric Blue */
+            
+            --border-width: 3px;
+            --shadow-offset: 6px;
+            
+            --font-main: 'Space Grotesk', sans-serif;
+        }
+
+        /* --- Reset & Base --- */
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        
+        body {
+            background-color: var(--bg-color);
+            background-image: radial-gradient(var(--accent-green) 1px, transparent 1px);
+            background-size: 20px 20px;
+            font-family: var(--font-main);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        /* --- Main Card --- */
+        .player-card {
+            width: 100%;
+            max-width: 400px;
+            background: var(--card-bg);
+            border: var(--border-width) solid var(--border-color);
+            box-shadow: var(--shadow-offset) var(--shadow-offset) 0px var(--border-color);
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            position: relative;
+            z-index: 2;
+        }
+
+        /* --- Decorative Top Bar --- */
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: var(--border-width) solid var(--border-color);
+            padding-bottom: 15px;
+        }
+        
+        .brand {
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 1.2rem;
+            letter-spacing: -1px;
+            background: var(--accent-green);
+            padding: 2px 6px;
+            border: 2px solid black;
+        }
+
+        .status-badge {
+            background: black;
+            color: white;
+            font-size: 0.7rem;
+            padding: 4px 8px;
+            border-radius: 20px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        /* --- Visualizer Area (The Disc) --- */
+        .visual-area {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 220px;
+            position: relative;
+        }
+
+        /* Pulsing Background Blob */
+        .blob-bg {
+            position: absolute;
+            width: 180px;
+            height: 180px;
+            background: var(--accent-pink);
+            border-radius: 50%;
+            filter: blur(40px);
+            opacity: 0.6;
+            animation: breathe 3s infinite ease-in-out;
+            z-index: 0;
+        }
+
+        /* The Rotating Disc */
+        .disc {
+            width: 160px;
+            height: 160px;
+            border-radius: 50%;
+            background: conic-gradient(
+                var(--accent-green), 
+                var(--accent-blue), 
+                var(--accent-pink), 
+                var(--accent-green)
+            );
+            border: var(--border-width) solid var(--border-color);
+            position: relative;
+            z-index: 1;
+            animation: spin 0s linear infinite; /* Duration set by JS */
+            box-shadow: 4px 4px 0px rgba(0,0,0,0.2);
+            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .disc::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 30px;
+            height: 30px;
+            background: var(--card-bg);
+            border: 2px solid black;
+            border-radius: 50%;
+        }
+
+        /* --- Track Info --- */
+        .track-info {
+            text-align: center;
+        }
+
+        .track-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            line-height: 1.1;
+            margin-bottom: 5px;
+            color: black;
+        }
+
+        .track-artist {
+            font-size: 0.9rem;
+            color: #666;
+            font-weight: 400;
+        }
+
+        /* --- Progress Bar (Brutalist) --- */
+        .progress-container {
+            width: 100%;
+            height: 24px;
+            border: var(--border-width) solid var(--border-color);
+            background: #fff;
+            position: relative;
+            cursor: pointer;
+            box-shadow: 3px 3px 0px #eee;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--accent-blue);
+            width: 0%;
+            transition: width 0.1s linear;
+            border-right: var(--border-width) solid var(--border-color);
+        }
+
+        .time-display {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 5px;
+            font-family: monospace;
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+
+        /* --- Controls (Bouncy Buttons) --- */
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 10px;
+        }
+
+        .btn {
+            background: #fff;
+            border: var(--border-width) solid var(--border-color);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.1s;
+            position: relative;
+        }
+
+        /* Physical Press Effect */
+        .btn:active {
+            transform: translate(2px, 2px);
+            box-shadow: none !important;
+        }
+
+        .btn svg {
+            fill: black;
+            width: 20px;
+            height: 20px;
+        }
+
+        .btn-secondary {
+            width: 50px;
+            height: 50px;
+            box-shadow: 4px 4px 0px var(--border-color);
+            border-radius: 8px;
+        }
+
+        .btn-primary {
+            width: 70px;
+            height: 70px;
+            background: var(--accent-green);
+            box-shadow: 6px 6px 0px var(--border-color);
+            border-radius: 50%;
+            z-index: 2;
+        }
+
+        .btn-primary svg {
+            width: 28px;
+            height: 28px;
+        }
+
+        /* --- Playlist --- */
+        .playlist {
+            max-height: 140px;
+            overflow-y: auto;
+            border-top: var(--border-width) solid var(--border-color);
+            padding-top: 15px;
+        }
+        
+        .playlist::-webkit-scrollbar { width: 6px; }
+        .playlist::-webkit-scrollbar-thumb { background: black; }
+
+        .pl-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            margin-bottom: 8px;
+            background: #fff;
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .pl-item:hover {
+            border-color: var(--accent-pink);
+            transform: translateX(-5px);
+        }
+
+        .pl-item.active {
+            border-color: black;
+            background: var(--accent-blue);
+            color: white;
+        }
+
+        .pl-num {
+            font-size: 0.8rem;
+            font-weight: bold;
+            margin-right: 15px;
+            width: 20px;
+        }
+
+        .pl-name {
+            font-weight: 600;
+            font-size: 0.9rem;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* --- Animations --- */
+        @keyframes breathe {
+            0%, 100% { transform: scale(1); opacity: 0.4; }
+            50% { transform: scale(1.1); opacity: 0.7; }
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Glitch text effect class */
+        .glitch-anim {
+            animation: glitch 0.3s cubic-bezier(.25, .46, .45, .94) both infinite;
+        }
+        
+        @keyframes glitch {
+            0% { transform: translate(0); }
+            20% { transform: translate(-2px, 2px); }
+            40% { transform: translate(-2px, -2px); }
+            60% { transform: translate(2px, 2px); }
+            80% { transform: translate(2px, -2px); }
+            100% { transform: translate(0); }
+        }
+
+    </style>
+</head>
+<body>
+
+    <main class="player-card">
+        <!-- Top Header -->
+        <header class="top-bar">
+            <div class="brand">MUSIC.BOX</div>
+            <div class="status-badge" id="statusBadge">STOPPED</div>
+        </header>
+
+        <!-- Visual Disc -->
+        <section class="visual-area">
+            <div class="blob-bg"></div>
+            <div class="disc" id="disc"></div>
+        </section>
+
+        <!-- Info -->
+        <section class="track-info">
+            <h2 class="track-title" id="trackTitle">LOADING...</h2>
+            <p class="track-artist" id="trackArtist">SELECT TRACK</p>
+        </section>
+
+        <!-- Progress -->
+        <div class="progress-wrapper">
+            <div class="progress-container" id="progressContainer">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <div class="time-display">
+                <span id="currentTime">00:00</span>
+                <span id="duration">00:00</span>
+            </div>
+        </div>
+
+        <!-- Controls -->
+        <section class="controls">
+            <button class="btn btn-secondary" id="btnPrev" aria-label="Previous">
+                <svg viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
+            </button>
+            
+            <button class="btn btn-primary" id="btnPlayPause" aria-label="Play">
+                <svg id="iconPlay" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                <svg id="iconPause" viewBox="0 0 24 24" style="display:none;"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+            </button>
+
+            <button class="btn btn-secondary" id="btnStop" aria-label="Stop">
+                <svg viewBox="0 0 24 24"><path d="M6 6h12v12H6z"/></svg>
+            </button>
+
+            <button class="btn btn-secondary" id="btnNext" aria-label="Next">
+                <svg viewBox="0 0 24 24"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
+            </button>
+        </section>
+
+        <!-- Playlist -->
+        <div class="playlist" id="playlist">
+            <!-- Injected via JS -->
+        </div>
+    </main>
+
+    <audio id="audio"></audio>
+
+    <script>
+        // --- Data ---
+        const tracks = [
+            { url: "https://music.giau.info/mp3/1765329418087_I_Just_Called_To_Say_I_Love_You.mp3", raw: "1765329418087_I_Just_Called_To_Say_I_Love_You.mp3" },
+            { url: "https://music.giau.info/mp3/1765329417208_Another_Day_In_Paradise.mp3", raw: "1765329417208_Another_Day_In_Paradise.mp3" },
+            { url: "https://music.giau.info/mp3/1765329418894_If_Life_Is_So_Short.mp3", raw: "1765329418894_If_Life_Is_So_Short.mp3" }
+        ];
+
+        let currentIndex = 0;
+        let isPlaying = false;
+        let isStopped = true;
+
+        // --- Elements ---
+        const audio = document.getElementById('audio');
+        const disc = document.getElementById('disc');
+        const btnPlayPause = document.getElementById('btnPlayPause');
+        const iconPlay = document.getElementById('iconPlay');
+        const iconPause = document.getElementById('iconPause');
+        const progressContainer = document.getElementById('progressContainer');
+        const progressFill = document.getElementById('progressFill');
+        const currentTimeEl = document.getElementById('currentTime');
+        const durationEl = document.getElementById('duration');
+        const trackTitle = document.getElementById('trackTitle');
+        const trackArtist = document.getElementById('trackArtist');
+        const playlistEl = document.getElementById('playlist');
+        const statusBadge = document.getElementById('statusBadge');
+
+        // --- Utils ---
+        const cleanName = (n) => n.replace(/^\d+_/, '').replace(/_/g, ' ').replace('.mp3', '');
+        const formatTime = (s) => {
+            if(isNaN(s)) return "00:00";
+            const m = Math.floor(s/60);
+            const sec = Math.floor(s%60);
+            return `${m}:${sec.toString().padStart(2, '0')}`;
+        };
+
+        // --- Functions ---
+        function renderPlaylist() {
+            playlistEl.innerHTML = '';
+            tracks.forEach((t, i) => {
+                const item = document.createElement('div');
+                item.className = `pl-item ${i === currentIndex ? 'active' : ''}`;
+                item.innerHTML = `
+                    <span class="pl-num">${i + 1}</span>
+                    <span class="pl-name">${cleanName(t.raw)}</span>
+                `;
+                item.onclick = () => {
+                    if(i !== currentIndex) {
+                        loadTrack(i);
+                        playAudio();
+                    }
+                };
+                playlistEl.appendChild(item);
+            });
+        }
+
+        function loadTrack(index) {
+            currentIndex = index;
+            audio.src = tracks[index].url;
+            
+            // Glitch effect on title change
+            trackTitle.textContent = cleanName(tracks[index].raw);
+            trackTitle.classList.remove('glitch-anim');
+            void trackTitle.offsetWidth; // trigger reflow
+            trackTitle.classList.add('glitch-anim');
+            
+            renderPlaylist();
+            resetUI();
+        }
+
+        function resetUI() {
+            progressFill.style.width = '0%';
+            currentTimeEl.textContent = "00:00";
+        }
+
+        function playAudio() {
+            const p = audio.play();
+            if(p !== undefined) {
+                p.then(() => {
+                    isPlaying = true;
+                    isStopped = false;
+                    iconPlay.style.display = 'none';
+                    iconPause.style.display = 'block';
+                    statusBadge.textContent = "PLAYING";
+                    statusBadge.style.background = "var(--accent-green)";
+                    statusBadge.style.color = "black";
+                    disc.style.animationDuration = "4s";
+                    disc.style.animationPlayState = "running";
+                });
+            }
+        }
+
+        function pauseAudio() {
+            audio.pause();
+            isPlaying = false;
+            iconPlay.style.display = 'block';
+            iconPause.style.display = 'none';
+            statusBadge.textContent = "PAUSED";
+            statusBadge.style.background = "var(--accent-pink)";
+            statusBadge.style.color = "white";
+            disc.style.animationPlayState = "paused";
+        }
+
+        function stopAudio() {
+            audio.pause();
+            audio.currentTime = 0;
+            isPlaying = false;
+            isStopped = true;
+            iconPlay.style.display = 'block';
+            iconPause.style.display = 'none';
+            statusBadge.textContent = "STOPPED";
+            statusBadge.style.background = "black";
+            statusBadge.style.color = "white";
+            resetUI();
+            disc.style.animationPlayState = "paused";
+            disc.style.transform = "rotate(0deg)"; // Reset rotation
+        }
+
+        function togglePlay() {
+            if(isStopped) {
+                playAudio();
+            } else if(isPlaying) {
+                pauseAudio();
+            } else {
+                playAudio();
+            }
+        }
+
+        function next() {
+            let n = currentIndex + 1;
+            if(n >= tracks.length) n = 0;
+            loadTrack(n);
+            playAudio();
+        }
+
+        function prev() {
+            let p = currentIndex - 1;
+            if(p < 0) p = tracks.length - 1;
+            loadTrack(p);
+            playAudio();
+        }
+
+        function updateProgress() {
+            const { duration, currentTime } = audio;
+            if(duration) {
+                const pct = (currentTime / duration) * 100;
+                progressFill.style.width = `${pct}%`;
+                currentTimeEl.textContent = formatTime(currentTime);
+                durationEl.textContent = formatTime(duration);
+            }
+        }
+
+        function seek(e) {
+            const w = progressContainer.clientWidth;
+            const x = e.offsetX;
+            const pct = x / w;
+            audio.currentTime = pct * audio.duration;
+        }
+
+        // --- Listeners ---
+        btnPlayPause.onclick = togglePlay;
+        document.getElementById('btnStop').onclick = stopAudio;
+        document.getElementById('btnNext').onclick = next;
+        document.getElementById('btnPrev').onclick = prev;
+        
+        progressContainer.onclick = seek;
+        audio.addEventListener('timeupdate', updateProgress);
+        audio.addEventListener('ended', next);
+
+        // Init
+        window.addEventListener('DOMContentLoaded', () => {
+            loadTrack(0);
+        });
+
+    </script>
+</body>
+</html>

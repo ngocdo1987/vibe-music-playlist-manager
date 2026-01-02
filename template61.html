@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Retro Cassette Deck</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+
+    <style>
+        /* --- CSS Variables --- */
+        :root {
+            --bg-dark: #1a1a1d;
+            --plastic-grey: #d1d5db;
+            --plastic-light: #f3f4f6;
+            --cassette-body: #111;
+            --lcd-bg: #2b2b2b;
+            --lcd-text: #ff9d00; /* Classic Orange LCD */
+            --accent-red: #ef4444;
+            
+            --font-tech: 'Share Tech Mono', monospace;
+        }
+
+        /* --- Base Styles --- */
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        
+        body {
+            background-color: var(--bg-dark);
+            background-image: 
+                linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 30px 30px;
+            font-family: var(--font-tech);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            color: #fff;
+        }
+
+        /* --- Main Device Body --- */
+        .device-body {
+            width: 100%;
+            max-width: 420px;
+            background: var(--plastic-grey);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 
+                inset 2px 2px 5px rgba(255,255,255,0.5),
+                inset -2px -2px 5px rgba(0,0,0,0.2),
+                10px 10px 30px rgba(0,0,0,0.5);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            border: 4px solid #fff;
+        }
+
+        /* --- Cassette Component --- */
+        .cassette {
+            background: var(--cassette-body);
+            border-radius: 10px;
+            height: 200px;
+            position: relative;
+            box-shadow: inset 0 0 20px rgba(0,0,0,0.8);
+            overflow: hidden;
+            border: 2px solid #333;
+        }
+
+        /* Label */
+        .cassette-label {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            right: 10px;
+            height: 50px;
+            background: #e5e7eb;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 0 15px;
+            border-radius: 4px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+            z-index: 2;
+        }
+
+        .label-title {
+            font-size: 1.1rem;
+            font-weight: bold;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .label-sub {
+            font-size: 0.7rem;
+            opacity: 0.7;
+        }
+
+        /* Window & Reels */
+        .tape-window {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 130px;
+            background: #222;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .reel {
+            width: 60px;
+            height: 60px;
+            background: 
+                radial-gradient(circle, #fff 2px, transparent 3px),
+                conic-gradient(from 0deg, #000 0deg 10deg, #333 10deg 20deg);
+            background-size: 100% 100%, 100% 100%;
+            border-radius: 50%;
+            border: 4px solid #fff;
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+            position: relative;
+        }
+
+        /* White gear teeth effect */
+        .reel::after {
+            content: '';
+            position: absolute;
+            inset: -6px;
+            border-radius: 50%;
+            border: 2px dashed #555;
+            animation: none; 
+        }
+
+        .reel.spinning {
+            animation: spin 2s linear infinite;
+        }
+        
+        .reel.spinning::after {
+            animation: spin 2s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* Tape visual in middle */
+        .tape-strip {
+            width: 60px;
+            height: 40px;
+            background: #444;
+            border-left: 2px solid #111;
+            border-right: 2px solid #111;
+            position: absolute;
+            z-index: 1;
+            opacity: 0.5;
+        }
+
+        /* --- LCD Display --- */
+        .lcd-display {
+            background: var(--lcd-bg);
+            padding: 10px 15px;
+            border-radius: 4px;
+            border: 2px solid #444;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.5);
+            font-family: var(--font-tech);
+            color: var(--lcd-text);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            text-shadow: 0 0 5px rgba(255, 157, 0, 0.6);
+        }
+
+        .lcd-info {
+            display: flex;
+            flex-direction: column;
+            line-height: 1.2;
+        }
+
+        .lcd-time {
+            font-size: 1.4rem;
+            font-weight: bold;
+        }
+
+        .lcd-status {
+            font-size: 0.7rem;
+            opacity: 0.8;
+            text-transform: uppercase;
+        }
+
+        .visualizer-mini {
+            display: flex;
+            gap: 2px;
+            height: 20px;
+            align-items: flex-end;
+        }
+        
+        .bar-mini {
+            width: 4px;
+            background: var(--lcd-text);
+            height: 2px;
+            opacity: 0.3;
+        }
+        
+        .cassette.playing .bar-mini {
+            animation: bounce 0.5s infinite ease-in-out;
+        }
+        .bar-mini:nth-child(1) { animation-delay: 0.1s; }
+        .bar-mini:nth-child(2) { animation-delay: 0.3s; }
+        .bar-mini:nth-child(3) { animation-delay: 0.2s; }
+        
+        @keyframes bounce {
+            0%, 100% { height: 2px; opacity: 0.3; }
+            50% { height: 15px; opacity: 1; box-shadow: 0 0 5px var(--lcd-text); }
+        }
+
+        /* --- Controls Area --- */
+        .controls-area {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 15px;
+            background: #fff;
+            padding: 15px;
+            border-radius: 12px;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .btn-plastic {
+            background: linear-gradient(180deg, #f0f0f0, #dcdcdc);
+            border: none;
+            border-radius: 8px;
+            padding: 15px;
+            cursor: pointer;
+            box-shadow: 
+                0 4px 0 #999,
+                0 5px 5px rgba(0,0,0,0.2);
+            transition: all 0.1s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .btn-plastic:active {
+            transform: translateY(4px);
+            box-shadow: 
+                0 0 0 #999,
+                inset 0 2px 5px rgba(0,0,0,0.2);
+        }
+
+        .btn-plastic svg {
+            fill: #333;
+            width: 24px;
+            height: 24px;
+        }
+
+        .btn-play {
+            grid-column: 2;
+            background: linear-gradient(180deg, #4ade80, #22c55e); /* Green */
+        }
+        .btn-play:active {
+            background: #16a34a;
+        }
+        .btn-play svg { fill: #fff; width: 28px; height: 28px; }
+
+        .btn-stop {
+            background: linear-gradient(180deg, #f87171, #ef4444); /* Red */
+        }
+        .btn-stop svg { fill: #fff; }
+
+        /* --- Playlist (Compact) --- */
+        .playlist-strip {
+            background: #fff;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 2px solid #999;
+        }
+
+        .track-row {
+            padding: 10px 15px;
+            border-bottom: 1px solid #eee;
+            font-size: 0.9rem;
+            color: #333;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            transition: background 0.2s;
+        }
+
+        .track-row:last-child { border-bottom: none; }
+        .track-row:hover { background: #f3f4f6; }
+        .track-row.active {
+            background: #333;
+            color: var(--lcd-text);
+            font-weight: bold;
+        }
+
+        .num { margin-right: 10px; font-size: 0.7rem; opacity: 0.6; }
+
+    </style>
+</head>
+<body>
+
+    <main class="device-body">
+        
+        <!-- Cassette Visual -->
+        <div class="cassette" id="cassette">
+            <div class="cassette-label">
+                <div class="label-title" id="trackName">LOADING...</div>
+                <div class="label-sub">STEREO • 60 MIN</div>
+            </div>
+            <div class="tape-window">
+                <div class="tape-strip"></div>
+                <!-- Left Reel -->
+                <div class="reel" id="reelLeft"></div>
+                <!-- Right Reel -->
+                <div class="reel" id="reelRight"></div>
+                <div class="tape-strip"></div>
+            </div>
+        </div>
+
+        <!-- LCD Screen -->
+        <div class="lcd-display">
+            <div class="lcd-info">
+                <div class="lcd-time" id="lcdTime">00:00</div>
+                <div class="lcd-status" id="lcdStatus">STOPPED</div>
+            </div>
+            <div class="visualizer-mini">
+                <div class="bar-mini"></div>
+                <div class="bar-mini"></div>
+                <div class="bar-mini"></div>
+            </div>
+        </div>
+
+        <!-- Controls -->
+        <div class="controls-area">
+            <button class="btn-plastic" id="btnPrev" aria-label="Previous">
+                <svg viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
+            </button>
+            <button class="btn-plastic btn-play" id="btnPlayPause" aria-label="Play">
+                <svg id="iconPlay" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                <svg id="iconPause" viewBox="0 0 24 24" style="display:none;"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+            </button>
+            <button class="btn-plastic btn-stop" id="btnStop" aria-label="Stop">
+                <svg viewBox="0 0 24 24"><path d="M6 6h12v12H6z"/></svg>
+            </button>
+            <!-- Next is placed outside grid for layout balance or can be rearranged -->
+        </div>
+        <button class="btn-plastic" id="btnNext" style="width: 100%; border-radius: 8px;" aria-label="Next Track">
+            <svg viewBox="0 0 24 24" style="margin-right:8px;"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
+            NEXT
+        </button>
+
+        <!-- Playlist -->
+        <div class="playlist-strip" id="playlist">
+            <!-- JS Injection -->
+        </div>
+
+    </main>
+
+    <audio id="audio"></audio>
+
+    <script>
+        const tracks = [
+            { url: "https://music.giau.info/mp3/1765329418087_I_Just_Called_To_Say_I_Love_You.mp3", name: "I Just Called To Say I Love You" },
+            { url: "https://music.giau.info/mp3/1765329417208_Another_Day_In_Paradise.mp3", name: "Another Day In Paradise" },
+            { url: "https://music.giau.info/mp3/1765329418894_If_Life_Is_So_Short.mp3", name: "If Life Is So Short" }
+        ];
+
+        let idx = 0;
+        let isPlaying = false;
+        let isStopped = true;
+
+        // Elements
+        const audio = document.getElementById('audio');
+        const cassette = document.getElementById('cassette');
+        const reelLeft = document.getElementById('reelLeft');
+        const reelRight = document.getElementById('reelRight');
+        const trackName = document.getElementById('trackName');
+        const lcdTime = document.getElementById('lcdTime');
+        const lcdStatus = document.getElementById('lcdStatus');
+        const iconPlay = document.getElementById('iconPlay');
+        const iconPause = document.getElementById('iconPause');
+        const playlistEl = document.getElementById('playlist');
+
+        // Functions
+        function renderList() {
+            playlistEl.innerHTML = '';
+            tracks.forEach((t, i) => {
+                const div = document.createElement('div');
+                div.className = `track-row ${i === idx ? 'active' : ''}`;
+                div.innerHTML = `<span class="num">${i < 9 ? '0'+(i+1) : i+1}</span> ${t.name}`;
+                div.onclick = () => {
+                    if(i !== idx) {
+                        load(i);
+                        play();
+                    }
+                };
+                playlistEl.appendChild(div);
+            });
+        }
+
+        function load(index) {
+            idx = index;
+            audio.src = tracks[index].url;
+            trackName.textContent = tracks[index].name;
+            renderList();
+            resetUI();
+        }
+
+        function resetUI() {
+            lcdTime.textContent = "00:00";
+            lcdStatus.textContent = "STOPPED";
+        }
+
+        function play() {
+            const p = audio.play();
+            if(p !== undefined) {
+                p.then(() => {
+                    isPlaying = true;
+                    isStopped = false;
+                    iconPlay.style.display = 'none';
+                    iconPause.style.display = 'block';
+                    lcdStatus.textContent = "PLAYING ►";
+                    cassette.classList.add('playing');
+                    reelLeft.classList.add('spinning');
+                    reelRight.classList.add('spinning');
+                });
+            }
+        }
+
+        function pause() {
+            audio.pause();
+            isPlaying = false;
+            iconPlay.style.display = 'block';
+            iconPause.style.display = 'none';
+            lcdStatus.textContent = "PAUSED ❚❚";
+            cassette.classList.remove('playing');
+            reelLeft.classList.remove('spinning');
+            reelRight.classList.remove('spinning');
+        }
+
+        function stop() {
+            audio.pause();
+            audio.currentTime = 0;
+            isPlaying = false;
+            isStopped = true;
+            iconPlay.style.display = 'block';
+            iconPause.style.display = 'none';
+            lcdStatus.textContent = "STOPPED ■";
+            cassette.classList.remove('playing');
+            reelLeft.classList.remove('spinning');
+            reelRight.classList.remove('spinning');
+            lcdTime.textContent = "00:00";
+        }
+
+        function toggle() {
+            if(isStopped) play();
+            else if(isPlaying) pause();
+            else play();
+        }
+
+        function next() {
+            let n = idx + 1;
+            if(n >= tracks.length) n = 0;
+            load(n);
+            play();
+        }
+
+        function prev() {
+            let p = idx - 1;
+            if(p < 0) p = tracks.length - 1;
+            load(p);
+            play();
+        }
+
+        function updateTime() {
+            const { currentTime, duration } = audio;
+            if(!isNaN(currentTime)) {
+                const m = Math.floor(currentTime / 60);
+                const s = Math.floor(currentTime % 60);
+                lcdTime.textContent = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+            }
+        }
+
+        // Listeners
+        document.getElementById('btnPlayPause').onclick = toggle;
+        document.getElementById('btnStop').onclick = stop;
+        document.getElementById('btnNext').onclick = next;
+        document.getElementById('btnPrev').onclick = prev;
+        
+        audio.addEventListener('timeupdate', updateTime);
+        audio.addEventListener('ended', next);
+
+        // Init
+        window.addEventListener('DOMContentLoaded', () => {
+            load(0);
+        });
+
+    </script>
+</body>
+</html>

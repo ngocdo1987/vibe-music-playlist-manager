@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Synthwave Arcade Player</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Audiowide&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet">
+
+    <style>
+        /* --- CSS Variables --- */
+        :root {
+            --bg-void: #0f0c29;
+            --bg-purple: #302b63;
+            --bg-pink: #24243e;
+            
+            --neon-pink: #ff00cc;
+            --neon-cyan: #333399;
+            --neon-yellow: #fceabb;
+            
+            --glass-panel: rgba(16, 16, 24, 0.75);
+            
+            --font-head: 'Audiowide', cursive;
+            --font-body: 'Rajdhani', sans-serif;
+        }
+
+        /* --- Base --- */
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        
+        body {
+            font-family: var(--font-body);
+            background-color: var(--bg-void);
+            color: white;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: flex-end; /* Align to bottom for grid effect */
+            position: relative;
+        }
+
+        /* --- Background Elements --- */
+        
+        /* The Retro Sun */
+        .retro-sun {
+            position: absolute;
+            top: 15%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 300px;
+            height: 300px;
+            background: linear-gradient(to top, var(--neon-pink), var(--neon-yellow));
+            border-radius: 50%;
+            box-shadow: 0 0 60px var(--neon-pink);
+            z-index: 1;
+            /* Sun stripes (masking) */
+            clip-path: polygon(
+                0% 0%, 100% 0%, 100% 70%, 
+                90% 75%, 80% 70%, 70% 75%, 60% 70%, 50% 75%, 
+                40% 70%, 30% 75%, 20% 70%, 10% 75%, 0% 70%
+            );
+            animation: pulseSun 4s infinite alternate;
+        }
+        
+        @keyframes pulseSun {
+            from { box-shadow: 0 0 40px var(--neon-pink); }
+            to { box-shadow: 0 0 80px var(--neon-pink), 0 0 20px var(--neon-yellow); }
+        }
+
+        /* The Perspective Grid Floor */
+        .grid-floor {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 50vh;
+            background: 
+                linear-gradient(transparent 0%, var(--bg-void) 100%),
+                linear-gradient(0deg, transparent 24%, var(--neon-pink) 25%, var(--neon-pink) 26%, transparent 27%, transparent 74%, var(--neon-pink) 75%, var(--neon-pink) 76%, transparent 77%, transparent),
+                linear-gradient(90deg, transparent 24%, var(--neon-pink) 25%, var(--neon-pink) 26%, transparent 27%, transparent 74%, var(--neon-pink) 75%, var(--neon-pink) 76%, transparent 77%, transparent);
+            background-size: 100% 100%, 50px 50px, 50px 50px;
+            transform: perspective(500px) rotateX(60deg);
+            transform-origin: center top;
+            z-index: 2;
+            mask-image: linear-gradient(to bottom, transparent, black 40%);
+            animation: moveGrid 2s linear infinite;
+        }
+
+        @keyframes moveGrid {
+            0% { background-position: 0 0, 0 0, 0 0; }
+            100% { background-position: 0 0, 0 50px, 0 50px; }
+        }
+
+        /* --- Main Player Container (Arcade Cabinet Style) --- */
+        .arcade-cabinet {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            max-width: 480px;
+            background: var(--glass-panel);
+            border: 2px solid var(--neon-cyan);
+            border-radius: 20px 20px 0 0;
+            padding: 25px;
+            margin-bottom: -2px; /* Flush with bottom */
+            box-shadow: 0 -10px 40px rgba(0,0,0,0.8), inset 0 0 20px rgba(51, 51, 153, 0.3);
+            backdrop-filter: blur(10px);
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* --- Header / Visualizer Screen --- */
+        .screen-header {
+            background: #000;
+            border: 2px solid var(--neon-pink);
+            border-radius: 10px;
+            padding: 15px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 0 15px var(--neon-pink);
+        }
+
+        .track-info {
+            text-align: center;
+            margin-bottom: 15px;
+            z-index: 2;
+            position: relative;
+        }
+
+        .track-title {
+            font-family: var(--font-head);
+            font-size: 1.4rem;
+            color: var(--neon-cyan);
+            text-shadow: 0 0 5px var(--neon-cyan);
+            text-transform: uppercase;
+            margin-bottom: 5px;
+        }
+
+        .track-artist {
+            color: var(--neon-pink);
+            font-weight: 700;
+            letter-spacing: 2px;
+            font-size: 1rem;
+        }
+
+        /* Audio Bars (Fake Spectrum) */
+        .spectrum {
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            height: 40px;
+            gap: 4px;
+            margin-top: 10px;
+        }
+
+        .spec-bar {
+            width: 8px;
+            background: var(--neon-cyan);
+            height: 5px;
+            border-radius: 2px;
+            box-shadow: 0 0 10px var(--neon-cyan);
+            transition: height 0.1s ease;
+        }
+
+        .arcade-cabinet.playing .spec-bar {
+            animation: spectrumJump 0.8s infinite ease-in-out alternate;
+        }
+
+        /* Stagger animations */
+        .spec-bar:nth-child(odd) { animation-duration: 0.6s; }
+        .spec-bar:nth-child(2n) { animation-duration: 0.9s; }
+        .spec-bar:nth-child(3n) { animation-duration: 1.1s; }
+
+        @keyframes spectrumJump {
+            0% { height: 5px; opacity: 0.5; }
+            100% { height: 35px; opacity: 1; }
+        }
+
+        /* --- Progress Bar (Tech Slider) --- */
+        .progress-tech {
+            position: relative;
+            height: 6px;
+            background: #222;
+            border-radius: 3px;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .progress-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--neon-pink), var(--neon-cyan));
+            box-shadow: 0 0 10px var(--neon-pink);
+            transition: width 0.1s linear;
+        }
+
+        .time-stamps {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 5px;
+            font-family: var(--font-head);
+            color: var(--neon-yellow);
+            font-size: 0.9rem;
+            text-shadow: 0 0 2px black;
+        }
+
+        /* --- Controls (Angled Buttons) --- */
+        .controls-deck {
+            display: grid;
+            grid-template-columns: 1fr 1.5fr 1fr;
+            gap: 15px;
+            padding: 0 10px;
+        }
+
+        .btn-synth {
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            color: white;
+            position: relative;
+            height: 60px;
+            transition: all 0.2s;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: var(--font-head);
+            font-size: 0.8rem;
+            text-transform: uppercase;
+        }
+
+        /* Angled shapes using clip-path */
+        .btn-rect {
+            clip-path: polygon(10% 0, 100% 0, 100% 90%, 90% 100%, 0 100%, 0 10%);
+            background: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(0,0,0,0.4));
+            border: 1px solid var(--neon-cyan);
+            box-shadow: 0 0 10px rgba(51, 51, 153, 0.3);
+        }
+
+        .btn-rect:hover {
+            background: var(--neon-cyan);
+            color: #000;
+            box-shadow: 0 0 20px var(--neon-cyan);
+        }
+
+        .btn-main {
+            grid-column: 2;
+            clip-path: polygon(10% 0, 100% 0, 100% 100%, 0 100%, 0 10%);
+            background: linear-gradient(135deg, var(--neon-pink), #990066);
+            border: 1px solid var(--neon-pink);
+            box-shadow: 0 0 15px var(--neon-pink);
+            font-size: 1.2rem;
+        }
+
+        .btn-main:hover {
+            background: #ff66cc;
+            box-shadow: 0 0 30px var(--neon-pink);
+            transform: scale(1.05);
+        }
+
+        .btn-main:active {
+            transform: scale(0.95);
+        }
+
+        /* --- Playlist (Digital List) --- */
+        .playlist-tech {
+            margin-top: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .pl-item {
+            background: rgba(0,0,0,0.5);
+            border-left: 3px solid transparent;
+            padding: 8px 12px;
+            font-size: 0.9rem;
+            color: rgba(255,255,255,0.7);
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .pl-item:hover {
+            background: rgba(51, 51, 153, 0.4);
+            color: white;
+        }
+
+        .pl-item.active {
+            background: linear-gradient(90deg, rgba(51, 51, 153, 0.8), transparent);
+            border-left: 3px solid var(--neon-yellow);
+            color: var(--neon-yellow);
+            text-shadow: 0 0 5px var(--neon-yellow);
+            font-weight: bold;
+        }
+
+        /* Scanline Overlay (CRT Effect) */
+        .scanlines {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0) 50%, rgba(0,0,0,0.1) 50%, rgba(0,0,0,0.1));
+            background-size: 100% 4px;
+            pointer-events: none;
+            z-index: 100;
+            opacity: 0.3;
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- Background Elements -->
+    <div class="retro-sun"></div>
+    <div class="grid-floor"></div>
+    <div class="scanlines"></div>
+
+    <main class="arcade-cabinet" id="cabinet">
+        
+        <!-- Screen Area -->
+        <div class="screen-header">
+            <div class="track-info">
+                <h1 class="track-title" id="trackTitle">INSERT COIN</h1>
+                <div class="track-artist" id="trackArtist">SYSTEM READY</div>
+            </div>
+            
+            <!-- Spectrum Visualizer -->
+            <div class="spectrum">
+                <div class="spec-bar"></div>
+                <div class="spec-bar"></div>
+                <div class="spec-bar"></div>
+                <div class="spec-bar"></div>
+                <div class="spec-bar"></div>
+                <div class="spec-bar"></div>
+                <div class="spec-bar"></div>
+                <div class="spec-bar"></div>
+            </div>
+        </div>
+
+        <!-- Progress -->
+        <div>
+            <div class="progress-tech" id="progressBar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <div class="time-stamps">
+                <span id="currentTime">00:00</span>
+                <span id="duration">00:00</span>
+            </div>
+        </div>
+
+        <!-- Controls -->
+        <div class="controls-deck">
+            <button class="btn-synth btn-rect" id="btnPrev">
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
+            </button>
+            <button class="btn-synth btn-main" id="btnPlayPause">
+                PLAY
+            </button>
+            <button class="btn-synth btn-rect" id="btnNext">
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
+            </button>
+        </div>
+
+        <!-- Extra Buttons (Stop/Playlist Toggle) -->
+        <div class="controls-deck" style="margin-top:-10px;">
+             <button class="btn-synth btn-rect" id="btnStop" style="font-size: 0.7rem;">STOP</button>
+             <div></div> <!-- Spacer -->
+             <button class="btn-synth btn-rect" style="font-size: 0.7rem; opacity: 0.5; pointer-events: none;">LOAD</button>
+        </div>
+
+        <!-- Playlist -->
+        <div class="playlist-tech" id="playlist">
+            <!-- JS Injected -->
+        </div>
+
+    </main>
+
+    <audio id="audio"></audio>
+
+    <script>
+        const tracks = [
+            {
+                url: "https://music.giau.info/mp3/1765329418087_I_Just_Called_To_Say_I_Love_You.mp3",
+                title: "I Just Called To Say I Love You",
+                artist: "Stevie Wonder"
+            },
+            {
+                url: "https://music.giau.info/mp3/1765329417208_Another_Day_In_Paradise.mp3",
+                title: "Another Day In Paradise",
+                artist: "Phil Collins"
+            },
+            {
+                url: "https://music.giau.info/mp3/1765329418894_If_Life_Is_So_Short.mp3",
+                title: "If Life Is So Short",
+                artist: "The Moffatts"
+            }
+        ];
+
+        let idx = 0;
+        let isPlaying = false;
+        let isStopped = true;
+
+        const audio = document.getElementById('audio');
+        const cabinet = document.getElementById('cabinet');
+        const trackTitle = document.getElementById('trackTitle');
+        const trackArtist = document.getElementById('trackArtist');
+        const btnPlayPause = document.getElementById('btnPlayPause');
+        const progressBar = document.getElementById('progressBar');
+        const progressFill = document.getElementById('progressFill');
+        const currTime = document.getElementById('currentTime');
+        const durTime = document.getElementById('duration');
+        const playlist = document.getElementById('playlist');
+
+        function renderPlaylist() {
+            playlist.innerHTML = '';
+            tracks.forEach((t, i) => {
+                const item = document.createElement('div');
+                item.className = `pl-item ${i === idx ? 'active' : ''}`;
+                item.innerHTML = `<span>${t.title.toUpperCase()}</span> <span style="opacity:0.5">0${i+1}</span>`;
+                item.onclick = () => {
+                    if(i !== idx) {
+                        load(i);
+                        play();
+                    }
+                };
+                playlist.appendChild(item);
+            });
+        }
+
+        function load(index) {
+            idx = index;
+            audio.src = tracks[index].url;
+            trackTitle.textContent = tracks[index].title;
+            trackArtist.textContent = tracks[index].artist;
+            renderPlaylist();
+            resetProgress();
+        }
+
+        function resetProgress() {
+            progressFill.style.width = '0%';
+            currTime.textContent = "00:00";
+            durTime.textContent = "00:00";
+        }
+
+        function play() {
+            const p = audio.play();
+            if(p !== undefined) {
+                p.then(() => {
+                    isPlaying = true;
+                    isStopped = false;
+                    btnPlayPause.textContent = "PAUSE";
+                    cabinet.classList.add('playing');
+                });
+            }
+        }
+
+        function pause() {
+            audio.pause();
+            isPlaying = false;
+            btnPlayPause.textContent = "RESUME";
+            cabinet.classList.remove('playing');
+        }
+
+        function stop() {
+            audio.pause();
+            audio.currentTime = 0;
+            isPlaying = false;
+            isStopped = true;
+            btnPlayPause.textContent = "PLAY";
+            cabinet.classList.remove('playing');
+            resetProgress();
+        }
+
+        function toggle() {
+            if(isStopped) play();
+            else if(isPlaying) pause();
+            else play();
+        }
+
+        function next() {
+            let n = idx + 1;
+            if(n >= tracks.length) n = 0;
+            load(n);
+            play();
+        }
+
+        function prev() {
+            let p = idx - 1;
+            if(p < 0) p = tracks.length - 1;
+            load(p);
+            play();
+        }
+
+        function updateProgress() {
+            const { duration, currentTime } = audio;
+            if(duration) {
+                const pct = (currentTime / duration) * 100;
+                progressFill.style.width = `${pct}%`;
+                
+                const m = Math.floor(currentTime/60);
+                const s = Math.floor(currentTime%60);
+                currTime.textContent = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+                
+                const dm = Math.floor(duration/60);
+                const ds = Math.floor(duration%60);
+                durTime.textContent = `${dm.toString().padStart(2,'0')}:${ds.toString().padStart(2,'0')}`;
+            }
+        }
+
+        function seek(e) {
+            const rect = progressBar.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const width = rect.width;
+            audio.currentTime = (x / width) * audio.duration;
+        }
+
+        // Listeners
+        btnPlayPause.onclick = toggle;
+        document.getElementById('btnStop').onclick = stop;
+        document.getElementById('btnNext').onclick = next;
+        document.getElementById('btnPrev').onclick = prev;
+        progressBar.onclick = seek;
+        
+        audio.addEventListener('timeupdate', updateProgress);
+        audio.addEventListener('ended', next);
+
+        window.addEventListener('DOMContentLoaded', () => {
+            load(0);
+        });
+
+    </script>
+</body>
+</html>

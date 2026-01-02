@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Retro Pop Cassette Player</title>
+    
+    <!-- Fonts: Fredoka (Chunky/Playful) & VT323 (Retro Terminal) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600&family=VT323&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            /* Palette: 80s Pop Art */
+            --bg-yellow: #ffeb3b;
+            --bg-pink: #ff80ab;
+            --bg-mint: #b9f6ca;
+            --bg-white: #ffffff;
+            --text-dark: #212121;
+            --outline-black: 3px solid var(--text-dark);
+            --shadow-offset: 6px;
+            
+            --font-playful: 'Fredoka', sans-serif;
+            --font-retro: 'VT323', monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+        }
+
+        body {
+            background-color: var(--bg-yellow);
+            background-image: radial-gradient(var(--bg-pink) 20%, transparent 20%),
+                              radial-gradient(var(--bg-pink) 20%, transparent 20%);
+            background-position: 0 0, 50px 50px;
+            background-size: 100px 100px;
+            font-family: var(--font-playful);
+            color: var(--text-dark);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        /* --- Main Wrapper --- */
+        .pop-wrapper {
+            width: 90%;
+            max-width: 950px;
+            height: 85vh;
+            max-height: 650px;
+            background: var(--bg-white);
+            border: var(--outline-black);
+            border-radius: 30px;
+            box-shadow: var(--shadow-offset) var(--shadow-offset) 0px var(--text-dark);
+            display: grid;
+            grid-template-columns: 1fr 280px;
+            position: relative;
+            transform: rotate(-1deg); /* Slight playful tilt */
+            transition: transform 0.3s ease;
+        }
+        
+        .pop-wrapper:hover {
+            transform: rotate(0deg) scale(1.01);
+        }
+
+        /* --- Left: Cassette Area --- */
+        .cassette-stage {
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            background: #fff;
+            border-radius: 26px 0 0 26px;
+        }
+
+        /* CSS Cassette Tape */
+        .cassette-body {
+            width: 320px;
+            height: 200px;
+            background: #444;
+            border-radius: 10px;
+            border: var(--outline-black);
+            position: relative;
+            box-shadow: inset 2px 2px 5px rgba(0,0,0,0.3);
+            margin-bottom: 40px;
+            overflow: hidden;
+        }
+
+        .cassette-label {
+            position: absolute;
+            top: 10px; left: 10px; right: 10px; bottom: 10px;
+            background: var(--bg-mint);
+            border-radius: 4px;
+            border: 2px solid rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            padding: 15px;
+            align-items: center;
+        }
+
+        /* Tape Reels */
+        .reel-group {
+            display: flex;
+            gap: 40px;
+        }
+
+        .reel {
+            width: 40px;
+            height: 40px;
+            background: #fff;
+            border-radius: 50%;
+            border: 4px solid var(--text-dark);
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* Spokes inside the reel to show rotation */
+        .reel::before, .reel::after {
+            content: '';
+            position: absolute;
+            background: var(--text-dark);
+            border-radius: 2px;
+        }
+        .reel::before { width: 100%; height: 4px; }
+        .reel::after { width: 4px; height: 100%; }
+
+        .reel-spin {
+            animation: spinReel 3s linear infinite;
+            animation-play-state: paused;
+        }
+
+        .playing .reel-spin {
+            animation-play-state: running;
+        }
+
+        @keyframes spinReel {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Window for tape ribbon */
+        .tape-window {
+            width: 80px;
+            height: 40px;
+            background: #222;
+            border-radius: 4px;
+            border: 2px solid #000;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tape-ribbon {
+            position: absolute;
+            top: 0; bottom: 0; left: 20%; right: 20%;
+            background: #111;
+        }
+
+        /* Text Info on Tape */
+        .tape-text {
+            position: absolute;
+            top: 60%;
+            left: 15px;
+            right: 15px;
+            font-family: var(--font-retro);
+            font-size: 1rem;
+            text-align: center;
+            color: #000;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            border-top: 1px dashed rgba(0,0,0,0.2);
+            padding-top: 5px;
+        }
+
+        /* Controls Section */
+        .controls-section {
+            width: 100%;
+            max-width: 400px;
+        }
+
+        .song-title-display {
+            font-family: var(--font-retro);
+            font-size: 2.5rem;
+            text-align: center;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 0px rgba(0,0,0,0.1);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .song-artist-display {
+            text-align: center;
+            font-size: 1.2rem;
+            color: #666;
+            margin-bottom: 25px;
+            background: var(--bg-pink);
+            display: inline-block;
+            padding: 2px 10px;
+            border-radius: 20px;
+            border: 2px solid var(--text-dark);
+            box-shadow: 3px 3px 0px var(--text-dark);
+        }
+
+        .progress-box {
+            height: 24px;
+            background: #eee;
+            border: var(--outline-black);
+            border-radius: 12px;
+            margin-bottom: 30px;
+            position: relative;
+            cursor: pointer;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            width: 0%;
+            background: var(--bg-pink);
+            border-right: var(--outline-black);
+            transition: width 0.1s linear;
+        }
+
+        .btn-pop-row {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .btn-pop {
+            width: 60px;
+            height: 60px;
+            border: var(--outline-black);
+            border-radius: 50%;
+            background: var(--bg-white);
+            box-shadow: 4px 4px 0px var(--text-dark);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.1s ease;
+            font-size: 1.2rem;
+        }
+
+        .btn-pop:active {
+            transform: translate(4px, 4px);
+            box-shadow: 0px 0px 0px var(--text-dark);
+        }
+
+        .btn-pop:hover {
+            background: #fafafa;
+        }
+
+        .btn-main-pop {
+            width: 80px;
+            height: 80px;
+            background: var(--text-dark);
+            color: #fff;
+        }
+        
+        .btn-main-pop:hover {
+            background: #333;
+            transform: translate(-2px, -2px);
+            box-shadow: 6px 6px 0px var(--text-dark);
+        }
+
+        .btn-main-pop:active {
+            transform: translate(4px, 4px);
+            box-shadow: 0px 0px 0px var(--text-dark);
+        }
+
+        /* --- Right Side: Playlist --- */
+        .playlist-pop {
+            background: #f9f9f9;
+            border-left: var(--outline-black);
+            border-radius: 0 26px 26px 0;
+            padding: 30px 20px;
+            overflow-y: auto;
+        }
+
+        .pl-header-pop {
+            font-family: var(--font-retro);
+            font-size: 1.5rem;
+            text-align: center;
+            margin-bottom: 20px;
+            text-decoration: underline;
+            text-decoration-style: wavy;
+            text-decoration-color: var(--bg-pink);
+        }
+
+        .track-card {
+            background: #fff;
+            border: 2px solid #ddd;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .track-card:hover {
+            border-color: var(--text-dark);
+            transform: rotate(1deg) scale(1.02);
+            background: var(--bg-yellow);
+        }
+
+        .track-card.active {
+            background: var(--text-dark);
+            color: #fff;
+            border: 2px solid var(--text-dark);
+            transform: rotate(-2deg);
+        }
+        
+        .track-card.active .track-meta {
+            color: #ccc;
+        }
+
+        .track-name {
+            font-weight: 600;
+            font-size: 1rem;
+            margin-bottom: 4px;
+        }
+
+        .track-meta {
+            font-family: var(--font-retro);
+            font-size: 1rem;
+            color: #777;
+        }
+
+        /* Sticker on active track */
+        .sticker {
+            position: absolute;
+            top: -10px;
+            right: -10px;
+            width: 30px;
+            height: 30px;
+            background: var(--bg-pink);
+            border: 2px solid var(--text-dark);
+            border-radius: 50%;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+
+        .track-card.active .sticker {
+            display: flex;
+        }
+
+        /* SVGs */
+        svg {
+            width: 30px;
+            height: 30px;
+            fill: currentColor;
+        }
+        .btn-main-pop svg { width: 36px; height: 36px; }
+
+        /* Mobile */
+        @media (max-width: 850px) {
+            .pop-wrapper {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto 1fr;
+                height: 95vh;
+                border-radius: 20px;
+                transform: none !important;
+            }
+            .cassette-stage {
+                border-radius: 20px 20px 0 0;
+                border-bottom: var(--outline-black);
+            }
+            .playlist-pop {
+                border-radius: 0 0 20px 20px;
+                border-left: none;
+                border-top: var(--outline-black);
+            }
+            .cassette-body { width: 260px; height: 160px; }
+            .song-title-display { font-size: 1.8rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <main class="pop-wrapper" id="pop-container">
+        <!-- Left: Cassette & Controls -->
+        <section class="cassette-stage">
+            
+            <!-- The Tape -->
+            <div class="cassette-body">
+                <div class="cassette-label">
+                    <div class="reel-group">
+                        <div class="reel reel-spin"></div>
+                        <div class="reel reel-spin"></div>
+                    </div>
+                    <div class="tape-window">
+                        <div class="tape-ribbon"></div>
+                    </div>
+                    <div class="tape-text" id="tape-label-text">SONG TITLE...</div>
+                </div>
+            </div>
+
+            <!-- Info -->
+            <div class="song-title-display" id="main-title">Loading...</div>
+            <div style="text-align:center"><span class="song-artist-display" id="main-artist">Artist</span></div>
+
+            <!-- Controls -->
+            <div class="controls-section">
+                <div class="progress-box" id="progress-area">
+                    <div class="progress-fill" id="progress-bar"></div>
+                </div>
+
+                <div class="btn-pop-row">
+                    <button class="btn-pop" id="btn-prev">
+                        <svg viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
+                    </button>
+                    
+                    <button class="btn-pop btn-main-pop" id="btn-play">
+                        <svg id="icon-play" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                        <svg id="icon-pause" viewBox="0 0 24 24" style="display:none"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+                    </button>
+
+                    <button class="btn-pop" id="btn-stop">
+                        <svg viewBox="0 0 24 24"><path d="M6 6h12v12H6z"/></svg>
+                    </button>
+
+                    <button class="btn-pop" id="btn-next">
+                        <svg viewBox="0 0 24 24"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Right: Playlist -->
+        <aside class="playlist-pop">
+            <div class="pl-header-pop">MIX TAPE 01</div>
+            <div id="playlist-container">
+                <!-- JS Generated -->
+            </div>
+        </aside>
+    </main>
+
+    <script>
+        const tracks = [
+            {
+                title: "I Just Called To Say I Love You",
+                artist: "Stevie Wonder",
+                url: "https://music.giau.info/mp3/1765329418087_I_Just_Called_To_Say_I_Love_You.mp3"
+            },
+            {
+                title: "Another Day In Paradise",
+                artist: "Phil Collins",
+                url: "https://music.giau.info/mp3/1765329417208_Another_Day_In_Paradise.mp3"
+            },
+            {
+                title: "If Life Is So Short",
+                artist: "The Moffatts",
+                url: "https://music.giau.info/mp3/1765329418894_If_Life_Is_So_Short.mp3"
+            }
+        ];
+
+        let currentIdx = 0;
+        let isPlaying = false;
+        const audio = new Audio();
+
+        // Elements
+        const popContainer = document.getElementById('pop-container');
+        const tapeText = document.getElementById('tape-label-text');
+        const titleEl = document.getElementById('main-title');
+        const artistEl = document.getElementById('main-artist');
+        const progArea = document.getElementById('progress-area');
+        const progBar = document.getElementById('progress-bar');
+        const plContainer = document.getElementById('playlist-container');
+
+        const btnPlay = document.getElementById('btn-play');
+        const btnStop = document.getElementById('btn-stop');
+        const btnPrev = document.getElementById('btn-prev');
+        const btnNext = document.getElementById('btn-next');
+        const iconPlay = document.getElementById('icon-play');
+        const iconPause = document.getElementById('icon-pause');
+
+        function init() {
+            renderPlaylist();
+            loadTrack(0);
+
+            btnPlay.addEventListener('click', togglePlay);
+            btnStop.addEventListener('click', stopTrack);
+            btnPrev.addEventListener('click', prevTrack);
+            btnNext.addEventListener('click', nextTrack);
+            progArea.addEventListener('click', seek);
+
+            audio.addEventListener('timeupdate', updateProgress);
+            audio.addEventListener('ended', nextTrack);
+        }
+
+        function loadTrack(index) {
+            currentIdx = index;
+            const track = tracks[index];
+
+            // Update Tape Label Text (scrolling effect simulated via overflow)
+            tapeText.innerText = track.title.toUpperCase();
+            titleEl.innerText = track.title;
+            artistEl.innerText = track.artist;
+            audio.src = track.url;
+
+            progBar.style.width = '0%';
+            updatePlaylistUI();
+
+            if (isPlaying) {
+                audio.play().catch(e => console.log(e));
+            }
+        }
+
+        function togglePlay() {
+            if (isPlaying) {
+                audio.pause();
+                isPlaying = false;
+                popContainer.classList.remove('playing');
+                iconPlay.style.display = 'block';
+                iconPause.style.display = 'none';
+            } else {
+                audio.play().catch(e => console.log(e));
+                isPlaying = true;
+                popContainer.classList.add('playing');
+                iconPlay.style.display = 'none';
+                iconPause.style.display = 'block';
+            }
+        }
+
+        function stopTrack() {
+            if (isPlaying) togglePlay();
+            audio.currentTime = 0;
+            progBar.style.width = '0%';
+        }
+
+        function nextTrack() {
+            currentIdx++;
+            if (currentIdx >= tracks.length) currentIdx = 0;
+            loadTrack(currentIdx);
+            if (!isPlaying) togglePlay();
+        }
+
+        function prevTrack() {
+            currentIdx--;
+            if (currentIdx < 0) currentIdx = tracks.length - 1;
+            loadTrack(currentIdx);
+            if (!isPlaying) togglePlay();
+        }
+
+        function updateProgress() {
+            if(audio.duration) {
+                const pct = (audio.currentTime / audio.duration) * 100;
+                progBar.style.width = `${pct}%`;
+            }
+        }
+
+        function seek(e) {
+            const width = progArea.clientWidth;
+            const clickX = e.offsetX;
+            if(audio.duration) {
+                audio.currentTime = (clickX / width) * audio.duration;
+            }
+        }
+
+        function renderPlaylist() {
+            plContainer.innerHTML = '';
+            tracks.forEach((t, i) => {
+                const div = document.createElement('div');
+                div.className = 'track-card';
+                div.innerHTML = `
+                    <div class="track-name">${t.title}</div>
+                    <div class="track-meta">${t.artist}</div>
+                    <div class="sticker">♫</div>
+                `;
+                div.addEventListener('click', () => {
+                    if(currentIdx === i) togglePlay();
+                    else {
+                        loadTrack(i);
+                        togglePlay();
+                    }
+                });
+                plContainer.appendChild(div);
+            });
+        }
+
+        function updatePlaylistUI() {
+            const items = document.querySelectorAll('.track-card');
+            items.forEach((item, i) => {
+                if (i === currentIdx) item.classList.add('active');
+                else item.classList.remove('active');
+            });
+        }
+
+        init();
+    </script>
+</body>
+</html>

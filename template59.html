@@ -1,0 +1,552 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vinyl Editorial Player</title>
+    
+    <!-- Google Fonts Import -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+
+    <style>
+        /* --- CSS Variables & Design Tokens --- */
+        :root {
+            /* Palette: Swiss Style / High Contrast */
+            --bg-color: #e0e0e0;
+            --card-bg: #ffffff;
+            --ink-color: #121212;
+            --accent-color: #ff3366; /* International Orange */
+            
+            /* Typography */
+            --font-display: 'DM Serif Display', serif;
+            --font-mono: 'Space Mono', monospace;
+            
+            /* Layout */
+            --border-width: 3px;
+            --radius-soft: 4px;
+        }
+
+        /* --- Global Reset & Texture --- */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--ink-color);
+            font-family: var(--font-mono);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Noise Texture Overlay */
+        .noise-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.05;
+            pointer-events: none;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
+            z-index: 10;
+        }
+
+        /* --- Main Player Case --- */
+        .player-case {
+            background-color: var(--card-bg);
+            width: 100%;
+            max-width: 380px;
+            border: var(--border-width) solid var(--ink-color);
+            box-shadow: 10px 10px 0px rgba(0,0,0,0.1);
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+            position: relative;
+            z-index: 2;
+            transition: transform 0.2s ease;
+        }
+
+        /* --- Visual Element: The Vinyl Record --- */
+        .vinyl-wrapper {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 10px;
+            position: relative;
+        }
+
+        .vinyl-record {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            background: 
+                radial-gradient(circle at center, var(--accent-color) 15%, transparent 16%),
+                repeating-radial-gradient(var(--ink-color) 0, var(--ink-color) 1px, transparent 1px, transparent 4px);
+            background-size: 100% 100%, 100% 100%;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            position: relative;
+            transform: rotate(0deg);
+            /* Animation applied via JS class */
+        }
+        
+        .vinyl-record.spinning {
+            animation: spin 4s linear infinite;
+        }
+        
+        /* Tone Arm (Decorative) */
+        .tone-arm {
+            position: absolute;
+            top: 50%;
+            right: 30px;
+            width: 80px;
+            height: 10px;
+            background: var(--ink-color);
+            transform-origin: right center;
+            transform: rotate(-30deg) translateY(-20px);
+            z-index: 5;
+            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border-radius: 10px;
+        }
+        
+        .tone-arm.playing {
+            transform: rotate(-5deg) translateY(-20px);
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* --- Info Section (Marquee) --- */
+        .info-display {
+            background: var(--ink-color);
+            color: #fff;
+            padding: 15px;
+            border: var(--border-width) solid var(--ink-color);
+            overflow: hidden;
+            white-space: nowrap;
+            position: relative;
+            height: 50px;
+            display: flex;
+            align-items: center;
+        }
+
+        .marquee-content {
+            display: inline-block;
+            font-family: var(--font-display);
+            font-size: 1.4rem;
+            padding-left: 100%;
+            animation: marquee 15s linear infinite;
+        }
+        
+        .marquee-content:hover {
+            animation-play-state: paused;
+        }
+
+        @keyframes marquee {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(-100%, 0); }
+        }
+
+        /* --- Progress Bar (Tape Style) --- */
+        .progress-container {
+            width: 100%;
+            height: 6px;
+            background: #ddd;
+            border: 1px solid var(--ink-color);
+            cursor: pointer;
+            position: relative;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: var(--accent-color);
+            width: 0%;
+            transition: width 0.1s linear;
+        }
+
+        .time-code {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.7rem;
+            margin-top: 5px;
+            font-weight: 700;
+            color: var(--ink-color);
+        }
+
+        /* --- Controls (Brutalist Buttons) --- */
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .btn-brutal {
+            background: transparent;
+            border: 2px solid var(--ink-color);
+            color: var(--ink-color);
+            padding: 12px;
+            cursor: pointer;
+            transition: all 0.1s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-brutal:hover {
+            background: var(--ink-color);
+            color: #fff;
+            transform: translate(-2px, -2px);
+            box-shadow: 4px 4px 0px var(--accent-color);
+        }
+
+        .btn-brutal:active {
+            transform: translate(0, 0);
+            box-shadow: none;
+        }
+
+        .btn-main {
+            width: 70px;
+            height: 70px;
+            border-width: 3px;
+            border-radius: 50%; /* Circle for main button */
+        }
+        
+        .btn-main svg {
+            width: 28px;
+            height: 28px;
+            fill: currentColor;
+        }
+
+        .btn-sec svg {
+            width: 20px;
+            height: 20px;
+            fill: currentColor;
+        }
+
+        /* --- Playlist (Magazine Style) --- */
+        .playlist {
+            border-top: 2px solid #eee;
+            padding-top: 15px;
+        }
+
+        .track-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 0;
+            cursor: pointer;
+            border-bottom: 1px dashed #ccc;
+            transition: background 0.2s, padding 0.2s;
+        }
+
+        .track-row:hover {
+            background: #f4f4f4;
+            padding-left: 10px;
+        }
+
+        .track-row.active {
+            background: var(--ink-color);
+            color: #fff;
+            border-bottom: 1px solid var(--ink-color);
+            border-radius: 2px;
+        }
+
+        .track-num {
+            font-weight: bold;
+            margin-right: 10px;
+            font-size: 0.8rem;
+        }
+
+        .track-name-list {
+            font-family: var(--font-display);
+            font-size: 1rem;
+            flex-grow: 1;
+        }
+
+        .track-duration {
+            font-size: 0.75rem;
+            opacity: 0.7;
+        }
+
+        /* Status Text (Bottom of card) */
+        .status-text {
+            font-size: 0.7rem;
+            text-align: right;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #888;
+            margin-top: -10px;
+        }
+
+        /* Responsive */
+        @media (max-width: 400px) {
+            .vinyl-record { width: 160px; height: 160px; }
+            .player-case { max-width: 90%; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="noise-overlay"></div>
+
+    <main class="player-case">
+        
+        <!-- Vinyl Section -->
+        <div class="vinyl-wrapper">
+            <div class="vinyl-record" id="vinyl"></div>
+            <div class="tone-arm" id="toneArm"></div>
+        </div>
+
+        <!-- Marquee Info -->
+        <div class="info-display">
+            <div class="marquee-content" id="marqueeText">
+                SELECT A TRACK TO BEGIN
+            </div>
+        </div>
+
+        <!-- Progress -->
+        <div>
+            <div class="progress-container" id="progressBarContainer">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <div class="time-code">
+                <span id="currentTime">00:00</span>
+                <span id="duration">00:00</span>
+            </div>
+        </div>
+
+        <!-- Controls -->
+        <section class="controls">
+            <button class="btn-brutal btn-sec" id="btnPrev" aria-label="Previous">
+                <svg viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
+            </button>
+            
+            <button class="btn-brutal btn-main" id="btnPlayPause" aria-label="Play">
+                <svg id="iconPlay" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                <svg id="iconPause" viewBox="0 0 24 24" style="display:none;"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+            </button>
+
+            <button class="btn-brutal btn-sec" id="btnStop" aria-label="Stop">
+                <svg viewBox="0 0 24 24"><path d="M6 6h12v12H6z"/></svg>
+            </button>
+
+            <button class="btn-brutal btn-sec" id="btnNext" aria-label="Next">
+                <svg viewBox="0 0 24 24"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
+            </button>
+        </section>
+
+        <!-- Playlist -->
+        <div class="playlist" id="playlistContainer">
+            <!-- Items injected via JS -->
+        </div>
+
+        <div class="status-text" id="statusMsg">System Ready</div>
+    </main>
+
+    <audio id="audioPlayer"></audio>
+
+    <script>
+        /**
+         * Logic for Editorial Vinyl Player
+         */
+        const tracks = [
+            {
+                url: "https://music.giau.info/mp3/1765329418087_I_Just_Called_To_Say_I_Love_You.mp3",
+                rawName: "1765329418087_I_Just_Called_To_Say_I_Love_You.mp3"
+            },
+            {
+                url: "https://music.giau.info/mp3/1765329417208_Another_Day_In_Paradise.mp3",
+                rawName: "1765329417208_Another_Day_In_Paradise.mp3"
+            },
+            {
+                url: "https://music.giau.info/mp3/1765329418894_If_Life_Is_So_Short.mp3",
+                rawName: "1765329418894_If_Life_Is_So_Short.mp3"
+            }
+        ];
+
+        let currentIndex = 0;
+        let isPlaying = false;
+
+        // DOM Elements
+        const audio = document.getElementById('audioPlayer');
+        const vinyl = document.getElementById('vinyl');
+        const toneArm = document.getElementById('toneArm');
+        const marqueeText = document.getElementById('marqueeText');
+        const btnPlayPause = document.getElementById('btnPlayPause');
+        const iconPlay = document.getElementById('iconPlay');
+        const iconPause = document.getElementById('iconPause');
+        const progressBarContainer = document.getElementById('progressBarContainer');
+        const progressFill = document.getElementById('progressFill');
+        const currentTimeEl = document.getElementById('currentTime');
+        const durationEl = document.getElementById('duration');
+        const playlistContainer = document.getElementById('playlistContainer');
+        const statusMsg = document.getElementById('statusMsg');
+
+        // Helper: Clean Filename
+        function cleanName(name) {
+            return name
+                .replace(/^\d+_/g, "")
+                .replace(/_/g, " ")
+                .replace(".mp3", "");
+        }
+
+        // Helper: Format Time
+        function formatTime(s) {
+            if(isNaN(s)) return "00:00";
+            const m = Math.floor(s / 60);
+            const sec = Math.floor(s % 60);
+            return `${m.toString().padStart(2,'0')}:${sec.toString().padStart(2,'0')}`;
+        }
+
+        // Update UI Status Message
+        function updateStatus(msg) {
+            statusMsg.textContent = msg;
+            statusMsg.style.color = '#121212';
+            setTimeout(() => statusMsg.style.color = '#888', 1000);
+        }
+
+        // Render Playlist
+        function renderPlaylist() {
+            playlistContainer.innerHTML = '';
+            tracks.forEach((track, idx) => {
+                const row = document.createElement('div');
+                row.className = `track-row ${idx === currentIndex ? 'active' : ''}`;
+                row.innerHTML = `
+                    <span class="track-num">0${idx + 1}</span>
+                    <span class="track-name-list">${cleanName(track.rawName)}</span>
+                `;
+                row.onclick = () => {
+                    if (currentIndex !== idx) {
+                        loadTrack(idx);
+                        playTrack();
+                    }
+                };
+                playlistContainer.appendChild(row);
+            });
+        }
+
+        // Load Track
+        function loadTrack(index) {
+            currentIndex = index;
+            audio.src = tracks[index].url;
+            
+            const name = cleanName(tracks[index].rawName);
+            // Duplicate text for seamless marquee effect
+            marqueeText.textContent = `${name}   •   ${name}   •   ${name}   •   ${name}`;
+            
+            renderPlaylist();
+            resetProgress();
+        }
+
+        function resetProgress() {
+            progressFill.style.width = '0%';
+            currentTimeEl.textContent = "00:00";
+        }
+
+        // Play
+        function playTrack() {
+            const p = audio.play();
+            if(p !== undefined) {
+                p.then(() => {
+                    isPlaying = true;
+                    vinyl.classList.add('spinning');
+                    toneArm.classList.add('playing');
+                    iconPlay.style.display = 'none';
+                    iconPause.style.display = 'block';
+                    updateStatus("Now Playing");
+                }).catch(e => {
+                    console.error(e);
+                    updateStatus("Load Error");
+                });
+            }
+        }
+
+        // Pause
+        function pauseTrack() {
+            audio.pause();
+            isPlaying = false;
+            vinyl.classList.remove('spinning');
+            toneArm.classList.remove('playing');
+            iconPlay.style.display = 'block';
+            iconPause.style.display = 'none';
+            updateStatus("Paused");
+        }
+
+        // Stop
+        function stopTrack() {
+            audio.pause();
+            audio.currentTime = 0;
+            isPlaying = false;
+            vinyl.classList.remove('spinning');
+            // Reset tone arm slightly slower for realism
+            toneArm.classList.remove('playing');
+            iconPlay.style.display = 'block';
+            iconPause.style.display = 'none';
+            resetProgress();
+            updateStatus("Stopped");
+        }
+
+        // Toggle
+        btnPlayPause.onclick = () => {
+            if (isPlaying) pauseTrack();
+            else playTrack();
+        };
+
+        document.getElementById('btnStop').onclick = stopTrack;
+        
+        document.getElementById('btnNext').onclick = () => {
+            let next = currentIndex + 1;
+            if(next >= tracks.length) next = 0;
+            loadTrack(next);
+            playTrack();
+        };
+
+        document.getElementById('btnPrev').onclick = () => {
+            let prev = currentIndex - 1;
+            if(prev < 0) prev = tracks.length - 1;
+            loadTrack(prev);
+            playTrack();
+        };
+
+        // Progress Bar Click
+        progressBarContainer.onclick = (e) => {
+            const rect = progressBarContainer.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const pct = x / rect.width;
+            audio.currentTime = pct * audio.duration;
+        };
+
+        // Audio Events
+        audio.addEventListener('timeupdate', () => {
+            const pct = (audio.currentTime / audio.duration) * 100;
+            progressFill.style.width = `${pct}%`;
+            currentTimeEl.textContent = formatTime(audio.currentTime);
+            durationEl.textContent = formatTime(audio.duration);
+        });
+
+        audio.addEventListener('ended', () => {
+            document.getElementById('btnNext').click();
+        });
+
+        // Init
+        window.addEventListener('DOMContentLoaded', () => {
+            loadTrack(0);
+        });
+
+    </script>
+</body>
+</html>

@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Industrial Constructivism Player</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;700&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+
+    <style>
+        /* --- CSS Variables --- */
+        :root {
+            --concrete-light: #e0e0e0;
+            --concrete-dark: #b0b0b0;
+            --structure-black: #1a1a1a;
+            --safety-orange: #ff4500;
+            
+            --font-head: 'Oswald', sans-serif;
+            --font-tech: 'Space Mono', monospace;
+        }
+
+        /* --- Reset & Texture --- */
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        
+        body {
+            background-color: var(--concrete-light);
+            background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.15'/%3E%3C/svg%3E");
+            font-family: var(--font-head);
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: var(--structure-black);
+            overflow: hidden;
+        }
+
+        /* --- Main Unit --- */
+        .machinery-housing {
+            width: 100%;
+            max-width: 400px;
+            background: #dcdcdc;
+            padding: 30px;
+            /* Chamfered corners */
+            clip-path: polygon(
+                20px 0, 100% 0, 
+                100% calc(100% - 20px), calc(100% - 20px) 100%, 
+                0 100%, 0 20px
+            );
+            box-shadow: 15px 15px 0px rgba(0,0,0,0.1);
+            border: 2px solid var(--structure-black);
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+            position: relative;
+        }
+
+        /* Decorative Bolts */
+        .bolt {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            background: var(--structure-black);
+            border-radius: 50%;
+            z-index: 2;
+        }
+        .tl { top: 10px; left: 10px; }
+        .tr { top: 10px; right: 10px; }
+        .bl { bottom: 10px; left: 10px; }
+        .br { bottom: 10px; right: 10px; }
+
+        /* --- Optical Sensor (Visual) --- */
+        .optics-sensor {
+            width: 100%;
+            height: 200px;
+            background: var(--structure-black);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+            border: 2px solid var(--structure-black);
+        }
+
+        .constructivist-art {
+            width: 140px;
+            height: 140px;
+            border: 4px solid var(--safety-orange);
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: transform 0.1s linear; /* Mechanical rotation */
+        }
+
+        .constructivist-art::before {
+            content: '';
+            position: absolute;
+            width: 80%;
+            height: 80%;
+            border: 2px solid #fff;
+        }
+
+        .constructivist-art::after {
+            content: '';
+            position: absolute;
+            width: 40%;
+            height: 40%;
+            background: var(--safety-orange);
+        }
+
+        .rotating {
+            animation: rotateSquare 4s linear infinite;
+        }
+
+        @keyframes rotateSquare {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(90deg); } /* Mechanical 90 deg steps logic usually, but let's do smooth for now */
+        }
+
+        /* --- Data Readout --- */
+        .data-readout {
+            border-bottom: 4px solid var(--structure-black);
+            padding-bottom: 10px;
+        }
+
+        .track-id {
+            font-family: var(--font-tech);
+            font-size: 0.75rem;
+            color: var(--safety-orange);
+            letter-spacing: 2px;
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        .track-name {
+            font-size: 2rem;
+            text-transform: uppercase;
+            line-height: 0.9;
+            font-weight: 700;
+            letter-spacing: -1px;
+        }
+
+        /* --- Conveyor Belt (Progress) --- */
+        .conveyor-belt {
+            position: relative;
+            height: 30px;
+            background: rgba(0,0,0,0.1);
+            border: 2px solid var(--structure-black);
+            cursor: pointer;
+        }
+
+        .belt-load {
+            height: 100%;
+            width: 0%;
+            background: repeating-linear-gradient(
+                45deg,
+                var(--safety-orange),
+                var(--safety-orange) 10px,
+                #cc3700 10px,
+                #cc3700 20px
+            );
+            border-right: 2px solid var(--structure-black);
+            transition: width 0.1s linear;
+        }
+
+        .measurements {
+            display: flex;
+            justify-content: space-between;
+            font-family: var(--font-tech);
+            font-size: 0.8rem;
+            margin-top: 5px;
+            font-weight: bold;
+        }
+
+        /* --- Control Grid --- */
+        .control-panel {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+
+        .btn-industrial {
+            background: transparent;
+            border: 2px solid var(--structure-black);
+            height: 50px;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.1s;
+            clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px);
+        }
+
+        .btn-industrial:hover {
+            background: var(--structure-black);
+            color: #fff;
+        }
+
+        .btn-industrial:active {
+            transform: translateY(2px);
+        }
+
+        .btn-main-action {
+            background: var(--safety-orange);
+            grid-column: span 2;
+        }
+        
+        .btn-main-action:hover {
+            background: #cc3700;
+        }
+
+        .btn-industrial svg {
+            width: 20px;
+            height: 20px;
+            fill: currentColor;
+        }
+
+        /* --- Manifest (Playlist) --- */
+        .manifest-list {
+            border-top: 2px dashed var(--concrete-dark);
+            padding-top: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .manifest-item {
+            display: flex;
+            align-items: center;
+            padding: 8px;
+            background: rgba(255,255,255,0.3);
+            border-left: 3px solid transparent;
+            cursor: pointer;
+            font-family: var(--font-tech);
+            font-size: 0.8rem;
+        }
+
+        .manifest-item:hover {
+            background: #fff;
+            border-left: 3px solid var(--structure-black);
+        }
+
+        .manifest-item.active {
+            background: var(--structure-black);
+            color: var(--safety-orange);
+            border-left: 3px solid var(--safety-orange);
+        }
+
+        .m-num {
+            margin-right: 15px;
+            font-weight: bold;
+            opacity: 0.5;
+        }
+
+    </style>
+</head>
+<body>
+
+    <main class="machinery-housing">
+        <!-- Bolts -->
+        <div class="bolt tl"></div><div class="bolt tr"></div>
+        <div class="bolt bl"></div><div class="bolt br"></div>
+
+        <!-- Visual -->
+        <div class="optics-sensor">
+            <div class="constructivist-art" id="visualArt"></div>
+        </div>
+
+        <!-- Info -->
+        <div class="data-readout">
+            <span class="track-id">UNIT: MK-IV</span>
+            <h1 class="track-name" id="trackName">SYSTEM IDLE</h1>
+        </div>
+
+        <!-- Progress -->
+        <div>
+            <div class="conveyor-belt" id="progressContainer">
+                <div class="belt-load" id="progressLoad"></div>
+            </div>
+            <div class="measurements">
+                <span id="currTime">00:00</span>
+                <span id="durTime">00:00</span>
+            </div>
+        </div>
+
+        <!-- Controls -->
+        <div class="control-panel">
+            <button class="btn-industrial" id="btnPrev" aria-label="Previous">
+                <svg viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
+            </button>
+            <button class="btn-industrial btn-main-action" id="btnPlayPause" aria-label="Play">
+                <svg id="iconPlay" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                <svg id="iconPause" viewBox="0 0 24 24" style="display:none;"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+            </button>
+            <button class="btn-industrial btn-main-action" id="btnStop" aria-label="Stop">
+                <svg viewBox="0 0 24 24"><path d="M6 6h12v12H6z"/></svg>
+            </button>
+            <button class="btn-industrial" id="btnNext" aria-label="Next">
+                <svg viewBox="0 0 24 24"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
+            </button>
+        </div>
+
+        <!-- Playlist -->
+        <div class="manifest-list" id="playlist">
+            <!-- JS Injected -->
+        </div>
+
+    </main>
+
+    <audio id="audio"></audio>
+
+    <script>
+        // Data
+        const tracks = [
+            { url: "https://music.giau.info/mp3/1765329418087_I_Just_Called_To_Say_I_Love_You.mp3", name: "I Just Called To Say I Love You" },
+            { url: "https://music.giau.info/mp3/1765329417208_Another_Day_In_Paradise.mp3", name: "Another Day In Paradise" },
+            { url: "https://music.giau.info/mp3/1765329418894_If_Life_Is_So_Short.mp3", name: "If Life Is So Short" }
+        ];
+
+        let idx = 0;
+        let isPlaying = false;
+        let isStopped = true;
+
+        // DOM
+        const audio = document.getElementById('audio');
+        const visualArt = document.getElementById('visualArt');
+        const trackName = document.getElementById('trackName');
+        const progressContainer = document.getElementById('progressContainer');
+        const progressLoad = document.getElementById('progressLoad');
+        const currTime = document.getElementById('currTime');
+        const durTime = document.getElementById('durTime');
+        const playlist = document.getElementById('playlist');
+        const btnPlayPause = document.getElementById('btnPlayPause');
+        const iconPlay = document.getElementById('iconPlay');
+        const iconPause = document.getElementById('iconPause');
+
+        // Render
+        function renderList() {
+            playlist.innerHTML = '';
+            tracks.forEach((t, i) => {
+                const item = document.createElement('div');
+                item.className = `manifest-item ${i === idx ? 'active' : ''}`;
+                item.innerHTML = `<span class="m-num">0${i+1}</span> ${t.name.toUpperCase()}`;
+                item.onclick = () => {
+                    if(i !== idx) {
+                        load(i);
+                        play();
+                    }
+                };
+                playlist.appendChild(item);
+            });
+        }
+
+        function load(index) {
+            idx = index;
+            audio.src = tracks[index].url;
+            trackName.textContent = tracks[index].name.toUpperCase();
+            renderList();
+            reset();
+        }
+
+        function reset() {
+            progressLoad.style.width = '0%';
+            currTime.textContent = "00:00";
+            durTime.textContent = "00:00";
+        }
+
+        function play() {
+            const p = audio.play();
+            if(p !== undefined) {
+                p.then(() => {
+                    isPlaying = true;
+                    isStopped = false;
+                    iconPlay.style.display = 'none';
+                    iconPause.style.display = 'block';
+                    visualArt.classList.add('rotating');
+                });
+            }
+        }
+
+        function pause() {
+            audio.pause();
+            isPlaying = false;
+            iconPlay.style.display = 'block';
+            iconPause.style.display = 'none';
+            visualArt.classList.remove('rotating');
+        }
+
+        function stop() {
+            audio.pause();
+            audio.currentTime = 0;
+            isPlaying = false;
+            isStopped = true;
+            iconPlay.style.display = 'block';
+            iconPause.style.display = 'none';
+            visualArt.classList.remove('rotating');
+            reset();
+        }
+
+        function toggle() {
+            if(isStopped) play();
+            else if(isPlaying) pause();
+            else play();
+        }
+
+        function next() {
+            let n = idx + 1;
+            if(n >= tracks.length) n = 0;
+            load(n);
+            play();
+        }
+
+        function prev() {
+            let p = idx - 1;
+            if(p < 0) p = tracks.length - 1;
+            load(p);
+            play();
+        }
+
+        function updateProgress() {
+            const { duration, currentTime } = audio;
+            if(duration) {
+                const pct = (currentTime / duration) * 100;
+                progressLoad.style.width = `${pct}%`;
+                
+                const m = Math.floor(currentTime/60);
+                const s = Math.floor(currentTime%60);
+                currTime.textContent = `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`;
+                
+                const dm = Math.floor(duration/60);
+                const ds = Math.floor(duration%60);
+                durTime.textContent = `${dm.toString().padStart(2,'0')}:${ds.toString().padStart(2,'0')}`;
+            }
+        }
+
+        function seek(e) {
+            const rect = progressContainer.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const width = rect.width;
+            audio.currentTime = (x / width) * audio.duration;
+        }
+
+        // Listeners
+        btnPlayPause.onclick = toggle;
+        document.getElementById('btnStop').onclick = stop;
+        document.getElementById('btnNext').onclick = next;
+        document.getElementById('btnPrev').onclick = prev;
+        progressContainer.onclick = seek;
+
+        audio.addEventListener('timeupdate', updateProgress);
+        audio.addEventListener('ended', next);
+
+        window.addEventListener('DOMContentLoaded', () => {
+            load(0);
+        });
+
+    </script>
+</body>
+</html>

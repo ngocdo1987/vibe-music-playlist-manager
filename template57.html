@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Brutalist Constructivist Player</title>
+    
+    <!-- Fonts: Syne (Wide/Industrial Headers) & JetBrains Mono (Data/Code) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            /* Palette: Stark High Contrast */
+            --bg-wall: #f0f0f0;
+            --surface: #ffffff;
+            --ink: #080808;
+            --accent: #ff4500; /* Safety Orange */
+            --accent-hover: #e03e00;
+            
+            /* Dimensions */
+            --border-thick: 3px;
+            --shadow-hard: 6px 6px 0px 0px var(--ink);
+            --shadow-hard-active: 2px 2px 0px 0px var(--ink);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+        }
+
+        body {
+            background-color: var(--bg-wall);
+            background-image: radial-gradient(var(--ink) 1px, transparent 1px);
+            background-size: 20px 20px;
+            color: var(--ink);
+            font-family: 'JetBrains Mono', monospace;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        /* --- Main Container --- */
+        .brutalist-deck {
+            width: 90%;
+            max-width: 1000px;
+            height: 85vh;
+            max-height: 700px;
+            background: var(--surface);
+            border: var(--border-thick) solid var(--ink);
+            box-shadow: 15px 15px 0px 0px var(--ink);
+            display: grid;
+            grid-template-columns: 2fr 1.2fr;
+            position: relative;
+            transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        /* --- Left: The Heavy Display --- */
+        .display-stage {
+            border-right: var(--border-thick) solid var(--ink);
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            background-color: #fff;
+        }
+
+        .header-strip {
+            border-bottom: var(--border-thick) solid var(--ink);
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+        }
+
+        .brand-logo {
+            font-family: 'Syne', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: -1px;
+            background: var(--ink);
+            color: #fff;
+            padding: 5px 10px;
+            display: inline-block;
+        }
+
+        .status-indicator {
+            font-size: 0.8rem;
+            font-weight: 700;
+            padding: 4px 8px;
+            background: var(--bg-wall);
+            border: 2px solid var(--ink);
+        }
+
+        /* Art Area - Constructivist Shapes */
+        .art-visual {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            border: 2px solid var(--ink);
+            margin-bottom: 40px;
+            background: var(--bg-wall);
+            overflow: hidden;
+        }
+
+        /* Abstract Geometric Art */
+        .geo-shape {
+            position: absolute;
+            background: var(--accent);
+            mix-blend-mode: multiply;
+        }
+        
+        .shape-1 {
+            width: 200px;
+            height: 200px;
+            transform: rotate(45deg);
+            background: var(--ink);
+            opacity: 0.1;
+        }
+        
+        .shape-2 {
+            width: 150px;
+            height: 100%;
+            border-left: 2px solid var(--ink);
+            left: 40%;
+            background: transparent;
+        }
+        
+        .shape-3 {
+            width: 100px;
+            height: 100px;
+            background: var(--accent);
+            right: 20px;
+            bottom: -20px;
+            opacity: 0.2;
+        }
+
+        .song-data-main {
+            z-index: 2;
+            text-align: center;
+            width: 80%;
+        }
+
+        .song-title {
+            font-family: 'Syne', sans-serif;
+            font-size: 3rem;
+            line-height: 0.9;
+            text-transform: uppercase;
+            font-weight: 800;
+            margin-bottom: 15px;
+            word-break: break-word;
+        }
+
+        .song-artist {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1rem;
+            background: var(--accent);
+            color: #fff;
+            padding: 5px 10px;
+            display: inline-block;
+            font-weight: 700;
+        }
+
+        /* Controls Area */
+        .control-grid {
+            display: grid;
+            grid-template-columns: 1fr 3fr 1fr;
+            gap: 15px;
+            align-items: end;
+        }
+
+        .progress-block {
+            grid-column: 1 / -1;
+            height: 40px;
+            border: var(--border-thick) solid var(--ink);
+            position: relative;
+            background: var(--bg-wall);
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            width: 0%;
+            background: var(--ink);
+            transition: width 0.1s linear;
+            position: relative;
+        }
+
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            width: 10px;
+            background: var(--accent);
+        }
+
+        .time-codes {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 0.9rem;
+            background: #fff;
+            padding: 2px 8px;
+            border: 2px solid var(--ink);
+            z-index: 5;
+            pointer-events: none;
+        }
+
+        .btn-group {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            grid-column: 2;
+        }
+
+        .btn-raw {
+            width: 60px;
+            height: 60px;
+            background: #fff;
+            border: var(--border-thick) solid var(--ink);
+            box-shadow: var(--shadow-hard);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.1s;
+        }
+
+        .btn-raw:active {
+            transform: translate(4px, 4px);
+            box-shadow: var(--shadow-hard-active);
+        }
+
+        .btn-raw:hover {
+            background: var(--bg-wall);
+        }
+
+        .btn-main {
+            width: 80px;
+            height: 80px;
+            background: var(--accent);
+            color: #fff;
+        }
+        
+        .btn-main:hover {
+            background: var(--accent-hover);
+        }
+
+        .btn-main:active {
+            background: var(--ink);
+        }
+
+        /* SVGs */
+        svg {
+            width: 28px;
+            height: 28px;
+            fill: currentColor;
+        }
+        .btn-main svg { width: 32px; height: 32px; fill: #fff; }
+
+        /* --- Right: The Playlist Grid --- */
+        .playlist-side {
+            background: var(--bg-wall);
+            display: flex;
+            flex-direction: column;
+            border-left: var(--border-thick) solid var(--ink); /* Re-inforce */
+        }
+
+        .pl-header {
+            padding: 20px;
+            border-bottom: var(--border-thick) solid var(--ink);
+            font-family: 'Syne', sans-serif;
+            font-size: 1.2rem;
+            text-transform: uppercase;
+            background: #fff;
+        }
+
+        .pl-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .pl-item {
+            background: #fff;
+            border: 2px solid var(--ink);
+            padding: 15px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 4px 4px 0px 0px rgba(0,0,0,0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .pl-item:hover {
+            transform: translate(-2px, -2px);
+            box-shadow: var(--shadow-hard);
+        }
+
+        .pl-item.active {
+            background: var(--ink);
+            color: #fff;
+            border-color: var(--accent);
+        }
+        
+        .pl-item.active .track-num {
+            background: var(--accent);
+            color: #fff;
+        }
+
+        .pl-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .track-num {
+            width: 30px;
+            height: 30px;
+            background: var(--bg-wall);
+            border: 2px solid var(--ink);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.8rem;
+        }
+
+        .track-details {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .t-title {
+            font-weight: 700;
+            font-size: 0.95rem;
+            line-height: 1.2;
+            margin-bottom: 4px;
+        }
+
+        .t-artist {
+            font-size: 0.75rem;
+            opacity: 0.8;
+            font-style: italic;
+        }
+
+        /* --- Mobile --- */
+        @media (max-width: 850px) {
+            .brutalist-deck {
+                grid-template-columns: 1fr;
+                grid-template-rows: auto 1fr;
+                height: 95vh;
+                overflow-y: auto;
+                box-shadow: 8px 8px 0px 0px var(--ink);
+            }
+            .display-stage {
+                border-right: none;
+                border-bottom: var(--border-thick) solid var(--ink);
+                padding: 20px;
+            }
+            .song-title { font-size: 2rem; }
+            .playlist-side { border-left: none; height: 300px; }
+            .btn-group { gap: 10px; }
+            .btn-raw { width: 50px; height: 50px; }
+            .btn-main { width: 70px; height: 70px; }
+        }
+    </style>
+</head>
+<body>
+
+    <main class="brutalist-deck">
+        <!-- Left Side -->
+        <section class="display-stage">
+            <header class="header-strip">
+                <div class="brand-logo">AUDIO_BRUTAL</div>
+                <div class="status-indicator" id="status-text">READY</div>
+            </header>
+
+            <!-- Geometric Visual Area -->
+            <div class="art-visual">
+                <div class="geo-shape shape-1"></div>
+                <div class="geo-shape shape-2"></div>
+                <div class="geo-shape shape-3"></div>
+                
+                <div class="song-data-main">
+                    <h1 class="song-title" id="main-title">LOADING</h1>
+                    <span class="song-artist" id="main-artist">SELECT TRACK</span>
+                </div>
+            </div>
+
+            <!-- Controls -->
+            <div class="control-grid">
+                <div class="progress-block" id="progress-container">
+                    <div class="progress-fill" id="progress-fill"></div>
+                    <div class="time-codes" id="time-text">0:00 / 0:00</div>
+                </div>
+
+                <div class="btn-group">
+                    <button class="btn-raw" id="btn-prev">
+                        <svg viewBox="0 0 24 24"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>
+                    </button>
+                    
+                    <button class="btn-raw btn-main" id="btn-play">
+                        <!-- Play Icon -->
+                        <svg id="icon-play" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
+                        <!-- Pause Icon -->
+                        <svg id="icon-pause" viewBox="0 0 24 24" style="display:none"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+                    </button>
+
+                    <button class="btn-raw" id="btn-stop">
+                        <svg viewBox="0 0 24 24"><path d="M6 6h12v12H6z"/></svg>
+                    </button>
+
+                    <button class="btn-raw" id="btn-next">
+                        <svg viewBox="0 0 24 24"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Right Side -->
+        <aside class="playlist-side">
+            <div class="pl-header">Tracks</div>
+            <div class="pl-list" id="playlist-container">
+                <!-- JS Generated -->
+            </div>
+        </aside>
+    </main>
+
+    <script>
+        const tracks = [
+            {
+                title: "I Just Called To Say I Love You",
+                artist: "Stevie Wonder",
+                url: "https://music.giau.info/mp3/1765329418087_I_Just_Called_To_Say_I_Love_You.mp3"
+            },
+            {
+                title: "Another Day In Paradise",
+                artist: "Phil Collins",
+                url: "https://music.giau.info/mp3/1765329417208_Another_Day_In_Paradise.mp3"
+            },
+            {
+                title: "If Life Is So Short",
+                artist: "The Moffatts",
+                url: "https://music.giau.info/mp3/1765329418894_If_Life_Is_So_Short.mp3"
+            }
+        ];
+
+        let currentIndex = 0;
+        let isPlaying = false;
+        const audio = new Audio();
+
+        // DOM Elements
+        const titleEl = document.getElementById('main-title');
+        const artistEl = document.getElementById('main-artist');
+        const statusEl = document.getElementById('status-text');
+        const progContainer = document.getElementById('progress-container');
+        const progFill = document.getElementById('progress-fill');
+        const timeText = document.getElementById('time-text');
+        const playlistContainer = document.getElementById('playlist-container');
+
+        const btnPlay = document.getElementById('btn-play');
+        const btnStop = document.getElementById('btn-stop');
+        const btnPrev = document.getElementById('btn-prev');
+        const btnNext = document.getElementById('btn-next');
+        const iconPlay = document.getElementById('icon-play');
+        const iconPause = document.getElementById('icon-pause');
+
+        // Core Functions
+        function init() {
+            renderPlaylist();
+            loadTrack(0);
+
+            btnPlay.addEventListener('click', togglePlay);
+            btnStop.addEventListener('click', stopTrack);
+            btnNext.addEventListener('click', nextTrack);
+            btnPrev.addEventListener('click', prevTrack);
+            progContainer.addEventListener('click', seek);
+
+            audio.addEventListener('timeupdate', updateProgress);
+            audio.addEventListener('ended', nextTrack);
+            audio.addEventListener('loadedmetadata', updateTimeDisplay);
+        }
+
+        function loadTrack(index) {
+            currentIndex = index;
+            const track = tracks[index];
+            
+            titleEl.innerText = track.title;
+            artistEl.innerText = track.artist;
+            audio.src = track.url;
+            
+            // Reset visual state
+            progFill.style.width = '0%';
+            timeText.innerText = "0:00 / 0:00";
+            
+            updatePlaylistUI();
+            
+            if (isPlaying) {
+                audio.play().catch(e => console.log(e));
+            }
+        }
+
+        function togglePlay() {
+            if (isPlaying) {
+                audio.pause();
+                isPlaying = false;
+                statusEl.innerText = "PAUSED";
+                statusEl.style.background = "#f0f0f0";
+                iconPlay.style.display = 'block';
+                iconPause.style.display = 'none';
+            } else {
+                audio.play().catch(e => console.log(e));
+                isPlaying = true;
+                statusEl.innerText = "PLAYING >";
+                statusEl.style.background = "var(--accent)";
+                statusEl.style.color = "#fff";
+                iconPlay.style.display = 'none';
+                iconPause.style.display = 'block';
+            }
+        }
+
+        function stopTrack() {
+            if (isPlaying) togglePlay();
+            audio.currentTime = 0;
+            progFill.style.width = '0%';
+            timeText.innerText = "0:00 / 0:00";
+            statusEl.innerText = "STOPPED";
+            statusEl.style.background = "#f0f0f0";
+        }
+
+        function nextTrack() {
+            currentIndex++;
+            if (currentIndex >= tracks.length) currentIndex = 0;
+            loadTrack(currentIndex);
+            if (!isPlaying) togglePlay();
+        }
+
+        function prevTrack() {
+            currentIndex--;
+            if (currentIndex < 0) currentIndex = tracks.length - 1;
+            loadTrack(currentIndex);
+            if (!isPlaying) togglePlay();
+        }
+
+        function updateProgress() {
+            if(audio.duration) {
+                const percent = (audio.currentTime / audio.duration) * 100;
+                progFill.style.width = `${percent}%`;
+                updateTimeDisplay();
+            }
+        }
+
+        function updateTimeDisplay() {
+            const cur = formatTime(audio.currentTime);
+            const dur = formatTime(audio.duration);
+            timeText.innerText = `${cur} / ${dur}`;
+        }
+
+        function seek(e) {
+            const width = progContainer.clientWidth;
+            const clickX = e.offsetX;
+            if(audio.duration) {
+                audio.currentTime = (clickX / width) * audio.duration;
+            }
+        }
+
+        function formatTime(s) {
+            if(isNaN(s)) return "0:00";
+            const mins = Math.floor(s / 60);
+            const secs = Math.floor(s % 60);
+            return `${mins}:${secs < 10 ? '0'+secs : secs}`;
+        }
+
+        function renderPlaylist() {
+            playlistContainer.innerHTML = '';
+            tracks.forEach((t, i) => {
+                const item = document.createElement('div');
+                item.className = 'pl-item';
+                item.innerHTML = `
+                    <div class="pl-left">
+                        <div class="track-num">0${i+1}</div>
+                        <div class="track-details">
+                            <div class="t-title">${t.title}</div>
+                            <div class="t-artist">${t.artist}</div>
+                        </div>
+                    </div>
+                `;
+                item.addEventListener('click', () => {
+                    if (currentIndex === i) {
+                        togglePlay();
+                    } else {
+                        loadTrack(i);
+                        togglePlay();
+                    }
+                });
+                playlistContainer.appendChild(item);
+            });
+        }
+
+        function updatePlaylistUI() {
+            const items = document.querySelectorAll('.pl-item');
+            items.forEach((item, i) => {
+                if (i === currentIndex) item.classList.add('active');
+                else item.classList.remove('active');
+            });
+        }
+
+        // Run
+        init();
+
+    </script>
+</body>
+</html>
