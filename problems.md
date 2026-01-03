@@ -1,0 +1,1 @@
+- Trong backend, mặc dù upload mp3 file và lưu vào playlist thành công nhưng web lại báo là "Upload failed". Chưa tự động load lại để hiển thị danh sách các song trong playlist sau khi upload xong.

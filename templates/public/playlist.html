@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ playlist.name }} - Music Player</title>
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link href="/static/css/custom.css" rel="stylesheet">
+</head>
+
+<body class="bg-body-tertiary">
+    <div class="container py-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <!-- Player Card -->
+                <div class="card shadow-lg border-0 player-card">
+                    <div class="card-body p-0">
+                        <!-- Header -->
+                        <div class="bg-primary text-white p-4 rounded-top">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h4 class="mb-1 fw-bold">
+                                        <i class="bi bi-collection me-2"></i>{{ playlist.name }}
+                                    </h4>
+                                    <small class="opacity-75">
+                                        <i class="bi bi-music-note me-1"></i>{{ songs|length }} songs
+                                    </small>
+                                </div>
+                                <button class="btn btn-light btn-sm" onclick="toggleTheme()">
+                                    <i class="bi bi-moon-stars"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Now Playing -->
+                        <div class="p-4 border-bottom bg-body-secondary">
+                            <div class="d-flex align-items-center">
+                                <div class="now-playing-icon me-3">
+                                    <i class="bi bi-disc display-4 text-primary spinning" id="discIcon"></i>
+                                </div>
+                                <div class="flex-grow-1">
+                                    <p class="text-muted small mb-0">Now Playing</p>
+                                    <h5 class="mb-0 fw-bold" id="currentSongTitle">Select a song</h5>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Audio Player -->
+                        <div class="p-4 border-bottom">
+                            <audio id="audioPlayer" class="w-100" controls>
+                                Your browser does not support the audio element.
+                            </audio>
+                        </div>
+
+                        <!-- Playlist -->
+                        <div class="playlist-container">
+                            {% if songs %}
+                            <ul class="list-group list-group-flush" id="playlistSongs">
+                                {% for song in songs %}
+                                <li class="list-group-item list-group-item-action song-row d-flex justify-content-between align-items-center"
+                                    data-url="/mp3/{{ song.filename }}" data-title="{{ song.original_name }}"
+                                    data-index="{{ loop.index0 }}">
+                                    <div class="d-flex align-items-center">
+                                        <span class="song-number me-3 text-muted">{{ loop.index }}</span>
+                                        <i class="bi bi-play-circle text-primary me-2 play-icon"></i>
+                                        <span class="song-title">{{ song.original_name }}</span>
+                                    </div>
+                                    <i class="bi bi-soundwave playing-indicator d-none text-primary"></i>
+                                </li>
+                                {% endfor %}
+                            </ul>
+                            {% else %}
+                            <div class="text-center py-5">
+                                <i class="bi bi-music-note-list display-4 text-muted"></i>
+                                <p class="text-muted mt-3">This playlist is empty</p>
+                            </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer -->
+                <div class="text-center mt-4">
+                    <small class="text-muted">
+                        Powered by <i class="bi bi-music-note-beamed text-primary"></i> Music Manager
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Theme Toggle -->
+    <script src="/static/js/theme.js"></script>
+    <script src="/static/js/player.js"></script>
+</body>
+
+</html>

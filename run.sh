@@ -1,0 +1,1 @@
+sbcl --eval "(ql:quickload :music-manager)" --eval "(music-manager:start-server)"

@@ -1,7 +1,29 @@
-database.sqlite
-node_modules
-.env
-mp3
-build
+# Dependencies
+/.qlot/
+
+# Compiled Lisp files
+*.fasl
+*.lx64fsl
+*.dx64fsl
+
+# Database
 *.db
-music_manager
+*.sqlite
+*.sqlite3
+
+# Environment file (contains secrets)
+.env
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor files
+*~
+\#*\#
+.#*
+
+# IDE
+.idea/
+*.swp
+*.swo
